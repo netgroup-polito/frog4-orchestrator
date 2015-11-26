@@ -147,12 +147,11 @@ class UpperLayerOrchestratorController(object):
             try:
                 # Manage profile
                 self.prepareNFFG(nffg)
-                 
-                
+                                 
                 # TODO: To split the graph we have to loop the following three instructions
                 # Take a decision about where we should schedule the serving graph (UN or HEAT), and the node
                 Graph().id_generator(nffg, session_id)
-                orchestrator, node = Scheduler(nffg.db_id, self.user_data).schedule(nffg)
+                node = Scheduler(nffg.db_id, self.user_data).schedule(nffg)
                 
                 # If the orchestrator have to connect two graphs in different nodes,
                 # the end-points must be characterized to allow a connection between nodes
@@ -162,14 +161,16 @@ class UpperLayerOrchestratorController(object):
                 self.updateRemoteGraph(remote_nffgs_dict)
                 
                 # Save the NFFG in the database, with the state initializing
-                ##Graph().addNFFG(nffg, session_id)
+                Graph().addNFFG(nffg, session_id)
                 
                 Graph().setNodeID(nffg.db_id, node.id)
                 
                 # Instantiate profile
                 logging.info('Call CA to instantiate NF-FG')
                 logging.debug(nffg.getJSON())
-                orchestrator.instantiateProfile(nffg, node)
+                nffg.id = nffg.db_id
+                logging.debug(nffg.getJSON())
+                #orchestrator.instantiateProfile(nffg, node)
                 logging.debug('NF-FG instantiated') 
                 
                 Session().updateSessionNode(session_id, node.id, node.id)    

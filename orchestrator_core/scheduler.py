@@ -20,7 +20,7 @@ class Scheduler(object):
         self.changeAvailabilityZone(nffg, Node().getAvailabilityZone(node.id))
         
         #orchestratorCA_instance = self.getInstance(node)
-        return orchestratorCA_instance, node
+        return node
         
     def getInstance(self, node):
         if node.type == "OpenStack+CA" or node.type == "OpenStack+_compute":

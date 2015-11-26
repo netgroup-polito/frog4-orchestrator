@@ -333,13 +333,14 @@ class Graph(object):
                         end_point.type = same_end_point.type.split('connection_end_point')[0]
                         break
         return nffg
-      
+    """  
     def addNFFG(self, nffg, session_id, partial=False):
         session = get_session()  
         with session.begin():
             self.id_generator(nffg, session_id)
             graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, partial=partial)
             session.add(graph_ref)
+            """
             for vnf in nffg.vnfs:
                 vnf_ref = VNFInstanceModel(id=vnf.db_id, graph_vnf_id = vnf.id,
                                            graph_id=nffg.db_id, name=vnf.name, template_location=vnf.vnf_template_location,
@@ -373,7 +374,8 @@ class Graph(object):
                                           resource_id=self.port_id)
                     session.add(endpoint_resource_ref)
                     self.port_id = self.port_id + 1
-    
+            """
+    """
     def addFlowRule(self, graph_id, flow_rule, nffg):
         session = get_session()
         with session.begin():  
