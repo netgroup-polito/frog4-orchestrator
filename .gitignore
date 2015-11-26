@@ -1,0 +1,12 @@
+*.*~
+*.bak
+*.pyc
+*.log
+*.conf
+*.project
+*.pydevproject
+*.DS_Store
+.DS_Store
+
+orchestrator-core/.metadata/
+FrogOrchestrator.log
