@@ -89,6 +89,7 @@ class UpperLayerOrchestratorController(object):
             # If the graph has been split, the smart update is not supported
             logging.warning("The graph has been split in various nffg, in this case the smart update is not supported.")
             self.delete(nffg.id)
+            ## self.put ?
         else:
             """
             old_nffg = Graph().get_nffg(graphs_ref[0].id)
@@ -199,7 +200,7 @@ class UpperLayerOrchestratorController(object):
                     Session().updateSessionNode(session_id, node.id, node.id)
                     
                 #debug   
-                #Session().set_error(session_id)
+                Session().set_error(session_id)
             except Exception as ex:
                 logging.exception(ex)
                 '''

@@ -56,8 +56,6 @@ app.add_route('/yang/{image_id}', yang)
 dd_server = special_server("orchestrator", conf.BROKER_ADDRESS, "public") 
 thread = Thread(target=dd_server.start)
 thread.start()
-#dd_server.start()
-
 
 logging.info("Falcon Successfully started")
 

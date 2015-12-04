@@ -2,7 +2,6 @@
 *.bak
 *.pyc
 *.log
-*.conf
 *.project
 *.pydevproject
 *.DS_Store

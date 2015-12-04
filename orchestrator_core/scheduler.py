@@ -38,7 +38,6 @@ class Scheduler(object):
         # Try to split and match capabilities
         if splittable is True:
             domains_info = DomainsInformation().get_domain_info()
-            #user_endpoint_domain_name = None
             if not domains_info:
                 logging.debug("Domains information are not present, so it's not possible to split the graph")
                 return node_list, nffg_list
@@ -105,19 +104,21 @@ class Scheduler(object):
             #Check if a direct link between these two domains exists
             if interface.neighbor is not None and interface.neighbor != "internet":
                 tmp = interface.neighbor.split('/')
-                remote_domain_name = tmp[1]
-                remote_interface_name = tmp[0]
+                remote_domain_name = tmp[0]
+                remote_interface_name = tmp[1]
                 if remote_domain_name == domain_name_2 and remote_domain_name in domains_info:
                     remote_interface = domains_info[remote_domain_name].getInterface(remote_interface_name)
-                    if remote_interface is not None and remote_interface.neighbor == interface.name+"/"+domain_name_1:
+                    if remote_interface is not None and remote_interface.neighbor == domain_name_1+"/"+ interface.name:
                         #Direct link found between these two domains
                         print ("found")
                         matches_found = matches_found + 1
-                        #characterization[domain_name_1+"/"+interface.name]=domain_name_2+"/"+remote_interface_name
-                        characterization.append(DirectLink(domain_1.ip, interface.name,domains_info[remote_domain_name].ip, remote_interface_name))
+                        characterization.append(DirectLink(domain_1.ip, interface.name, domains_info[remote_domain_name].ip, remote_interface_name))
                         if matches_found == number_of_links:
                             break
-        return characterization
+        if matches_found == number_of_links:
+            return characterization
+        else:
+            return None
                             
             
     """    
