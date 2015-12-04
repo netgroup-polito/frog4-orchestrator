@@ -43,11 +43,15 @@ class Configuration(object):
                         
             self._DEBUG_MODE = config.getboolean('orchestrator', 'debug_mode')
             
+
+            
             self._UNIFY_NUM_ENDPOINTS = config.getint('UniversalNodeCA','number_of_endpoint')
     
             self._ORCH_PORT = config.get('orchestrator','port')
             self._ORCH_IP = config.get('orchestrator','ip')
             self._ORCH_TIMEOUT = config.get('orchestrator','timeout')
+            self._BROKER_ADDRESS = config.get('orchestrator','broker_address')
+
             
             self._SWITCH_TEMPLATE = config.get('switch','template')
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
@@ -97,6 +101,10 @@ class Configuration(object):
     @property
     def ORCH_TIMEOUT(self):
         return self._ORCH_TIMEOUT
+    
+    @property
+    def BROKER_ADDRESS(self):
+        return self._BROKER_ADDRESS
 
     @property
     def TIMEOUT_NOVA(self):

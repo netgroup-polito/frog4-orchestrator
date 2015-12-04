@@ -334,7 +334,7 @@ class Graph(object):
                         break
         return nffg
     """  
-    def addNFFG(self, nffg, session_id, partial=False):
+    def add_graph(self, nffg, session_id, partial=False):
         session = get_session()  
         with session.begin():
             self.id_generator(nffg, session_id)

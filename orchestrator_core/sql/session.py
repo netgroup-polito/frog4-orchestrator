@@ -32,16 +32,6 @@ class SessionModel(Base):
     last_update = Column(DateTime, default=func.now())
     error = Column(Text)
     ended = Column(DateTime)
-    
- 
-class UserDeviceModel(Base):
-    '''
-    Maps the database table user_device
-    '''
-    __tablename__ = 'user_device'
-    attributes = ['session_id', 'mac_address']
-    session_id = Column(VARCHAR(64), primary_key=True)
-    mac_address = Column(VARCHAR(64), primary_key=True)
 
 class Session(object):
     def __init__(self):
@@ -102,27 +92,6 @@ class Session(object):
             raise sessionNotFound("Session Not Found")
         return session_ref
     
-    def get_active_user_device_session(self, user_id, mac_address = None, error_aware=True):
-        '''
-        returns if exists an active session of the user connected on the port of the switch passed
-        '''
-        session = get_session()
-        if error_aware is True:
-            user_session = session.query(SessionModel).filter_by(user_id = user_id).filter_by(ended = None).filter_by(error = None).first()
-        else:
-            user_session = session.query(SessionModel).filter_by(user_id = user_id).filter_by(ended = None).first()
-        if user_session is None:
-            raise sessionNotFound("Session Not Found")
-        if mac_address is None:
-            return 1, user_session
-        logging.debug("MAC address:"+str(mac_address))
-        devices = session.query(UserDeviceModel).filter_by(session_id = user_session.id).all()
-        for device in devices:
-            logging.debug("device MAC address:"+str(device.mac_address)+" MAC address:"+str(mac_address))
-            if device.mac_address == mac_address:
-                return len(devices), user_session
-        raise sessionNotFound("Device not found in the user session")
-    
     def set_ended(self, session_id):
         '''
         Set the ended status for the session identified with session_id
@@ -165,39 +134,6 @@ class Session(object):
         else:
             return True
         
-    def checkDeviceSession(self, user_id, mac_address):
-        '''
-        return true if there is already an active session of the user with this mac
-        '''
-        session = get_session()
-        user_sessions =session.query(SessionModel).filter_by(user_id = user_id).filter_by(ended = None).filter_by(error = None).all()
-        for user_session in user_sessions:
-            devices = session.query(UserDeviceModel).filter_by(session_id = user_session.id).all()
-            for device in devices:
-                if device.mac_address == mac_address:
-                    return True
-        return False
-        
-    def add_mac_address_in_the_session(self, mac_address, session_id):
-        session = get_session()
-        with session.begin():     
-            user_device_ref = UserDeviceModel(session_id = session_id, mac_address=mac_address)
-            session.add(user_device_ref)
-    
-    def del_mac_address_in_the_session(self, mac_address, session_id):
-        session = get_session()
-        with session.begin():     
-            session.query(UserDeviceModel).filter_by(session_id = session_id).filter_by(mac_address=mac_address).delete()
-
-    def get_active_user_devices(self, user_id):
-        session = get_session()
-        user_sessions = session.query(SessionModel.id).filter_by(user_id = user_id).filter_by(ended = None).filter_by(error = None).all()
-        mac_addresses = []
-        for user_session in user_sessions:
-            devices = session.query(UserDeviceModel).filter_by(session_id = user_session.id).all()
-            for device in devices:
-                mac_addresses.append(device.mac_address)
-        return mac_addresses
     
     def get_active_user_session_from_id(self, session_id):
         session = get_session()

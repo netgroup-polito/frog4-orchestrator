@@ -20,7 +20,7 @@ class NodeModel(Base):
     Maps the database table node
     '''
     __tablename__ = 'node'
-    attributes = ['id', 'name', 'type','domain_id','availability_zone','openstack_controller', 'openflow_controller']
+    attributes = ['id', 'name', 'type','domain_id','availability_zone','openstack_controller', 'openflow_controller', 'ca_ip']
     id = Column(VARCHAR(64), primary_key=True)
     name = Column(VARCHAR(64))
     
@@ -46,6 +46,8 @@ class NodeModel(Base):
     This specifies the id of the tuple in the openflow_controller table
     '''
     openflow_controller = Column(VARCHAR(64))
+    ca_ip = Column(VARCHAR(64))
+
     
 class OpenflowControllerModel(Base):
     '''
@@ -63,15 +65,6 @@ class OpenflowControllerModel(Base):
     username = Column(VARCHAR(64))
     password = Column(VARCHAR(64))
 
-#TODO: to be used into the SLApp DB and not into the orchestrator_core one    
-class UserLocationModel(Base):
-    '''
-    Maps the database table node (used only by the Service layer)
-    '''
-    __tablename__ = 'user_location'
-    attributes = ['user_id', 'node_id']
-    user_id = Column(VARCHAR(64), primary_key=True)
-    node_id = Column(VARCHAR(64))
 
 class Node(object):
     def __init__(self):
@@ -157,13 +150,3 @@ class Node(object):
             logging.error(ex)
             raise ControllerNotFound("Node not found: "+str(controller_id))
         
-    def getUserLocation(self, user_id):
-        '''
-        Ruturns the id of the node, where the User is connected
-        '''
-        session = get_session()
-        try:
-            return session.query(UserLocationModel.node_id).filter_by(user_id = user_id).one().node_id
-        except Exception as ex:
-            logging.error(ex)
-            raise UserLocationNotFound("It is not defined a default location for the user: "+str(user_id))

@@ -5,9 +5,11 @@ Created on Oct 1, 2014
 '''
 
 import falcon, logging
-
+from threading import Thread
 from orchestrator_core.config import Configuration
 from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus
+from orchestrator_core.dd_server import special_server
+#from orchestrator_core.testclient import special_client
 
 conf = Configuration()
 
@@ -37,9 +39,6 @@ print("Welcome to the UN orchestrator_core")
 app = falcon.API()
 logging.info("Starting Orchestration Server application")
 
-#upper_layer_API = UpperLayerOrchestrator(conf.AUTH_SERVER,conf.ORCH_USERNAME,conf.ORCH_PASSWORD,conf.ORCH_TENANT)
-#template = TemplateAPI(conf.AUTH_SERVER,conf.ORCH_USERNAME,conf.ORCH_PASSWORD,conf.ORCH_TENANT)
-#yang = YANGAPI(conf.AUTH_SERVER,conf.ORCH_USERNAME,conf.ORCH_PASSWORD,conf.ORCH_TENANT)
 
 upper_layer_API = UpperLayerOrchestrator()
 nffg_status = NFFGStatus()
@@ -53,6 +52,11 @@ app.add_route('/NF-FG/status/{nffg_id}', nffg_status)
 app.add_route('/template/{image_id}', template)
 app.add_route('/template/location/{template_location}', template_location)
 app.add_route('/yang/{image_id}', yang)
+
+dd_server = special_server("orchestrator", conf.BROKER_ADDRESS, "public") 
+thread = Thread(target=dd_server.start)
+thread.start()
+#dd_server.start()
 
 
 logging.info("Falcon Successfully started")
