@@ -57,7 +57,6 @@ class DomainsInformation(object):
         if domain_info is not None:
             domain_name=domain_info.domain_name
         return domain_name
-
     
     def get_domain_info(self, domain_name=None):
         session = get_session() 

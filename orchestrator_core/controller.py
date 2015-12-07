@@ -15,6 +15,7 @@ from orchestrator_core.sql.node import Node
 from orchestrator_core.userAuthentication import UserData
 from orchestrator_core.config import Configuration
 from collections import OrderedDict
+from orchestrator_core.ca_rest import CA_Interface
 
 DEBUG_MODE = Configuration().DEBUG_MODE
 
@@ -32,15 +33,19 @@ class UpperLayerOrchestratorController(object):
         graphs_ref = Graph().getGraphs(session.id)
         instantiated_nffgs = []
         for graph_ref in graphs_ref:
-            instantiated_nffgs.append(Graph().get_nffg(graph_ref.id))
+            #instantiated_nffgs.append(Graph().get_nffg(graph_ref.id))
+            node = Node().getNode(Graph().getNodeID(graph_ref.id))
+            instantiated_nffgs.append(CA_Interface(self.user_data, node.ca_ip, node.ca_port).getNFFG(graph_ref.id))
         
         if not instantiated_nffgs:
             return None
-        # TODO: If the graph has been split, we need to rebuild the origina nffg
+        # If the graph has been split, we need to rebuild the original nffg
+        if len(instantiated_nffgs) == 2:
+            return instantiated_nffgs[0].join(instantiated_nffgs[1])
+            
         return instantiated_nffgs[0].getJSON()
     
     def delete(self, nffg_id):        
-        # Get the component adapter associated  to the node where the nffg was instantiated
         session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
         logging.debug("Deleting session: "+str(session.id))
 
@@ -67,8 +72,7 @@ class UpperLayerOrchestratorController(object):
             #orchestrator = Scheduler(graph_ref.id, self.user_data).getInstance(node)
             
             try:
-                #orchestrator.deinstantiateProfile(instantiated_nffg, node)
-                pass
+                CA_Interface(self.user_data, node.ca_ip, node.ca_port).delete(graph_ref.id)
             except Exception as ex:
                 logging.exception(ex)
                 Session().set_error(session.id)
@@ -89,8 +93,10 @@ class UpperLayerOrchestratorController(object):
             # If the graph has been split, the smart update is not supported
             logging.warning("The graph has been split in various nffg, in this case the smart update is not supported.")
             self.delete(nffg.id)
-            ## self.put ?
+            #to be tested
+            ##self.put(nffg)
         else:
+            #graph instantiated in a single domain
             """
             old_nffg = Graph().get_nffg(graphs_ref[0].id)
             logging.debug('NF-FG that has to be updated: '+old_nffg.getJSON())
@@ -112,43 +118,75 @@ class UpperLayerOrchestratorController(object):
             
             old_node = Node().getNode(Graph().getNodeID(old_graph.id))
 
-            scheduler = Scheduler(old_graph.id, self.user_data)
-            new_node = scheduler.schedule(nffg)
+            ##scheduler = Scheduler(old_graph.id, self.user_data)
+            ##new_node = scheduler.schedule(nffg)
+            nodes, nffgs = Scheduler().schedule(nffg)
             
-            # If the orchestrator have to connect two graphs in different nodes,
-            # the end-points must be characterized to allow a connection between nodes
-            remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_node)
+            old_node_present=False
+            for node in nodes:
+                if node.id == old_node.id:
+                    old_node_present = True
+                    break
             
-            # If needed, update the remote graph
-            self.updateRemoteGraph(remote_nffgs_dict)
+            if old_node_present is False:
+                logging.warning("The graph will be instantiated in a different node...deleting old graph")
+                CA_Interface(self.user_data, old_node.ca_ip, old_node.ca_port).delete(old_graph.id)
+                Graph().delete_session(session.id)                
             
-            nffg.id = nffg.db_id
+            node_nffg_dict = OrderedDict()
+            for i in range(0, len(nodes)):
+                node_nffg_dict[nodes[i]]=nffgs[i]
+                
+            for new_node, new_nffg in node_nffg_dict.items():
+                # If the orchestrator has to connect two graphs in different nodes,
+                # the end-points must be characterized to allow a connection between nodes
+                remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_node)
             
-            if new_node.id != old_node.id:
-                logging.warning("The graph will be instantiated in a different node, in this case the smart update is not supported.")
-                #orchestrator.deinstantiateProfile(nffg, old_node)
-                Graph().delete_session(session.id)
-                Graph().add_graph(nffg, session.id)
-                Graph().setNodeID(graphs_ref[0].id, Node().getNodeFromDomainID(new_node.domain_id).id)
-                try:
-                    #orchestrator.instantiateProfile(nffg, new_node)
-                    logging.debug(nffg.getJSON())
-                except Exception as ex:
-                    logging.exception(ex)
-                    Session().set_error(session.id)          
-                    raise ex
-            else:
-                # Update the nffg
-                try:
-                    #orchestrator.updateProfile(nffg, old_nffg, new_node)
-                    logging.debug(nffg.getJSON())
-                except Exception as ex:
-                    logging.exception(ex)
-                    Session().set_error(session.id)
-                    raise ex
+                # If needed, update the remote graph
+                self.updateRemoteGraph(remote_nffgs_dict)
+                
+                if new_node.id == old_node.id:
+                    Graph().setGraphPartial(new_nffg.db_id, partial=len(node_nffg_dict)>1)
+                else:
+                    Graph().add_graph(new_nffg, session.id, partial=len(node_nffg_dict)>1)
+                    
+                    Graph().setNodeID(new_nffg.db_id, new_node.id)
+                    
+                new_nffg.id = new_nffg.db_id
+                
+                CA_Interface(self.user_data, new_node.ca_ip, new_node.ca_port).put(new_nffg)
+               
+                """
+                if new_node.id != old_node.id:
+                    logging.warning("The graph will be instantiated in a different node, in this case the smart update is not supported.")
+                    #orchestrator.deinstantiateProfile(nffg, old_node)
+                    Graph().delete_session(session.id)
+                    Graph().add_graph(nffg, session.id)
+                    Graph().setNodeID(graphs_ref[0].id, Node().getNodeFromDomainID(new_node.domain_id).id)
+                    try:
+                        #orchestrator.instantiateProfile(nffg, new_node)
+                        logging.debug(nffg.getJSON())
+                    except Exception as ex:
+                        logging.exception(ex)
+                        Session().set_error(session.id)          
+                        raise ex
+                else:
+                    # Update the nffg
+                    try:
+                        #orchestrator.updateProfile(nffg, old_nffg, new_node)
+                        logging.debug(nffg.getJSON())
+                    except Exception as ex:
+                        logging.exception(ex)
+                        Session().set_error(session.id)
+                        raise ex
+                """
         
-        Session().updateStatus(session.id, 'complete')
-        Session().updateSessionNode(session.id, new_node.id, new_node.id)
+        Session().updateStatus(session.id, 'complete')     
+        if len(nodes)>1:
+            Session().updateSessionNode(session.id, nodes[0].id, nodes[1].id)
+        else:
+            Session().updateSessionNode(session.id, new_node.id, new_node.id)        
+        #Session().updateSessionNode(session.id, new_node.id, new_node.id)
         return session.id
         
     def put(self, nffg):
@@ -175,7 +213,7 @@ class UpperLayerOrchestratorController(object):
                     node_nffg_dict[nodes[i]]=nffgs[i]
                 
                 for node, nffg in node_nffg_dict.items():
-                    # If the orchestrator have to connect two graphs in different nodes,
+                    # If the orchestrator has to connect two graphs in different nodes,
                     # the end-points must be characterized to allow a connection between nodes
                     remote_nffgs_dict = self.analizeRemoteConnection(nffg, node)
                     
@@ -190,8 +228,8 @@ class UpperLayerOrchestratorController(object):
                     # Instantiate profile
                     logging.info('Call CA to instantiate NF-FG')
                     nffg.id = nffg.db_id
-                    logging.debug(nffg.getJSON())
-                    #orchestrator.instantiateProfile(nffg, node)
+                    #logging.debug(nffg.getJSON())
+                    CA_Interface(self.user_data, node.ca_ip, node.ca_port).put(nffg)
                     logging.debug('NF-FG instantiated')
                      
                 if len(nodes)>1:
@@ -200,7 +238,7 @@ class UpperLayerOrchestratorController(object):
                     Session().updateSessionNode(session_id, node.id, node.id)
                     
                 #debug   
-                Session().set_error(session_id)
+                #Session().set_error(session_id)
             except Exception as ex:
                 logging.exception(ex)
                 '''

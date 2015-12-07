@@ -59,7 +59,9 @@ class Scheduler(object):
                 nffg_list.append(nffg1)   
                 nffg_list.append(nffg2)  
                 # provisional
-                node_list.append(Node().getNodeFromDomainID(self.checkEndpointLocation(nffg2)))           
+                node_list.append(Node().getNodeFromDomainID(self.checkEndpointLocation(nffg2)))
+            else:
+                logging.debug("Graph cannot be split because domains capabilities are not suitable for this graph")
             
         return node_list, nffg_list
     
@@ -110,28 +112,18 @@ class Scheduler(object):
                     remote_interface = domains_info[remote_domain_name].getInterface(remote_interface_name)
                     if remote_interface is not None and remote_interface.neighbor == domain_name_1+"/"+ interface.name:
                         #Direct link found between these two domains
-                        print ("found")
+                        print ("match found")
                         matches_found = matches_found + 1
                         characterization.append(DirectLink(domain_1.ip, interface.name, domains_info[remote_domain_name].ip, remote_interface_name))
                         if matches_found == number_of_links:
                             break
         if matches_found == number_of_links:
+            print ("Characterization found")
             return characterization
         else:
             return None
                             
-            
     """    
-    def getInstance(self, node):
-        if node.type == "OpenStack+CA" or node.type == "OpenStack+_compute":
-            orchestratorCA_instance = OpenStackPlusOrchestrator(self.graph_id, self.userdata)
-        elif node.type == "JolnetCA":
-            orchestratorCA_instance = JolnetAdapter(self.graph_id, self.userdata)
-        else:
-            logging.error("Driver not supported: "+node.type)
-            raise
-        return orchestratorCA_instance
-    
     def changeAvailabilityZone(self, nffg, availability_zone):
         for vnf in nffg.vnfs:
             vnf.availability_zone = availability_zone
@@ -154,7 +146,7 @@ class Scheduler(object):
         return node
     
 class DirectLink(object):
-    def __init__(self,domain_1=None, port_1=None, domain_2=None, port_2=None):
+    def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None):
         self.domain_1 = domain_1
         self.port_1 = port_1
         self.domain_2 = domain_2

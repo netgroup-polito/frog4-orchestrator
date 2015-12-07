@@ -496,6 +496,11 @@ class Graph(object):
         graphs_ref = session.query(GraphModel).filter_by(session_id = session_id).all()
         for graph_ref in graphs_ref:
             self.delete_graph(graph_ref.id)
+            
+    def setGraphPartial(self, graph_id, partial=True):
+        session = get_session()  
+        with session.begin():
+            session.query(GraphModel).filter_by(id = graph_id).update({"partial": partial})
     
     def delete_graph(self, graph_id):
         session = get_session()

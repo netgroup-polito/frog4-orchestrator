@@ -4,7 +4,7 @@ Created on Jun 20, 2015
 @author: fabiomignini
 '''
 
-from sqlalchemy import Column, VARCHAR, Boolean
+from sqlalchemy import Column, VARCHAR, Boolean, Integer
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -20,7 +20,7 @@ class NodeModel(Base):
     Maps the database table node
     '''
     __tablename__ = 'node'
-    attributes = ['id', 'name', 'type','domain_id','availability_zone','openstack_controller', 'openflow_controller', 'ca_ip']
+    attributes = ['id', 'name', 'type','domain_id','availability_zone','openstack_controller', 'openflow_controller', 'ca_ip', 'ca_port']
     id = Column(VARCHAR(64), primary_key=True)
     name = Column(VARCHAR(64))
     
@@ -47,7 +47,7 @@ class NodeModel(Base):
     '''
     openflow_controller = Column(VARCHAR(64))
     ca_ip = Column(VARCHAR(64))
-
+    ca_port = Column(Integer)
     
 class OpenflowControllerModel(Base):
     '''
