@@ -79,7 +79,7 @@ class UpperLayerOrchestratorController(object):
                 raise ex
             
         logging.debug('Session deleted: '+str(session.id))
-        # Set the field ended in the table session to the actual datatime        
+        # Set the field ended in the table session to the actual datetime        
         Graph().delete_session(session.id)
         Session().set_ended(session.id)
     
@@ -92,9 +92,8 @@ class UpperLayerOrchestratorController(object):
         if len(graphs_ref) > 1:
             # If the graph has been split, the smart update is not supported
             logging.warning("The graph has been split in various nffg, in this case the smart update is not supported.")
+            Session().updateStatus(session.id, 'complete')
             self.delete(nffg.id)
-            #to be tested
-            ##self.put(nffg)
         else:
             #graph instantiated in a single domain
             """
@@ -149,7 +148,6 @@ class UpperLayerOrchestratorController(object):
                     Graph().setGraphPartial(new_nffg.db_id, partial=len(node_nffg_dict)>1)
                 else:
                     Graph().add_graph(new_nffg, session.id, partial=len(node_nffg_dict)>1)
-                    
                     Graph().setNodeID(new_nffg.db_id, new_node.id)
                     
                 new_nffg.id = new_nffg.db_id
@@ -180,12 +178,12 @@ class UpperLayerOrchestratorController(object):
                         Session().set_error(session.id)
                         raise ex
                 """
+            Session().updateStatus(session.id, 'complete')
+            if len(nodes)>1:
+                Session().updateSessionNode(session.id, nodes[0].id, nodes[1].id)
+            else:
+                Session().updateSessionNode(session.id, new_node.id, new_node.id)     
         
-        Session().updateStatus(session.id, 'complete')     
-        if len(nodes)>1:
-            Session().updateSessionNode(session.id, nodes[0].id, nodes[1].id)
-        else:
-            Session().updateSessionNode(session.id, new_node.id, new_node.id)        
         #Session().updateSessionNode(session.id, new_node.id, new_node.id)
         return session.id
         

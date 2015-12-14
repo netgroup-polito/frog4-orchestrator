@@ -21,8 +21,6 @@ class Scheduler(object):
         node = Node().getNodeFromDomainID(self.checkEndpointLocation(nffg))
         node_list.append(node)
         nffg_list.append(nffg)
-        # not needed in UN
-        #self.changeAvailabilityZone(nffg, Node().getAvailabilityZone(node.id))
         
         # check if the nffg can be split (for the moment with a very stupid criterion)
         left = []
@@ -123,12 +121,6 @@ class Scheduler(object):
         else:
             return None
                             
-    """    
-    def changeAvailabilityZone(self, nffg, availability_zone):
-        for vnf in nffg.vnfs:
-            vnf.availability_zone = availability_zone
-    """
-    
     def checkEndpointLocation(self, nffg):
         '''
         Define the node where to instantiate the nffg

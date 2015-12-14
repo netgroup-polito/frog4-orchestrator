@@ -36,35 +36,10 @@ class NodeModel(Base):
     '''
     type = Column(VARCHAR(64))
     domain_id = Column(VARCHAR(64))
-    availability_zone = Column(VARCHAR(64))
     
-    '''
-    This specifies the endpoint for Keystone authentication on the controller (es: http://1.1.1.1:35357)
-    '''
-    openstack_controller = Column(VARCHAR(64))
-    '''
-    This specifies the id of the tuple in the openflow_controller table
-    '''
-    openflow_controller = Column(VARCHAR(64))
     ca_ip = Column(VARCHAR(64))
     ca_port = Column(Integer)
     
-class OpenflowControllerModel(Base):
-    '''
-    Maps the database table openflow_controller
-    '''
-    __tablename__ = 'openflow_controller'
-    attributes = ['id', 'endpoint', 'version', 'username', 'password']
-    id = Column(VARCHAR(64), primary_key=True)
-    
-    '''
-    This specifies the endpoint for REST APIs on the openflow controller (es: http://2.2.2.2:8181)
-    '''
-    endpoint = Column(VARCHAR(64))
-    version = Column(VARCHAR(64))
-    username = Column(VARCHAR(64))
-    password = Column(VARCHAR(64))
-
 
 class Node(object):
     def __init__(self):
@@ -101,14 +76,6 @@ class Node(object):
             logging.error(ex)
             raise NodeNotFound("Node not found for domain id: "+str(domain_id))
     
-    def getAvailabilityZone(self, node_id):
-        session = get_session()
-        try:
-            return session.query(NodeModel.availability_zone).filter_by(id = node_id).one().availability_zone
-        except Exception as ex:
-            logging.error(ex)
-            raise NodeNotFound("Node not found: "+str(node_id))
-    
     def getNodeDomainID(self, node_id):
         session = get_session()
         try:
@@ -125,14 +92,6 @@ class Node(object):
         except Exception as ex:
             logging.error(ex)
             raise NodeNotFound("Node not found")
-        
-    def getOpenstackControllerURL(self, node_id):
-        session = get_session()
-        try:
-            return session.query(NodeModel.openstack_controller).filter_by(id = node_id).one().openstack_controller
-        except Exception as ex:
-            logging.error(ex)
-            raise NodeNotFound("Node not found: "+str(node_id))
     
     def getOpenflowControllerID(self, node_id):
         session = get_session()
@@ -141,12 +100,4 @@ class Node(object):
         except Exception as ex:
             logging.error(ex)
             raise NodeNotFound("Node not found: "+str(node_id))
-        
-    def getOpenflowController(self, controller_id):
-        session = get_session()
-        try:
-            return session.query(OpenflowControllerModel).filter_by(id = controller_id).one()
-        except Exception as ex:
-            logging.error(ex)
-            raise ControllerNotFound("Node not found: "+str(controller_id))
         
