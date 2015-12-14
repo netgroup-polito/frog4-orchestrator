@@ -41,7 +41,7 @@ class UpperLayerOrchestratorController(object):
             return None
         # If the graph has been split, we need to rebuild the original nffg
         if len(instantiated_nffgs) == 2:
-            return instantiated_nffgs[0].join(instantiated_nffgs[1])
+            return instantiated_nffgs[0].join(instantiated_nffgs[1]).getJSON()
             
         return instantiated_nffgs[0].getJSON()
     
