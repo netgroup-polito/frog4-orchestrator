@@ -2,10 +2,10 @@
 
 - Required ubuntu packages:
     
-        sudo apt-get install python-dev python-setuptools
+        sudo apt-get install python3-dev python3-setuptools
 		sudo easy_install pip
-        sudo apt-get install python-sqlalchemy libmysqlclient-dev
-		sudo pip install --upgrade cython falcon requests gunicorn jsonschema mysql-python json_hyper_schema
+        sudo apt-get install python3-sqlalchemy libmysqlclient-dev
+		sudo pip3 install --upgrade falcon requests gunicorn jsonschema mysql-python
 	
 - Create database
     - Create database and user for orchestrator database:
@@ -17,15 +17,14 @@
             mysql> exit;
     
     - Create tables in the orchestrator db:
-            
-            cd frog-orchestrator
+            cd frog4-orchestrator
             mysql -u orchestrator -p orchestrator < db.sql
 
     - Change the db connection in configuration/orchestrator.conf:
 
             [db]
             # Mysql DB
-            connection = mysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
+            connection = mysql+pymysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
         
 	- Change templates inside the "templates" directory with right information
 
