@@ -17,6 +17,7 @@
             mysql> exit;
     
     - Create tables in the orchestrator db:
+    
             cd frog4-orchestrator
             mysql -u orchestrator -p orchestrator < db.sql
 
