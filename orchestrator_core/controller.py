@@ -150,7 +150,7 @@ class UpperLayerOrchestratorController(object):
                     Graph().add_graph(new_nffg, session.id, partial=len(node_nffg_dict)>1)
                     Graph().setNodeID(new_nffg.db_id, new_node.id)
                     
-                new_nffg.id = new_nffg.db_id
+                new_nffg.id = str(new_nffg.db_id)
                 
                 CA_Interface(self.user_data, new_node.ca_ip, new_node.ca_port).put(new_nffg)
                
@@ -225,7 +225,7 @@ class UpperLayerOrchestratorController(object):
                     
                     # Instantiate profile
                     logging.info('Call CA to instantiate NF-FG')
-                    nffg.id = nffg.db_id
+                    nffg.id = str(nffg.db_id)
                     #logging.debug(nffg.getJSON())
                     CA_Interface(self.user_data, node.ca_ip, node.ca_port).put(nffg)
                     logging.debug('NF-FG instantiated')
