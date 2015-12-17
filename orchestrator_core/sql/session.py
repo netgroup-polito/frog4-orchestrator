@@ -23,14 +23,14 @@ class SessionModel(Base):
                   'last_update','error','ended']
     id = Column(VARCHAR(64), primary_key=True)
     user_id = Column(VARCHAR(64))
-    service_graph_id = Column(Text)
-    service_graph_name = Column(Text)
-    ingress_node = Column(Text)
-    egress_node = Column(Text)
-    status = Column(Text)
-    started_at = Column(Text)
+    service_graph_id = Column(VARCHAR(64))
+    service_graph_name = Column(VARCHAR(64))
+    ingress_node = Column(VARCHAR(64))
+    egress_node = Column(VARCHAR(64))
+    status = Column(VARCHAR(64))
+    started_at = Column(DateTime)
     last_update = Column(DateTime, default=func.now())
-    error = Column(Text)
+    error = Column(DateTime)
     ended = Column(DateTime)
 
 class Session(object):

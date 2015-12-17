@@ -9,6 +9,7 @@ from threading import Thread
 from orchestrator_core.config import Configuration
 from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus
 from orchestrator_core.dd_server import special_server
+import os, inspect
 #from orchestrator_core.testclient import special_client
 
 conf = Configuration()
@@ -53,7 +54,9 @@ app.add_route('/template/{image_id}', template)
 app.add_route('/template/location/{template_location}', template_location)
 app.add_route('/yang/{image_id}', yang)
 
-dd_server = special_server("orchestrator", conf.BROKER_ADDRESS, "public") 
+
+base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+dd_server = special_server("orchestrator", conf.BROKER_ADDRESS, "public", keyfile=base_folder+"/orchestrator_core/doubledecker/public-keys.json") 
 thread = Thread(target=dd_server.start)
 thread.start()
 
