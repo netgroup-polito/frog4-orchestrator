@@ -14,8 +14,9 @@ The technology dependent part receives the NF-FG from the thechnology indipenden
 	ubuntu 14.04.1)
 
 ```sh	
-$ git clone https://github.com/netgroup-polito/frog4-orchestrator.git && git submodule init && git submodule update
+$ git clone https://github.com/netgroup-polito/frog4-orchestrator.git
 $ cd frog4-orchestrator
+$ git submodule init && git submodule update
 $ sudo apt-get install python3-dev python3-setuptools python3-sqlalchemy libmysqlclient-dev
 $ sudo easy_install pip
 $ sudo pip3 install --upgrade falcon requests gunicorn jsonschema mysql-python
