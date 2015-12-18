@@ -1,11 +1,20 @@
 # Orchestrator installation guide (Tested on ubuntu 14.04.1)
 
+- Clone the repository including submodules:
+
+        git clone https://github.com/netgroup-polito/frog4-orchestrator.git
+        cd frog4-orchestrator
+        git submodule init && git submodule update
+
 - Required ubuntu packages:
     
         sudo apt-get install python3-dev python3-setuptools
 		sudo easy_install pip
         sudo apt-get install python3-sqlalchemy libmysqlclient-dev
 		sudo pip3 install --upgrade falcon requests gunicorn jsonschema mysql-python
+
+- Configuration:
+    - The configuration file is stored in configuration/orchestrator.conf
 	
 - Create database
     - Create database and user for orchestrator database:
