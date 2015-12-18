@@ -27,7 +27,6 @@
     
     - Create tables in the orchestrator db:
     
-            cd frog4-orchestrator
             mysql -u orchestrator -p orchestrator < db.sql
 
     - Change the db connection in configuration/orchestrator.conf:
