@@ -1,42 +1,50 @@
-# Orchestrator installation guide (Tested on ubuntu 14.04.1)
+# FROG4 Orchestrator Installation Guide
 
-- Clone the repository including submodules:
+The installation instructions below have been tested on ubuntu 14.04.1.
 
-        git clone https://github.com/netgroup-polito/frog4-orchestrator.git
-        cd frog4-orchestrator
-        git submodule init && git submodule update
-
-- Required ubuntu packages:
+#### Required packages
+First, you need to install all the required ubuntu packages. For this, please follow the steps below:
     
         sudo apt-get install python3-dev python3-setuptools
 		sudo easy_install pip
         sudo apt-get install python3-sqlalchemy libmysqlclient-dev
 		sudo pip3 install --upgrade falcon requests gunicorn jsonschema mysql-python
 
-- Configuration:
-    - The configuration file is stored in configuration/orchestrator.conf
-	
-- Create database
-    - Create database and user for orchestrator database:
+#### Clone the code
+Now you have to clone this repository _and_ all the submodules. Submodules include components that are part of the orchestrator but that are being developed in different repositories. This lead to the necessity to clone them as well in the right folders, under the FROG4 orchestrator root. For this, please follow the steps below:
+
+        git clone https://github.com/netgroup-polito/frog4-orchestrator.git
+        cd frog4-orchestrator
+        git submodule init && git submodule update
+
+
+#### Modify the configuration parameters
+For this, you need to modify the [configuration/orchestrator.conf](configuration/orchestrator.conf) file according to your preferences.
+
+#### Create database
+The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
+
+- Create database and user for orchestrator database:
 	    
-            mysql -u root -p
-            mysql> CREATE DATABASE orchestrator;
-            mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'localhost' IDENTIFIED BY 'ORCH_DBPASS';
-            mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'%' IDENTIFIED BY 'ORCH_DBPASS';	
-            mysql> exit;
+        mysql -u root -p
+        mysql> CREATE DATABASE orchestrator;
+        mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'localhost' IDENTIFIED BY 'ORCH_DBPASS';
+        mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'%' IDENTIFIED BY 'ORCH_DBPASS';	
+        mysql> exit;
     
-    - Create tables in the orchestrator db:
+- Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
     
-            mysql -u orchestrator -p orchestrator < db.sql
+        mysql -u orchestrator -p orchestrator < db.sql
 
-    - Change the db connection in configuration/orchestrator.conf:
+- Change the the parameters used to connect to the database in [configuration/orchestrator.conf](configuration/orchestrator.conf):
 
-            [db]
-            # Mysql DB
-            connection = mysql+pymysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
+        [db]
+        # Mysql DB
+        connection = mysql+pymysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
         
-	- Change templates inside the "templates" directory with right information
+- Change all the templates inside the ``templates`` directory with the correct information.
 
-- Run the orchestrator
+#### Run the orchestrator
+You can launch the orchestrator by executing the following script in the orchestrator root folder:
         
         ./start_orchestrator.sh
