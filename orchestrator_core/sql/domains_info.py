@@ -19,13 +19,13 @@ sqlserver = Configuration().CONNECTION
 
 class DomainsInformationModel(Base):
     __tablename__ = 'domains_information'
-    attributes = ['id', 'domain_ip', 'domain_name','interface','interface_type','neighbor','gre','vlan']
+    attributes = ['id', 'node_id', 'interface','interface_type','neighbor_domain','neighbor_interface','gre','vlan']
     id = Column(Integer, primary_key=True)
-    domain_ip = Column(VARCHAR(64))
-    domain_name = Column(VARCHAR(64))
+    node_id = Column(VARCHAR(64))
     interface = Column(VARCHAR(64))
     interface_type = Column(VARCHAR(64))
-    neighbor = Column(VARCHAR(64))
+    neighbor_domain = Column(VARCHAR(64))
+    neighbor_interface = Column(VARCHAR(64))
     gre = Column(Boolean())
     vlan = Column(Boolean())
     
@@ -60,19 +60,19 @@ class DomainsInformation(object):
     
     def get_domain_info(self, domain_name=None):
         session = get_session() 
-        domains_info = {}
+        domains_info_list = {}
         if domain_name is not None:
             pass
         else:
             domains_refs = session.query(DomainsInformationModel).all()
             for domain_ref in domains_refs:
-                if domain_ref.domain_name not in domains_info:
-                    domain_info = DomainInfo(name=domain_ref.domain_name, ip=domain_ref.domain_ip)
-                    domains_info[domain_ref.domain_name]=domain_info
+                if domain_ref.node_id not in domains_info_list:
+                    domain_info = DomainInfo()
+                    domains_info_list[domain_ref.node_id]=domain_info
                 else:
-                    domain_info = domains_info[domain_ref.domain_name]
+                    domain_info = domains_info_list[domain_ref.node_id]
                 
-                intf = Interface(name=domain_ref.interface, _type=domain_ref.interface_type,neighbor=domain_ref.neighbor,gre=domain_ref.gre, vlan=domain_ref.vlan)
+                intf = Interface(name=domain_ref.interface, _type=domain_ref.interface_type,neighbor_domain=domain_ref.neighbor_domain,neighbor_interface=domain_ref.neighbor_interface,gre=domain_ref.gre, vlan=domain_ref.vlan)
                 if intf.gre is True:
                     gre_refs = session.query(DomainsGreModel).filter_by(domains_info_id=domain_ref.id).all()
                     for gre_ref in gre_refs:
@@ -81,7 +81,7 @@ class DomainsInformation(object):
                 #TODO: vlan
                        
                 domain_info.addInterface(intf)
-        return domains_info
+        return domains_info_list
                      
     
     def add_domain_info(self, domain_info, update=True):
@@ -89,7 +89,7 @@ class DomainsInformation(object):
         with session.begin():
             if update is True:
                 try:
-                    domain_refs = session.query(DomainsInformationModel).filter_by(domain_name=domain_info.name).all()
+                    domain_refs = session.query(DomainsInformationModel).filter_by(node_id=domain_info.node_id).all()
                     for domain_ref in domain_refs:
                         session.query(DomainsInformationModel).filter_by(id = domain_ref.id).delete()
                         session.query(DomainsVlanModel).filter_by(domains_info_id=domain_ref.id).delete()
@@ -98,7 +98,7 @@ class DomainsInformation(object):
                     pass                        
             self.id_generator(domain_info)
             for interface in domain_info.interfaces:
-                info_ref = DomainsInformationModel(id=self.info_id, domain_ip=domain_info.ip, domain_name=domain_info.name, interface=interface.name, interface_type=interface.type, neighbor=interface.neighbor, gre=interface.gre, vlan=interface.vlan)
+                info_ref = DomainsInformationModel(id=self.info_id, node_id=domain_info.node_id, interface=interface.name, interface_type=interface.type, neighbor_domain=interface.neighbor_domain, neighbor_interface=interface.neighbor_interface, gre=interface.gre, vlan=interface.vlan)
                 session.add(info_ref)
                 for gre_tunnel in interface.gre_tunnels:
                     gre_ref = DomainsGreModel(id=self.gre_id, name=gre_tunnel.name, domains_info_id=self.info_id, local_ip=gre_tunnel.local_ip, remote_ip=gre_tunnel.remote_ip, gre_key=gre_tunnel.gre_key)

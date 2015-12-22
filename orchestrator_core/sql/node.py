@@ -76,6 +76,14 @@ class Node(object):
             logging.error(ex)
             raise NodeNotFound("Node not found for domain id: "+str(domain_id))
     
+    def getNodeFromName(self, name):
+        session = get_session()
+        try:
+            return session.query(NodeModel).filter_by(name = name).one()
+        except Exception as ex:
+            logging.error(ex)
+            raise NodeNotFound("Node not found for name: "+str(name))   
+
     def getNodeDomainID(self, node_id):
         session = get_session()
         try:

@@ -4,10 +4,10 @@ Created on 01 dic 2015
 @author: stefanopetrangeli
 '''
 class DomainInfo(object):
-    def __init__(self, name = None, ip=None, interfaces=None):
+    def __init__(self, name = None, interfaces=None, node_id= None):
         self.name = name
-        self.ip = ip
         self.interfaces = interfaces or []
+        self.node_id = node_id
                  
     def parseDict(self, domaininfo_dict):
         self.name = domaininfo_dict['netgroup-domain:informations']['name']
@@ -58,14 +58,15 @@ class DomainInfo(object):
         
 class Interface(object):
     # Subinterfaces are ignored
-    def __init__(self, name=None, _type=None, neighbor=None, gre=False, gre_tunnels=None, vlan=False, vlans_used=None):
+    def __init__(self, name=None, _type=None, neighbor_domain=None, neighbor_interface=None, gre=False, gre_tunnels=None, vlan=False, vlans_used=None):
         self.name = name
         self.type = _type
         self.gre = gre
         self.gre_tunnels = gre_tunnels or []
         self.vlan = vlan   
         self.vlans_used = vlans_used or [] 
-        self.neighbor = neighbor
+        self.neighbor_domain = neighbor_domain
+        self.neighbor_interface = neighbor_interface
         
     def parseDict(self, interface_dict):
         self.name = interface_dict['name']
@@ -84,7 +85,10 @@ class Interface(object):
                     
                     
         if 'netgroup-neighbor:neighbor' in interface_dict['openconfig-if-ethernet:ethernet']:
-            self.neighbor = interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']['name']
+            self.neighbor_domain = interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']['domain']
+            if 'interface' in interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']:
+                self.neighbor_interface = interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']['interface']
+
         if 'openconfig-vlan:vlan-ethernet-top' in interface_dict['openconfig-if-ethernet:ethernet']:
             self.vlan = True
                 

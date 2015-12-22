@@ -16,7 +16,7 @@ class CA_Interface(object):
     # to be changed
     timeout = Configuration().ORCH_TIMEOUT
         
-    def __init__(self, user_data, ip, port):
+    def __init__(self, user_data, ip, port, token=None):
         self.ip = ip
         self.port = port
         self.user_data = user_data
@@ -26,22 +26,18 @@ class CA_Interface(object):
         self.get_nffg_url = self.base_url+"/NF-FG/%s"   
         self.get_status_url = self.base_url+"/NF-FG/status/%s"  
         self.get_template =  self.base_url+"/template/location/%s"
+        self.authentication_url = self.base_url+"/authentication"
+        """ DEBUG
+        if token is None:
+            self.getToken(user_data, ip, port)
+        else:
+            self.token = token
+        
         self.headers = {'Content-Type': 'application/json',
-                    'cache-control': 'no-cache',
-                    'X-Auth-User': user_data.username,
-                    'X-Auth-Pass': user_data.password,
-                    'X-Auth-Tenant': user_data.tenant}
-    """    
-    def getTemplate(self, vnf_template_location):
-        resp = requests.get(self.get_template % (vnf_template_location), headers=self.headers, timeout=int(self.timeout))
-        resp.raise_for_status()
-        template_dict = json.loads(resp.text)
-        ValidateTemplate().validate(template_dict)
-        template = Template()
-        template.parseDict(template_dict)
-        logging.debug("Get template from orchestrator completed")
-        return template
-    """
+            'cache-control': 'no-cache',
+            'X-Auth-Token': self.token}
+        """
+
     def getNFFGStatus(self, nffg_id):
         resp = requests.get(self.get_status_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
         resp.raise_for_status()
@@ -75,3 +71,11 @@ class CA_Interface(object):
         logging.debug("Delete completed")
         return resp.text   
         """     
+    def getToken(self, user_data, ip, port):
+        headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
+        authenticationData = {'username': user_data.username, 'password': user_data.password}
+        resp = requests.post(self.authentication_url, data=json.dumps(authenticationData), headers=headers)
+        resp.raise_for_status()
+        response = json.loads(resp.text)
+        self.token = response['token']
+        
