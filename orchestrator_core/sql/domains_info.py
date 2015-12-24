@@ -34,7 +34,7 @@ class DomainsVlanModel(Base):
     attributes = ['id', 'domains_info_id','vlan']
     id = Column(Integer, primary_key=True)
     domains_info_id = Column(Integer)
-    vlan = Column(VARCHAR(64))
+    vlan = Column(Integer)
     
 class DomainsGreModel(Base):    
     __tablename__ = 'domains_gre'
@@ -78,7 +78,10 @@ class DomainsInformation(object):
                     for gre_ref in gre_refs:
                         gre_tunnel = GreTunnel(name=gre_ref.name, local_ip=gre_ref.local_ip, remote_ip=gre_ref.remote_ip, gre_key=gre_ref.gre_key)
                         intf.addGreTunnel(gre_tunnel)
-                #TODO: vlan
+                if intf.vlan is True:
+                    vlan_refs = session.query(DomainsVlanModel).filter_by(domains_info_id=domain_ref.id).all()
+                    for vlan_ref in vlan_refs:
+                        intf.addVlan(vlan_ref.vlan)
                        
                 domain_info.addInterface(intf)
         return domains_info_list
@@ -104,7 +107,11 @@ class DomainsInformation(object):
                     gre_ref = DomainsGreModel(id=self.gre_id, name=gre_tunnel.name, domains_info_id=self.info_id, local_ip=gre_tunnel.local_ip, remote_ip=gre_tunnel.remote_ip, gre_key=gre_tunnel.gre_key)
                     session.add(gre_ref)
                     self.gre_id = self.gre_id + 1
-                #TODO: vlan
+                for vlan in interface.vlans_used:
+                    vlan_ref = DomainsVlanModel(id=self.vlan_id, domains_info_id=self.info_id, vlan=vlan)
+                    session.add(vlan_ref)
+                    self.vlan_id = self.vlan_id + 1
+                    
                 self.info_id = self.info_id + 1      
             
     def id_generator(self, domain_info):

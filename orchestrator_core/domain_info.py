@@ -89,23 +89,23 @@ class Interface(object):
             if 'interface' in interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']:
                 self.neighbor_interface = interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']['interface']
 
-        if 'openconfig-vlan:vlan-ethernet-top' in interface_dict['openconfig-if-ethernet:ethernet']:
+        if 'openconfig-vlan:vlan' in interface_dict['openconfig-if-ethernet:ethernet']:
             self.vlan = True
-                
-    """
-    def getDict(self):
-        interface = {}
-        if self.platform_type is not None:
-            cpu_requirements['platformType'] = self.platform_type
-        if self.socket is not None:             
-            cpu_requirements['socket'] = self.socket
-        return cpu_requirements
-    """
+            if 'openconfig-vlan:config' in interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']:
+                vlan_config = interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']['openconfig-vlan:config']
+                if vlan_config['interface-mode']=="TRUNK":
+                    for vlan in vlan_config['trunk-vlans']:
+                        self.vlans_used.append(vlan)
+                    
+
     def addGreTunnel(self, gre_tunnel):
         if type(gre_tunnel) is GreTunnel:
             self.gre_tunnels.append(gre_tunnel)
         else:
             raise TypeError("Tried to add a gre tunnel with a wrong type. Expected GreTunnel, found "+type(gre_tunnel))
+        
+    def addVlan(self, vlan):
+        self.vlans_used.append(vlan)
     
 class GreTunnel(object):
     def __init__(self, name=None, local_ip=None, remote_ip=None, gre_key=None):
@@ -123,12 +123,3 @@ class GreTunnel(object):
         if 'key' in gre_dict['options']:
             self.gre_key = gre_dict['options']['key']
                 
-    """
-    def getDict(self):
-        interface = {}
-        if self.platform_type is not None:
-            cpu_requirements['platformType'] = self.platform_type
-        if self.socket is not None:             
-            cpu_requirements['socket'] = self.socket
-        return cpu_requirements
-    """    
