@@ -159,18 +159,20 @@ class Scheduler(object):
             #Search for internet connections
             for interface in domain_1.interfaces: 
                 if interface.neighbor_domain is not None and interface.neighbor_domain == "internet" and interface.gre is True:
-                    domain_2 = domains_info[node_id_2]
-                    for remote_interface in domain_2.interfaces:
-                        if remote_interface.neighbor_domain is not None and remote_interface.neighbor_domain == "internet" and remote_interface.gre is True:
-                            free_interface = self.checkTunnelEndpoint(node_id_2, remote_interface.name, characterization)
-                            if free_interface is True:
-                                #Gre_tunnel endpoints found
-                                print ("gre  match found")
-                                matches_found = matches_found + 1
-                                characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
+                    if self.checkActiveTunnels(interface, node_id_2) is True:
+                        domain_2 = domains_info[node_id_2]
+                        for remote_interface in domain_2.interfaces:
+                            if remote_interface.neighbor_domain is not None and remote_interface.neighbor_domain == "internet" and remote_interface.gre is True:
+                                if self.checkActiveTunnels(remote_interface, node_id_1) is True:
+                                    free_interface = self.checkTunnelEndpoint(node_id_2, remote_interface, characterization)
+                                    if free_interface is True:
+                                        #Gre_tunnel endpoints found
+                                        print ("gre match found")
+                                        matches_found = matches_found + 1
+                                        characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
+                                        break
+                            if matches_found == number_of_links:
                                 break
-                    if matches_found == number_of_links:
-                        break
                     
         if matches_found == number_of_links:
             print ("Characterization found")
@@ -219,16 +221,24 @@ class Scheduler(object):
                 score = score + gre_value                
         return score
     
-    def checkTunnelEndpoint(self, domain_id, interface_name, characterization):
+    def checkActiveTunnels(self, interface, remote_domain_id):
+        '''
+        Returns True if this interface is not already connected to the remote domain
+        '''
+        for gre_tunnel in interface.gre_tunnels:
+            if gre_tunnel.remote_ip == Node().getNode(remote_domain_id).domain_id:
+                return False
+        return True
+    
+    def checkTunnelEndpoint(self, domain_id, interface, characterization):
         '''
         Returns False if this interface is already in a Gre characterization
         '''
         for element in characterization:
-            if type(element) is Gre and element.domain_2 == domain_id and element.port_2 == interface_name:
+            if type(element) is Gre and element.domain_2 == domain_id and element.port_2 == interface.name:
                 return False
         return True
 
-               
 class DirectLink(object):
     def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None):
         self.domain_1 = domain_1
@@ -237,7 +247,7 @@ class DirectLink(object):
         self.port_2 = port_2
            
 class Vlan(object):
-    def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None, vlan = None):
+    def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None, vlan=None):
         self.domain_1 = domain_1
         self.port_1 = port_1
         self.domain_2 = domain_2
@@ -245,7 +255,7 @@ class Vlan(object):
         self.vlan = vlan
         
 class Gre(object):
-    def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None, gre_key = None):
+    def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None, gre_key=None):
         self.domain_1 = domain_1
         self.port_1 = port_1
         self.domain_2 = domain_2

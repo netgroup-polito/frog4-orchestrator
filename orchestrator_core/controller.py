@@ -309,11 +309,15 @@ class UpperLayerOrchestratorController(object):
             #scheduler = Scheduler(graph_ref.id, self.user_data)  
             #orchestrator = scheduler.getInstance(node)
             #status = orchestrator.getStatus(node)
+            
+            """
+            status = CA_Interface(self.user_data, node.ca_ip, node.ca_port).getNFFGStatus(graph_ref.id)
+            logging.debug(status)
+            """
             status = {}
             status['status'] = 'complete'
             status['percentage_completed'] = 100
             
-            #logging.debug(status)
             return status
     
     def convertRemoteNodeID(self, nffg):
