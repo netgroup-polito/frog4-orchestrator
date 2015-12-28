@@ -1,11 +1,10 @@
-from .doubledecker import client, proto as DD
+from .doubledecker.clientSafe import ClientSafe
 from .domain_info import DomainInfo
 from .sql.domains_info import DomainsInformation
 from .sql.node import Node
 import logging, json
 
-
-class special_server(client.ClientSafe):
+class DD_Server(ClientSafe):
 
     def __init__(self, name, dealerurl, customer, keyfile):
         super().__init__(name, dealerurl, customer, keyfile)

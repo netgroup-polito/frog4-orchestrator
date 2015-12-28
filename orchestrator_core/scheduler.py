@@ -7,8 +7,7 @@ from orchestrator_core.exception import NodeNotFound
 from orchestrator_core.sql.node import Node
 from orchestrator_core.sql.graph import Graph
 from orchestrator_core.sql.domains_info import DomainsInformation
-import itertools
-
+import itertools, random
 import logging
 
 class Scheduler(object):
@@ -87,8 +86,24 @@ class Scheduler(object):
                 nffg_2_endp.node_id = Node().getNode(element.domain_2).domain_id
                 nffg_2_endp.interface = element.port_2         
                 nffg_2_endp.vlan_id = str(element.vlan)
+            elif type(element) is Gre:
+                nffg_1_endp = nffg1.getEndPoint(gen_endpoints[i].id)
+                nffg_2_endp = nffg2.getEndPoint(gen_endpoints[i].id)
+                ip_1 = Node().getNode(element.domain_1).domain_id
+                ip_2 = Node().getNode(element.domain_2).domain_id
+                
+                nffg_1_endp.type = "gre-tunnel"
+                nffg_1_endp.local_ip = ip_1
+                nffg_1_endp.remote_ip = ip_2
+                nffg_1_endp.interface = element.port_1
+                nffg_1_endp.gre_key = element.gre_key
+                nffg_2_endp.type = "gre-tunnel"
+                nffg_2_endp.local_ip = ip_2
+                nffg_2_endp.remote_ip = ip_1                
+                nffg_2_endp.interface = element.port_2         
+                nffg_2_endp.gre_key = element.gre_key     
             else:
-                raise TypeError("Only DirectLink and Vlan characterizations are supported")
+                raise TypeError("Only DirectLink, Vlan and Gre characterizations are supported")
             i=i+1
         #print(nffg1.getJSON())
         #print(nffg2.getJSON())         
@@ -96,7 +111,6 @@ class Scheduler(object):
     def matchCapabilites(self, domains_info, number_of_links, user_endpoint_node_id):
         characterizations_score = []
         characterizations_list = []
-        characterization = None
         for domain_relationship in itertools.permutations(domains_info, 2):
             #print(domain_relationship)
             if domain_relationship[0] == user_endpoint_node_id :
@@ -107,17 +121,16 @@ class Scheduler(object):
                     characterizations_score.append(self.calculateScore(characterization))
         if len(characterizations_list) == 0:
             return None
-        characterization = characterizations_list[characterizations_score.index(max(characterizations_score))]
-            
-        return characterization
+        return characterizations_list[characterizations_score.index(max(characterizations_score))]
                 
     def searchMatchesBetweenDomains(self, domains_info, node_id_1, node_id_2, number_of_links):
         matches_found = 0
         characterization = []
         domain_1 = domains_info[node_id_1]
         for interface in domain_1.interfaces: 
-            match = False
+            vlan_match = False
             if interface.neighbor_domain is not None and interface.neighbor_domain != "internet":
+                #Search for direct connections
                 try:
                     remote_node = Node().getNodeFromName(interface.neighbor_domain)
                 except NodeNotFound:
@@ -132,22 +145,38 @@ class Scheduler(object):
                             vlan_id = self.findFreeVlanId(interface.vlans_used, remote_interface.vlans_used)
                             if vlan_id is not None:
                                 print ("vlan match found")
-                                match = True
+                                vlan_match = True
                                 matches_found = matches_found + 1
                                 characterization.append(Vlan(node_id_1, interface.name, node_id_2, remote_interface_name, vlan_id))
-                        if match is False:
-                            #TODO: GRE
+                        if vlan_match is False:
                             print ("direct link match found")
                             matches_found = matches_found + 1
                             characterization.append(DirectLink(node_id_1, interface.name, node_id_2, remote_interface_name))
                         if matches_found == number_of_links:
                             break
 
+        if matches_found < number_of_links:
+            #Search for internet connections
+            for interface in domain_1.interfaces: 
+                if interface.neighbor_domain is not None and interface.neighbor_domain == "internet" and interface.gre is True:
+                    domain_2 = domains_info[node_id_2]
+                    for remote_interface in domain_2.interfaces:
+                        if remote_interface.neighbor_domain is not None and remote_interface.neighbor_domain == "internet" and remote_interface.gre is True:
+                            free_interface = self.checkTunnelEndpoint(node_id_2, remote_interface.name, characterization)
+                            if free_interface is True:
+                                #Gre_tunnel endpoints found
+                                print ("gre  match found")
+                                matches_found = matches_found + 1
+                                characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
+                                break
+                    if matches_found == number_of_links:
+                        break
+                    
         if matches_found == number_of_links:
             print ("Characterization found")
             return characterization
         else:
-            return None
+            return None       
                             
     def checkEndpointLocation(self, nffg):
         '''
@@ -161,8 +190,11 @@ class Scheduler(object):
             elif end_point.switch_id is not None:
                 node = end_point.switch_id
                 break
+            elif end_point.local_ip is not None:
+                node = end_point.local_ip
+                break
         if node is None:
-            raise NodeNotFound("Unable to determine where to place this graph (endpoint.node_id or endpoint.switch_id missing)")
+            raise NodeNotFound("Unable to determine where to place this graph (endpoint.node_id or endpoint.switch_id or endpoint.local_ip missing)")
         return node
     
     def findFreeVlanId(self, vlans_used_1, vlans_used_2):
@@ -173,8 +205,9 @@ class Scheduler(object):
             vlan_id = vlan_id + 1
             
     def calculateScore(self, characterization):
-        vlan_value = 2
-        directlink_value = 1
+        vlan_value = 3
+        directlink_value = 2
+        gre_value = 1
         
         score=0
         for element in characterization:
@@ -182,8 +215,20 @@ class Scheduler(object):
                 score = score + directlink_value
             elif type(element) is Vlan:
                 score = score + vlan_value
+            elif type(element) is Gre:
+                score = score + gre_value                
         return score
     
+    def checkTunnelEndpoint(self, domain_id, interface_name, characterization):
+        '''
+        Returns False if this interface is already in a Gre characterization
+        '''
+        for element in characterization:
+            if type(element) is Gre and element.domain_2 == domain_id and element.port_2 == interface_name:
+                return False
+        return True
+
+               
 class DirectLink(object):
     def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None):
         self.domain_1 = domain_1
@@ -198,4 +243,14 @@ class Vlan(object):
         self.domain_2 = domain_2
         self.port_2 = port_2 
         self.vlan = vlan
-
+        
+class Gre(object):
+    def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None, gre_key = None):
+        self.domain_1 = domain_1
+        self.port_1 = port_1
+        self.domain_2 = domain_2
+        self.port_2 = port_2 
+        if gre_key is not None:
+            self.gre_key = gre_key
+        else:
+            self.gre_key = '%032x' % random.getrandbits(128)

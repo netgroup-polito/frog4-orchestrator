@@ -8,7 +8,7 @@ import falcon, logging
 from threading import Thread
 from orchestrator_core.config import Configuration
 from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus
-from orchestrator_core.dd_server import special_server
+from orchestrator_core.dd_server import DD_Server
 import os, inspect
 #from orchestrator_core.testclient import special_client
 
@@ -56,7 +56,7 @@ app.add_route('/yang/{image_id}', yang)
 
 
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
-dd_server = special_server("orchestrator", conf.BROKER_ADDRESS, "public", keyfile=base_folder+"/orchestrator_core/doubledecker/public-keys.json") 
+dd_server = DD_Server("orchestrator", conf.BROKER_ADDRESS, "public", keyfile=base_folder+"/orchestrator_core/doubledecker/public-keys.json") 
 thread = Thread(target=dd_server.start)
 thread.start()
 
