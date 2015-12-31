@@ -47,7 +47,7 @@ class Scheduler(object):
 
             characterization = self.matchCapabilites(domains_info, len(gen_endpoints), node.id)
             
-            if characterization:
+            if characterization is not None:
                 logging.debug("Graph can be split!")
                 self.characterizeEndpoints(nffg1, nffg2, gen_endpoints, characterization)
                 nffg_list.clear()
@@ -116,7 +116,7 @@ class Scheduler(object):
             if domain_relationship[0] == user_endpoint_node_id :
                 print(domain_relationship)
                 characterization = self.searchMatchesBetweenDomains(domains_info, domain_relationship[0], domain_relationship[1], number_of_links)
-                if characterization:
+                if characterization is not None:
                     characterizations_list.append(characterization)
                     characterizations_score.append(self.calculateScore(characterization))
         if len(characterizations_list) == 0:
@@ -225,10 +225,13 @@ class Scheduler(object):
         '''
         Returns True if this interface is not already connected to the remote domain
         '''
+        return True
+        """
         for gre_tunnel in interface.gre_tunnels:
             if gre_tunnel.remote_ip == Node().getNode(remote_domain_id).domain_id:
                 return False
         return True
+        """
     
     def checkTunnelEndpoint(self, domain_id, interface, characterization):
         '''
