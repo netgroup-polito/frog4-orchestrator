@@ -159,21 +159,30 @@ class Scheduler(object):
             #Search for internet connections
             for interface in domain_1.interfaces: 
                 if interface.neighbor_domain is not None and interface.neighbor_domain == "internet" and interface.gre is True:
-                    if self.checkActiveTunnels(interface, node_id_2) is True:
-                        domain_2 = domains_info[node_id_2]
-                        for remote_interface in domain_2.interfaces:
-                            if remote_interface.neighbor_domain is not None and remote_interface.neighbor_domain == "internet" and remote_interface.gre is True:
-                                if self.checkActiveTunnels(remote_interface, node_id_1) is True:
-                                    free_interface = self.checkTunnelEndpoint(node_id_2, remote_interface, characterization)
-                                    if free_interface is True:
-                                        #Gre_tunnel endpoints found
-                                        print ("gre match found")
-                                        matches_found = matches_found + 1
-                                        characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
-                                        break
-                            if matches_found == number_of_links:
+                    #if self.checkActiveTunnels(interface, node_id_2) is True:
+                    domain_2 = domains_info[node_id_2]
+                    for remote_interface in domain_2.interfaces:
+                        if remote_interface.neighbor_domain is not None and remote_interface.neighbor_domain == "internet" and remote_interface.gre is True:
+                            #Gre_tunnel endpoints found                            
+                            while matches_found < number_of_links:
+                                print ("gre match found")
+                                matches_found = matches_found + 1
+                                characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
+                            break   
+                if matches_found == number_of_links:
+                    break                       
+                """
+                            #if self.checkActiveTunnels(remote_interface, node_id_1) is True:
+                            free_interface = self.checkTunnelEndpoint(node_id_2, remote_interface, characterization)
+                            if free_interface is True:
+                                #Gre_tunnel endpoints found
+                                print ("gre match found")
+                                matches_found = matches_found + 1
+                                characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
                                 break
-                    
+                        if matches_found == number_of_links:
+                            break
+                """  
         if matches_found == number_of_links:
             print ("Characterization found")
             return characterization
@@ -220,18 +229,18 @@ class Scheduler(object):
             elif type(element) is Gre:
                 score = score + gre_value                
         return score
-    
+    """
     def checkActiveTunnels(self, interface, remote_domain_id):
         '''
         Returns True if this interface is not already connected to the remote domain
         '''
         return True
-        """
+        '''
         for gre_tunnel in interface.gre_tunnels:
             if gre_tunnel.remote_ip == Node().getNode(remote_domain_id).domain_id:
                 return False
         return True
-        """
+        '''
     
     def checkTunnelEndpoint(self, domain_id, interface, characterization):
         '''
@@ -241,7 +250,7 @@ class Scheduler(object):
             if type(element) is Gre and element.domain_2 == domain_id and element.port_2 == interface.name:
                 return False
         return True
-
+    """
 class DirectLink(object):
     def __init__(self, domain_1=None, port_1=None, domain_2=None, port_2=None):
         self.domain_1 = domain_1
