@@ -111,6 +111,7 @@ class Scheduler(object):
     def matchCapabilites(self, domains_info, number_of_links, user_endpoint_node_id):
         characterizations_score = []
         characterizations_list = []
+        #TODO: change to combinations
         for domain_relationship in itertools.permutations(domains_info, 2):
             #print(domain_relationship)
             if domain_relationship[0] == user_endpoint_node_id :
@@ -142,12 +143,15 @@ class Scheduler(object):
                     if remote_interface is not None and remote_interface.neighbor_domain == Node().getNode(node_id_1).name and remote_interface.neighbor_interface == interface.name:
                         #Connection found between these two domains
                         if interface.vlan is True and remote_interface.vlan is True:
-                            vlan_id = self.findFreeVlanId(interface.vlans_used, remote_interface.vlans_used)
-                            if vlan_id is not None:
-                                print ("vlan match found")
-                                vlan_match = True
-                                matches_found = matches_found + 1
-                                characterization.append(Vlan(node_id_1, interface.name, node_id_2, remote_interface_name, vlan_id))
+                            while matches_found < number_of_links:
+                                vlan_id = self.findFreeVlanId(interface.vlans_used, remote_interface.vlans_used)
+                                if vlan_id is not None:
+                                    print ("vlan match found")
+                                    vlan_match = True
+                                    matches_found = matches_found + 1
+                                    characterization.append(Vlan(node_id_1, interface.name, node_id_2, remote_interface_name, vlan_id))
+                                else:
+                                    break
                         if vlan_match is False:
                             print ("direct link match found")
                             matches_found = matches_found + 1
@@ -212,10 +216,13 @@ class Scheduler(object):
         vlan_id = 2
         while (vlan_id < 4095):
             if vlan_id not in vlans_used_1 and vlan_id not in vlans_used_2:
+                vlans_used_1.append(vlan_id)
+                vlans_used_2.append(vlan_id)
                 return vlan_id
             vlan_id = vlan_id + 1
             
     def calculateScore(self, characterization):
+        #TODO: different score if multiple characterizations over the same interface?
         vlan_value = 3
         directlink_value = 2
         gre_value = 1
