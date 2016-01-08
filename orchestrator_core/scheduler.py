@@ -128,8 +128,8 @@ class Scheduler(object):
         matches_found = 0
         characterization = []
         domain_1 = domains_info[node_id_1]
+        #Vlan
         for interface in domain_1.interfaces: 
-            vlan_match = False
             if interface.neighbor_domain is not None and interface.neighbor_domain != "internet":
                 #Search for direct connections
                 try:
@@ -141,24 +141,37 @@ class Scheduler(object):
                 if remote_node.id == node_id_2 and remote_node.id in domains_info:
                     remote_interface = domains_info[remote_node.id].getInterface(remote_interface_name)
                     if remote_interface is not None and remote_interface.neighbor_domain == Node().getNode(node_id_1).name and remote_interface.neighbor_interface == interface.name:
-                        #Connection found between these two domains
                         if interface.vlan is True and remote_interface.vlan is True:
                             while matches_found < number_of_links:
                                 vlan_id = self.findFreeVlanId(interface.vlans_used, remote_interface.vlans_used)
                                 if vlan_id is not None:
                                     print ("vlan match found")
-                                    vlan_match = True
                                     matches_found = matches_found + 1
                                     characterization.append(Vlan(node_id_1, interface.name, node_id_2, remote_interface_name, vlan_id))
                                 else:
                                     break
-                        if vlan_match is False:
+                            if matches_found == number_of_links:
+                                break
+        #Direct links
+        if matches_found < number_of_links:
+            for interface in domain_1.interfaces: 
+                if interface.neighbor_domain is not None and interface.neighbor_domain != "internet":
+                    #Search for direct connections
+                    try:
+                        remote_node = Node().getNodeFromName(interface.neighbor_domain)
+                    except NodeNotFound:
+                        #Remote_node not found, continue
+                        continue                        
+                    remote_interface_name = interface.neighbor_interface
+                    if remote_node.id == node_id_2 and remote_node.id in domains_info:
+                        remote_interface = domains_info[remote_node.id].getInterface(remote_interface_name)
+                        if remote_interface is not None and remote_interface.neighbor_domain == Node().getNode(node_id_1).name and remote_interface.neighbor_interface == interface.name:
                             print ("direct link match found")
                             matches_found = matches_found + 1
                             characterization.append(DirectLink(node_id_1, interface.name, node_id_2, remote_interface_name))
-                        if matches_found == number_of_links:
-                            break
-
+                            if matches_found == number_of_links:
+                                break
+        #GRE
         if matches_found < number_of_links:
             #Search for internet connections
             for interface in domain_1.interfaces: 
@@ -175,18 +188,7 @@ class Scheduler(object):
                             break   
                 if matches_found == number_of_links:
                     break                       
-                """
-                            #if self.checkActiveTunnels(remote_interface, node_id_1) is True:
-                            free_interface = self.checkTunnelEndpoint(node_id_2, remote_interface, characterization)
-                            if free_interface is True:
-                                #Gre_tunnel endpoints found
-                                print ("gre match found")
-                                matches_found = matches_found + 1
-                                characterization.append(Gre(node_id_1, interface.name, node_id_2, remote_interface.name))
-                                break
-                        if matches_found == number_of_links:
-                            break
-                """  
+
         if matches_found == number_of_links:
             print ("Characterization found")
             return characterization
