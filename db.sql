@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dic 18, 2015 alle 14:08
+-- Generation Time: Gen 11, 2016 alle 09:35
 -- Versione del server: 5.6.27-0ubuntu0.15.04.1
 -- PHP Version: 5.6.4-4ubuntu6.4
 
@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS `domains_gre` (
 --
 
 INSERT INTO `domains_gre` (`id`, `name`, `domains_info_id`, `local_ip`, `remote_ip`, `gre_key`) VALUES
-(0, 'gre1', 0, '1.1.1.1', NULL, '156'),
-(1, 'gre1', 3, '2.2.2.2', NULL, '123'),
-(2, 'gre1', 5, '20.20.21.12', NULL, '123');
+(0, 'gre1', 0, '1.1.1.1', '10.0.0.14', '156'),
+(1, 'gre1', 3, '20.20.21.12', NULL, '123'),
+(2, 'gre1', 5, '2.2.2.2', '10.0.0.10', '123');
 
 -- --------------------------------------------------------
 
@@ -52,11 +52,11 @@ INSERT INTO `domains_gre` (`id`, `name`, `domains_info_id`, `local_ip`, `remote_
 
 CREATE TABLE IF NOT EXISTS `domains_information` (
   `id` int(64) NOT NULL,
-  `domain_ip` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `domain_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `node_id` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `interface` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `interface_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `neighbor` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `neighbor_domain` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `neighbor_interface` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `gre` tinyint(1) NOT NULL,
   `vlan` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -65,14 +65,13 @@ CREATE TABLE IF NOT EXISTS `domains_information` (
 -- Dump dei dati per la tabella `domains_information`
 --
 
-INSERT INTO `domains_information` (`id`, `domain_ip`, `domain_name`, `interface`, `interface_type`, `neighbor`, `gre`, `vlan`) VALUES
-(0, '10.0.0.1', 'domain0', 'eth1', 'ethernetCsmacd', 'domain1/eth2', 1, 1),
-(1, '10.0.0.1', 'domain0', 'eth2', 'ppoe', 'domain2/eth3', 0, 0),
-(2, '10.0.0.1', 'domain0', 'eth3', 'ppoe', 'domain2/eth21', 0, 0),
-(3, '10.0.0.2', 'domain1', 'eth2', 'ethernetCsmacd', 'domain0/eth1', 1, 1),
-(4, '10.0.0.2', 'domain1', 'eth20', 'ethernetCsmacd', NULL, 0, 0),
-(5, '10.0.0.3', 'domain2', 'eth3', 'ethernetCsmacd', 'domain0/eth2', 1, 1),
-(6, '10.0.0.3', 'domain2', 'eth21', 'ethernetCsmacd', 'domain0/eth3', 0, 0);
+INSERT INTO `domains_information` (`id`, `node_id`, `interface`, `interface_type`, `neighbor_domain`, `neighbor_interface`, `gre`, `vlan`) VALUES
+(0, '300', 'eth1', 'ethernetCsmacd', 'internet', NULL, 1, 1),
+(1, '300', 'eth2', 'ppoe', 'domain1', 'eth21', 0, 1),
+(2, '300', 'eth3', 'ppoe', 'internet', NULL, 1, 0),
+(3, '200', 'eth3', 'ethernetCsmacd', 'internet', NULL, 1, 0),
+(5, '490', 'eth21', 'ethernetCsmacd', 'domain0', 'eth2', 1, 1),
+(6, '490', 'eth20', 'ethernetCsmacd', 'internet', NULL, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -83,8 +82,22 @@ INSERT INTO `domains_information` (`id`, `domain_ip`, `domain_name`, `interface`
 CREATE TABLE IF NOT EXISTS `domains_vlan` (
   `id` int(64) NOT NULL,
   `domains_info_id` int(64) NOT NULL,
-  `vlan` varchar(64) COLLATE utf8_unicode_ci NOT NULL
+  `vlan` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dump dei dati per la tabella `domains_vlan`
+--
+
+INSERT INTO `domains_vlan` (`id`, `domains_info_id`, `vlan`) VALUES
+(0, 0, 2),
+(1, 0, 25),
+(2, 0, 39),
+(3, 0, 65),
+(4, 5, 92),
+(5, 5, 14),
+(6, 5, 2),
+(7, 5, 3);
 
 -- --------------------------------------------------------
 
@@ -98,6 +111,14 @@ CREATE TABLE IF NOT EXISTS `graph` (
   `node_id` varchar(64) DEFAULT NULL,
   `partial` tinyint(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dump dei dati per la tabella `graph`
+--
+
+INSERT INTO `graph` (`id`, `session_id`, `node_id`, `partial`) VALUES
+(0, '9c146c04c7884044989fd2c7049c9324', '300', 1),
+(1, '9c146c04c7884044989fd2c7049c9324', '490', 1);
 
 -- --------------------------------------------------------
 
@@ -127,13 +148,13 @@ INSERT INTO `node` (`id`, `name`, `type`, `domain_id`, `ca_ip`, `ca_port`) VALUE
 ('12', 'cpe-to:sw1', 'JolnetCA', '00:00:64:e9:50:5a:90:40', '', 0),
 ('2', 'nodo-mi:sw1', 'JolnetCA', 'openflow:110953238267840', '', 0),
 ('20', 'nodo-mi:sw1', 'JolnetCA', '00:00:64:e9:50:5a:87:c0', '', 0),
-('200', 'node2', 'OpenStack+_compute', '10.0.0.3', '10.0.0.3', 8000),
+('200', 'domain2', 'OpenStack+_compute', '10.0.0.3', '10.0.0.3', 8000),
 ('21', 'cpe-mi:sw1', 'JolnetCA', 'openflow:110953238267072', '', 0),
 ('22', 'cpe-mi:sw1', 'JolnetCA', '00:00:64:e9:50:5a:84:c0', '', 0),
 ('244', 'Jolnet_controller', 'JolnetCA', '163.162.234.44', '', 0),
 ('3', 'nodo-ti:sw1', 'JolnetCA', 'openflow:110953238268480', '', 0),
 ('30', 'nodo-ti:sw1', 'JolnetCA', '00:00:64:e9:50:5a:8a:40', '', 0),
-('300', 'node3', 'UniversalNodeCA', '10.0.0.1', '10.0.0.1', 9000),
+('300', 'domain0', 'UniversalNodeCA', '10.0.0.1', '10.0.0.1', 9000),
 ('31', 'cpe-ti:sw1', 'JolnetCA', 'openflow:110953238265624', '', 0),
 ('32', 'cpe-ti:sw1', 'JolnetCA', '00:00:64:e9:50:5a:7f:18', '', 0),
 ('4', 'nodo-tn:sw1', 'JolnetCA', 'openflow:44838630154304', '', 0),
@@ -141,7 +162,7 @@ INSERT INTO `node` (`id`, `name`, `type`, `domain_id`, `ca_ip`, `ca_port`) VALUE
 ('400', 'node4', 'UnifiedNode', '10.0.0.5', '', 0),
 ('41', 'cpe-tn:sw1', 'JolnetCA', 'openflow:968199681216', '', 0),
 ('42', 'cpe-tn:sw1', 'JolnetCA', '00:00:00:e1:6d:32:b4:c0', '', 0),
-('490', 'node45', 'UniversalNodeCA', '10.0.0.2', '10.0.0.2', 7500),
+('490', 'domain1', 'UniversalNodeCA', '10.0.0.2', '10.0.0.2', 7500),
 ('5', 'nodo-pi:sw1', 'JolnetCA', 'openflow:58119451054400', '', 0),
 ('50', 'nodo-pi:sw1', 'JolnetCA', '00:00:34:db:fd:3c:11:40', '', 0),
 ('51', 'cpe-pi:sw1', 'JolnetCA', 'openflow:110953239436736', '', 0),
@@ -178,7 +199,7 @@ CREATE TABLE IF NOT EXISTS `session` (
 --
 
 INSERT INTO `session` (`id`, `user_id`, `service_graph_id`, `service_graph_name`, `ingress_node`, `egress_node`, `status`, `started_at`, `last_update`, `error`, `ended`) VALUES
-('b49ff9c556f947f38e4c8e6126891a9b', '1', '3_base', 'Forwarding graph', '300', '200', 'complete', '2015-12-17 15:20:08', '2015-12-17 15:20:08', NULL, '2015-12-17 15:22:31');
+('9c146c04c7884044989fd2c7049c9324', '1', '4', 'Forwarding graph', '300', '490', 'complete', '2016-01-08 09:46:20', '2016-01-08 09:47:40', NULL, NULL);
 
 -- --------------------------------------------------------
 
