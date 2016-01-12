@@ -10,7 +10,6 @@ from orchestrator_core.config import Configuration
 from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus
 from orchestrator_core.dd_server import DD_Server
 import os, inspect
-#from orchestrator_core.testclient import special_client
 
 conf = Configuration()
 
@@ -62,10 +61,3 @@ thread.start()
 
 logging.info("Falcon Successfully started")
 
-
-
-
-
-
-    
-    

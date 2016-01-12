@@ -13,7 +13,6 @@ from nffg_library.nffg import NF_FG
 from nffg_library.validator import ValidateNF_FG
 
 class CA_Interface(object):
-    # to be changed
     timeout = Configuration().ORCH_TIMEOUT
         
     def __init__(self, user_data, ip, port, token=None):
@@ -74,7 +73,7 @@ class CA_Interface(object):
     def getToken(self, user_data, ip, port):
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
         authenticationData = {'username': user_data.username, 'password': user_data.password}
-        resp = requests.post(self.authentication_url, data=json.dumps(authenticationData), headers=headers)
+        resp = requests.post(self.authentication_url, data=json.dumps(authenticationData), headers=headers, timeout=int(self.timeout))
         resp.raise_for_status()
         response = json.loads(resp.text)
         self.token = response['token']

@@ -5,7 +5,6 @@ Created on Jun 20, 2015
 '''
 
 from sqlalchemy import Column, VARCHAR, Boolean, Integer
-import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import logging
@@ -56,7 +55,7 @@ class Node(object):
         
     def getNodeID(self, user_id):
         '''
-        This method should returns the ingress and egress node for a specific user
+        This method should return the ingress and egress node for a specific user
         '''
         pass
     
