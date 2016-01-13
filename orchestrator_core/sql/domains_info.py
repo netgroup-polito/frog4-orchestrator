@@ -49,7 +49,7 @@ class DomainsGreModel(Base):
 class DomainsInformation(object):
     def __init__(self):
         pass
-    
+    """
     def getDomainNamefromIP(self, domain_ip):
         session = get_session()  
         domain_name=None
@@ -57,6 +57,7 @@ class DomainsInformation(object):
         if domain_info is not None:
             domain_name=domain_info.domain_name
         return domain_name
+    """
     
     def get_domain_info(self, domain_name=None):
         session = get_session() 
