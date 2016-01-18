@@ -1,7 +1,6 @@
 from .doubledecker.clientSafe import ClientSafe
 from .domain_info import DomainInfo
 from .sql.domains_info import DomainInformation
-from .sql.node import Node
 from .sql.domain import Domain
 import logging, json
 
@@ -30,8 +29,7 @@ class DD_Server(ClientSafe):
             
             domain_id = Domain().addDomain(di.name, di.type, domain_ip, domain_port)
             di.domain_id = domain_id
-            
-            
+                     
             logging.debug("Domain information arrived from %s: %s" % (domain , str(domain_info)))
             DomainInformation().add_domain_info(di)
         except Exception as ex:

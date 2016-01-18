@@ -85,16 +85,6 @@ class CA_Interface(object):
                 return nffg   
             else:
                 raise err
-        # DEBUG UN
-        """
-        #resp = requests.get(self.get_nffg_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
-        get_nffg_url = self.base_url+"/graph/%s"   
-        resp = requests.get(get_nffg_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
-        resp.raise_for_status()
-        logging.debug(resp.text)
-        logging.debug("Get NFFG completed")
-        #return nffg
-        """
     
     def put(self, nffg):
         if self.token is None:

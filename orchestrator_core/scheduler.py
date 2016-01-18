@@ -4,12 +4,12 @@ Created on Oct 1, 2014
 @author: fabiomignini
 '''
 from orchestrator_core.exception import NodeNotFound, DomainNotFound
-from orchestrator_core.sql.node import Node
 from orchestrator_core.sql.graph import Graph
 from orchestrator_core.sql.domain import Domain
 from orchestrator_core.sql.domains_info import DomainInformation
 import itertools, random
 import logging
+from collections import OrderedDict
 
 class Scheduler(object):
     def __init__(self):
@@ -131,12 +131,17 @@ class Scheduler(object):
     def matchCapabilites(self, domains_info, number_of_links, user_endpoint_domain_id):
         characterizations_score = []
         characterizations_list = []
-        #TODO: change to combinations
-        for domain_relationship in itertools.permutations(domains_info, 2):
+        ordered_domains_info = OrderedDict()
+        ordered_domains_info[user_endpoint_domain_id] = domains_info[user_endpoint_domain_id]
+        del domains_info[user_endpoint_domain_id]
+        for k, v in domains_info.items():
+            ordered_domains_info[k] = v
+        
+        for domain_relationship in itertools.combinations(ordered_domains_info, 2):
             #print(domain_relationship)
-            if domain_relationship[0] == user_endpoint_domain_id :
+            if domain_relationship[0] == user_endpoint_domain_id:
                 print(domain_relationship)
-                characterization = self.searchMatchesBetweenDomains(domains_info, domain_relationship[0], domain_relationship[1], number_of_links)
+                characterization = self.searchMatchesBetweenDomains(ordered_domains_info, domain_relationship[0], domain_relationship[1], number_of_links)
                 if characterization is not None:
                     characterizations_list.append(characterization)
                     characterizations_score.append(self.calculateScore(characterization))

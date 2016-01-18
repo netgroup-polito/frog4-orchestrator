@@ -11,7 +11,6 @@ from orchestrator_core.exception import sessionNotFound, GraphError
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
-from orchestrator_core.sql.node import Node
 from orchestrator_core.sql.domain import Domain  
 from orchestrator_core.userAuthentication import UserData
 from orchestrator_core.config import Configuration
