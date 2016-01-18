@@ -62,6 +62,16 @@ class NodeNotFound(Exception):
     def get_mess(self):
         return self.message
     
+class DomainNotFound(Exception):
+    def __init__(self, message):
+        # Call the base class constructor with the parameters it needs
+        super(DomainNotFound, self).__init__(message)
+
+        self.message = message
+        
+    def get_mess(self):
+        return self.message    
+    
 class ControllerNotFound(Exception):
     def __init__(self, message):
         # Call the base class constructor with the parameters it needs
@@ -99,6 +109,15 @@ class WrongConfigurationFile(Exception):
         
     def get_mess(self):
         return self.message
+    
+class LoginError(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(LoginError, self).__init__(message)
+        
+    def get_mess(self):
+        return self.message    
     
 class NoHeatPortTranslationFound(Exception):
     def __init__(self, message):

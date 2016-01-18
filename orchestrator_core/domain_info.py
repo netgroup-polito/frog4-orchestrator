@@ -4,18 +4,21 @@ Created on 01 dic 2015
 @author: stefanopetrangeli
 '''
 class DomainInfo(object):
-    def __init__(self, name = None, interfaces=None, node_id= None):
+    def __init__(self, name = None, interfaces=None, domain_id=None, _type=None):
         self.name = name
+        self.type = _type
         self.interfaces = interfaces or []
-        self.node_id = node_id
+        self.domain_id = domain_id
                  
     def parseDict(self, domaininfo_dict):
         self.name = domaininfo_dict['netgroup-domain:informations']['name']
+        self.type = domaininfo_dict['netgroup-domain:informations']['type']
         if 'openconfig-interfaces:interfaces' in domaininfo_dict['netgroup-domain:informations']['netgroup-network-manager:informations']:
             for interface_dict in domaininfo_dict['netgroup-domain:informations']['netgroup-network-manager:informations']['openconfig-interfaces:interfaces']['openconfig-interfaces:interface']:
                 interface = Interface()
                 interface.parseDict(interface_dict)
-                self.interfaces.append(interface)
+                if interface.enabled is True:
+                    self.interfaces.append(interface)
     
     def addInterface(self, interface):
         if type(interface) is Interface:
@@ -23,43 +26,49 @@ class DomainInfo(object):
         else:
             raise TypeError("Tried to add an interface with a wrong type. Expected Interface, found "+type(interface))
         
-    def getInterface(self, interface_name):
+    def getInterface(self, node, name):
         for interface in self.interfaces:
-            if interface.name == interface_name:
+            if interface.node == node and interface.name == name:
                 return interface
         
 class Interface(object):
     # Subinterfaces are ignored
-    def __init__(self, name=None, _type=None, neighbor_domain=None, neighbor_interface=None, gre=False, gre_tunnels=None, vlan=False, vlans_used=None):
+    def __init__(self, node=None, name=None, _type=None, enabled=None, neighbors=None, gre=False, gre_tunnels=None, vlan=False, vlans_used=None):
+        # Interface is composed of node and name
+        self.node = node
         self.name = name
         self.type = _type
+        self.enabled = enabled
         self.gre = gre
         self.gre_tunnels = gre_tunnels or []
         self.vlan = vlan   
         self.vlans_used = vlans_used or [] 
-        self.neighbor_domain = neighbor_domain
-        self.neighbor_interface = neighbor_interface
+        self.neighbors = neighbors or []
         
     def parseDict(self, interface_dict):
-        self.name = interface_dict['name']
+        tmp = interface_dict['name']
+        self.node = tmp.split('/')[0]
+        self.name = tmp.split('/')[1]
         if 'type' in interface_dict['config']:
             self.type = interface_dict['config']['type']
-               
-        for subinterface_dict in interface_dict['openconfig-interfaces:subinterfaces']['openconfig-interfaces:subinterface']:
-            if subinterface_dict['config']['name'] == self.name:
-                if subinterface_dict['capabilities']['gre'] == True:
-                    self.gre = True
-                    if 'netgroup-if-gre:gre' in subinterface_dict:
-                        for gre_dict in subinterface_dict['netgroup-if-gre:gre']:
-                            gre_tunnel = GreTunnel()
-                            gre_tunnel.parseDict(gre_dict)
-                            self.gre_tunnels.append(gre_tunnel)
-                    
-                    
+        self.enabled = interface_dict['config']['enabled']            
+            
+        if 'openconfig-interfaces:subinterfaces' in interface_dict: 
+            for subinterface_dict in interface_dict['openconfig-interfaces:subinterfaces']['openconfig-interfaces:subinterface']:
+                if subinterface_dict['config']['name'] == self.name:
+                    if subinterface_dict['capabilities']['gre'] == True:
+                        self.gre = True
+                        if 'netgroup-if-gre:gre' in subinterface_dict:
+                            for gre_dict in subinterface_dict['netgroup-if-gre:gre']:
+                                gre_tunnel = GreTunnel()
+                                gre_tunnel.parseDict(gre_dict)
+                                self.gre_tunnels.append(gre_tunnel)
+                                
         if 'netgroup-neighbor:neighbor' in interface_dict['openconfig-if-ethernet:ethernet']:
-            self.neighbor_domain = interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']['domain']
-            if 'interface' in interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']:
-                self.neighbor_interface = interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']['interface']
+            for neighbor_dict in interface_dict['openconfig-if-ethernet:ethernet']['netgroup-neighbor:neighbor']:
+                neighbor = Neighbor()
+                neighbor.parseDict(neighbor_dict)
+                self.neighbors.append(neighbor)
 
         if 'openconfig-vlan:vlan' in interface_dict['openconfig-if-ethernet:ethernet']:
             self.vlan = True
@@ -68,7 +77,12 @@ class Interface(object):
                 if vlan_config['interface-mode']=="TRUNK":
                     for vlan in vlan_config['trunk-vlans']:
                         self.vlans_used.append(vlan)
-                    
+                        
+    def addNeighbor(self, neighbor):
+        if type(neighbor) is Neighbor:
+            self.neighbors.append(neighbor)
+        else:
+            raise TypeError("Tried to add a neighbor with a wrong type. Expected Neighbor, found "+type(neighbor))                                
 
     def addGreTunnel(self, gre_tunnel):
         if type(gre_tunnel) is GreTunnel:
@@ -78,6 +92,19 @@ class Interface(object):
         
     def addVlan(self, vlan):
         self.vlans_used.append(vlan)
+        
+class Neighbor(object):
+    def __init__(self, domain_name=None, node=None, interface=None):
+        self.domain_name = domain_name
+        self.node = node
+        self.interface = interface
+        
+    def parseDict(self, neighbor_dict):
+        self.domain_name = neighbor_dict['domain']
+        if 'interface' in neighbor_dict:
+            tmp = neighbor_dict['interface']
+            self.node = tmp.split('/')[0]
+            self.interface = tmp.split('/')[1]      
     
 class GreTunnel(object):
     def __init__(self, name=None, local_ip=None, remote_ip=None, gre_key=None):

@@ -24,10 +24,10 @@ class GraphModel(Base):
     Maps the database table graph
     '''
     __tablename__ = 'graph'
-    attributes = ['id', 'session_id','node_id','partial']
+    attributes = ['id', 'session_id','domain_id','partial']
     id = Column(Integer, primary_key=True)
     session_id = Column(VARCHAR(64))
-    node_id = Column(VARCHAR(64))
+    domain_id = Column(VARCHAR(64))
     partial = Column(Boolean())
 """    
 class VNFInstanceModel(Base):
@@ -778,14 +778,14 @@ class Graph(object):
         connections = connections+session.query(GraphConnectionModel).filter_by(endpoint_id_1 = endpoint_id).filter_by(endpoint_id_1_type = endpoint_type).all()
         return connections
     """
-    def getNodeID(self, graph_id):
+    def getDomainID(self, graph_id):
         session = get_session()
-        return session.query(GraphModel.node_id).filter_by(id = graph_id).one().node_id
+        return session.query(GraphModel.domain_id).filter_by(id = graph_id).one().domain_id
 
-    def setNodeID(self, graph_id, node_id):
+    def setDomainID(self, graph_id, domain_id):
         session = get_session()
         with session.begin():
-            logging.debug(session.query(GraphModel).filter_by(id = graph_id).update({"node_id":node_id}))
+            logging.debug(session.query(GraphModel).filter_by(id = graph_id).update({"domain_id":domain_id}))
     """
     def updateEndpointType(self, graph_endpoint_id, graph_id, endpoint_type):
         session = get_session()  

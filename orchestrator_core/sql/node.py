@@ -6,6 +6,7 @@ Created on Jun 20, 2015
 
 from sqlalchemy import Column, VARCHAR, Boolean, Integer
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 import logging
 from orchestrator_core.config import Configuration
@@ -19,8 +20,8 @@ class NodeModel(Base):
     Maps the database table node
     '''
     __tablename__ = 'node'
-    attributes = ['id', 'name', 'type','domain_id','availability_zone','openstack_controller', 'openflow_controller', 'ca_ip', 'ca_port']
-    id = Column(VARCHAR(64), primary_key=True)
+    attributes = ['id', 'name', 'type','domain_id','availability_zone','openstack_controller', 'openflow_controller', 'do_ip', 'do_port']
+    id = Column(Integer, primary_key=True)
     name = Column(VARCHAR(64))
     
     '''
@@ -36,13 +37,21 @@ class NodeModel(Base):
     type = Column(VARCHAR(64))
     domain_id = Column(VARCHAR(64))
     
-    ca_ip = Column(VARCHAR(64))
-    ca_port = Column(Integer)
-    
 
 class Node(object):
     def __init__(self):
         pass
+    
+    def addNode(self, name, _type, domain_id, update=False):
+        session = get_session()
+        with session.begin():
+            node_base_id = self._get_higher_node_id()
+            if node_base_id is not None:
+                node_id = int(node_base_id) + 1
+            else:
+                node_id = 0
+            node_ref = NodeModel(id=node_id, name=name,type=_type, domain_id=domain_id)
+            session.add(node_ref)
     
     def getNode(self, node_id):
         session = get_session()
@@ -51,7 +60,6 @@ class Node(object):
         except Exception as ex:
             logging.error(ex)
             raise NodeNotFound("Node not found: "+str(node_id))
-    
         
     def getNodeID(self, user_id):
         '''
@@ -67,7 +75,7 @@ class Node(object):
             logging.error(ex)
             raise NodeNotFound("Node not found.")
         
-    def getNodeFromDomainID(self, domain_id):
+    def getNodeFromNodeID(self, domain_id):
         session = get_session()
         try:
             return session.query(NodeModel).filter_by(domain_id = domain_id).one()
@@ -99,12 +107,9 @@ class Node(object):
         except Exception as ex:
             logging.error(ex)
             raise NodeNotFound("Node not found")
+        
+    def _get_higher_node_id(self):  
+        session = get_session()  
+        return session.query(func.max(NodeModel.id).label("max_id")).one().max_id
     
-    def getOpenflowControllerID(self, node_id):
-        session = get_session()
-        try:
-            return session.query(NodeModel.openflow_controller).filter_by(id = node_id).one().openflow_controller
-        except Exception as ex:
-            logging.error(ex)
-            raise NodeNotFound("Node not found: "+str(node_id))
         

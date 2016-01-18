@@ -1,7 +1,8 @@
 from .doubledecker.clientSafe import ClientSafe
 from .domain_info import DomainInfo
-from .sql.domains_info import DomainsInformation
+from .sql.domains_info import DomainInformation
 from .sql.node import Node
+from .sql.domain import Domain
 import logging, json
 
 class DD_Server(ClientSafe):
@@ -16,16 +17,23 @@ class DD_Server(ClientSafe):
         msgstr = "PUB %s from %s: %s" % (str(topic), str(src), str(msg))
         print(msgstr)
         #TODO: validation of msg needed
-        domain_name = src.decode("utf-8")
         try:
-            node = Node().getNodeFromName(domain_name)
+            domain = src.decode("utf-8")
+            domain_ip = domain.split(':')[0]
+            domain_port = domain.split(':')[1]
+
             domain_info = json.loads(msg.decode("utf-8"))
             
-            di = DomainInfo(node_id=node.id)
+            # domain info
+            di = DomainInfo()
             di.parseDict(domain_info)
-            #print (domain_info)
-            logging.debug("Domain information arrived from %s: %s" % (domain_name , str(domain_info)))
-            DomainsInformation().add_domain_info(di)
+            
+            domain_id = Domain().addDomain(di.name, di.type, domain_ip, domain_port)
+            di.domain_id = domain_id
+            
+            
+            logging.debug("Domain information arrived from %s: %s" % (domain , str(domain_info)))
+            DomainInformation().add_domain_info(di)
         except Exception as ex:
             logging.exception(ex)  
 
