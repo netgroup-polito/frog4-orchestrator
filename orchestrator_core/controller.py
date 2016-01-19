@@ -73,7 +73,8 @@ class UpperLayerOrchestratorController(object):
             #orchestrator = Scheduler(graph_ref.id, self.user_data).getInstance(node)
             
             try:
-                CA_Interface(self.user_data, domain).delete(graph_ref.id)
+                if DEBUG_MODE is False:
+                    CA_Interface(self.user_data, domain).delete(graph_ref.id)
             except Exception as ex:
                 logging.exception(ex)
                 Session().set_error(session.id)
@@ -131,7 +132,8 @@ class UpperLayerOrchestratorController(object):
             
             if old_domain_present is False:
                 logging.warning("The graph will be instantiated in a different node...deleting old graph")
-                CA_Interface(self.user_data, old_domain).delete(old_graph.id)
+                if DEBUG_MODE is False:
+                    CA_Interface(self.user_data, old_domain).delete(old_graph.id)
                 Graph().delete_session(session.id)                
             
             domain_nffg_dict = OrderedDict()
