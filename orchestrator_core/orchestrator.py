@@ -8,7 +8,6 @@ import falcon
 import logging
 import requests
 import json
-import jsonschema
 
 from sqlalchemy.orm.exc import NoResultFound
 from nffg_library.validator import ValidateNF_FG
@@ -57,18 +56,8 @@ class NFFGStatus(object):
             logging.exception("EXCEPTION - NoResultFound")
             raise falcon.HTTPNotFound()
         except requests.HTTPError as err:
-            logging.exception(err.response.text)
-            if err.response.status_code == 401:
-                raise falcon.HTTPInternalServerError('Unauthorized.',err.message)
-            elif err.response.status_code == 403:
-                raise falcon.HTTPInternalServerError('Forbidden.',err.message)
-            elif err.response.status_code == 404:
-                raise falcon.HTTPInternalServerError('Resource Not found.',err.message)
-            raise err
-        except jsonschema.ValidationError as err:
-            logging.exception(err.message)
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        err.message)
+            logging.exception(err)
+            raise falcon.HTTPInternalServerError(str(err), err.response.text)
         except sessionNotFound as err:
             logging.exception(err.message)
             raise falcon.HTTPNotFound()
@@ -102,18 +91,8 @@ class UpperLayerOrchestrator(object):
             logging.exception("EXCEPTION - NoResultFound")
             raise falcon.HTTPNotFound()
         except requests.HTTPError as err:
-            logging.exception(err.response.text)
-            if err.response.status_code == 401:
-                raise falcon.HTTPInternalServerError('Unauthorized.',err.message)
-            elif err.response.status_code == 403:
-                raise falcon.HTTPInternalServerError('Forbidden.',err.message)
-            elif err.response.status_code == 404:
-                raise falcon.HTTPInternalServerError('Resource Not found.',err.message)
-            raise err
-        except jsonschema.ValidationError as err:
-            logging.exception(err.message)
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        err.message)
+            logging.exception(err)
+            raise falcon.HTTPInternalServerError(str(err), err.response.text)
         except sessionNotFound as err:
             logging.exception(err.message)
             raise falcon.HTTPNotFound()
@@ -144,18 +123,8 @@ class UpperLayerOrchestrator(object):
             logging.exception("EXCEPTION - NoResultFound")
             raise falcon.HTTPNotFound()
         except requests.HTTPError as err:
-            logging.exception(err.response.text)
-            if err.response.status_code == 401:
-                raise falcon.HTTPInternalServerError('Unauthorized.',err.message)
-            elif err.response.status_code == 403:
-                raise falcon.HTTPInternalServerError('Forbidden.',err.message)
-            elif err.response.status_code == 404:
-                raise falcon.HTTPInternalServerError('Resource Not found.',err.message)
-            raise err
-        except jsonschema.ValidationError as err:
-            logging.exception(err.message)
-            raise falcon.HTTPBadRequest('Bad Request',
-                                        err.message)
+            logging.exception(err)
+            raise falcon.HTTPInternalServerError(str(err), err.response.text)
         except sessionNotFound as err:
             logging.exception(err.message)
             raise falcon.HTTPNotFound()
@@ -198,13 +167,7 @@ class UpperLayerOrchestrator(object):
             raise falcon.HTTPUnauthorized("Unauthorized", err.message)
         except requests.HTTPError as err:
             logging.exception(err)
-            if err.response.status_code == 401:
-                raise falcon.HTTPInternalServerError('Unauthorized.',err.message)
-            elif err.response.status_code == 403:
-                raise falcon.HTTPInternalServerError('Forbidden.',err.message)
-            elif err.response.status_code == 404: 
-                raise falcon.HTTPInternalServerError('Resource Not found.',err.message)
-            raise err
+            raise falcon.HTTPInternalServerError(str(err), err.response.text)
         except Exception as err:
             logging.exception(err)
             raise falcon.HTTPInternalServerError('Contact the admin. ', err.message)

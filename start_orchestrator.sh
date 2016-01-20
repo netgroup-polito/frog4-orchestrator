@@ -1,3 +1,3 @@
 #!/bin/bash
 echo "" > FrogOrchestrator.log
-python gunicorn.py
+python3 gunicorn.py

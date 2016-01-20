@@ -13,23 +13,35 @@ from nffg_library.validator import ValidateNF_FG
 #in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo0.json","r")
 #in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo0_AR.json","r")
 #in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo1.json","r")
-#in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo2.json","r")
-in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo3_4vnf.json","r")
+#in_file = open("../../frog4/grafo2.json","r")
+#in_file = open("../../frog4/grafo3_4vnf.json","r")
+in_file = open("../../frog4/jolnet_graphHe_3endp.json","r")
+
 
 nf_fg_file = json.loads(in_file.read())
 
 ValidateNF_FG().validate(nf_fg_file)
 nffg = NF_FG()
 nffg.parseDict(nf_fg_file)
-
+print(nffg.getJSON())
 #nffg1, nffg2 = nffg.split(nffg.end_points, nffg.vnfs) # for graph 0,2
+left = []
+for endpoint in nffg.end_points:
+    if endpoint.type == 'interface' and endpoint.name == "user":
+        splittable = True
+        left.append(endpoint)
+        right = nffg.end_points + nffg.vnfs
+        right.remove(endpoint)
+        break
+nffg1, nffg2 = nffg.split(left, right)
+
 
 # 3
-
+"""
 left = []
 left.append(nffg.end_points[0])
 nffg1, nffg2 = nffg.split(left, nffg.vnfs) # for graph 3
-
+"""
 """
 left = []
 left.append(nffg.vnfs[0])
@@ -51,7 +63,7 @@ nffg1, nffg2 = nffg.split(left, right) # for graph1 or 3
 
 print(nffg1.getJSON())
 print(nffg2.getJSON())
-
+"""
 left = []
 left.append(nffg1.end_points[0])
 right= []
@@ -66,7 +78,7 @@ print(nffg4.getJSON())
 #print nffg3.getJSON()
 nffg4.join(nffg3)
 print(nffg4.getJSON())
-
+"""
 
 
 #nffg1.join(nffg2)
