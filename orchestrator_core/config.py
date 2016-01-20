@@ -49,6 +49,7 @@ class Configuration(object):
             self._ORCH_IP = config.get('orchestrator','ip')
             self._ORCH_TIMEOUT = config.get('orchestrator','timeout')
             self._BROKER_ADDRESS = config.get('orchestrator','broker_address')
+            self._DD_KEYFILE = config.get('orchestrator','dd_keyfile')
 
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
             self._TEMPLATE_SOURCE = config.get('templates','source')
@@ -64,6 +65,10 @@ class Configuration(object):
     @property
     def BROKER_ADDRESS(self):
         return self._BROKER_ADDRESS
+    
+    @property
+    def DD_KEYFILE(self):
+        return self._DD_KEYFILE    
     
     @property
     def DEBUG_MODE(self):
