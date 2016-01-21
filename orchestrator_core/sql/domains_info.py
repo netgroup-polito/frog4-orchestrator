@@ -58,15 +58,6 @@ class DomainsNeighborModel(Base):
 class DomainInformation(object):
     def __init__(self):
         pass
-    """
-    def getDomainNamefromIP(self, domain_ip):
-        session = get_session()  
-        domain_name=None
-        domain_info = session.query(DomainsInformationModel).filter_by(domain_ip = domain_ip).first()
-        if domain_info is not None:
-            domain_name=domain_info.domain_name
-        return domain_name
-    """
     
     def get_domain_info(self, domain_name=None):
         session = get_session() 
@@ -110,16 +101,20 @@ class DomainInformation(object):
                 return None
             return domain.domain_id
     
-    def add_domain_info(self, domain_info, update=True):
+    def add_domain_info(self, domain_info, update=False):
+        '''
+        Populate domain_* tables on the DB. If update is False domains information related to this domain_info are overwritten
+        '''
         session = get_session()  
         with session.begin():
-            if update is True:
+            if update is False:
                 try:
                     domain_refs = session.query(DomainsInformationModel).filter_by(domain_id=domain_info.domain_id).all()
                     for domain_ref in domain_refs:
                         session.query(DomainsInformationModel).filter_by(id = domain_ref.id).delete()
                         session.query(DomainsVlanModel).filter_by(domain_info_id=domain_ref.id).delete()
                         session.query(DomainsGreModel).filter_by(domain_info_id=domain_ref.id).delete()
+                        session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).delete()
                 except NoResultFound:
                     pass                        
             self.id_generator(domain_info)
@@ -128,7 +123,7 @@ class DomainInformation(object):
                                                    interface_type=interface.type, gre=interface.gre, vlan=interface.vlan)
                 session.add(info_ref)
                 for neighbor in interface.neighbors:
-                    neighbor_ref = DomainsNeighborModel(id=self.neighbor_id, domain_info_id=self.info_id, neighbor_domain_name=neighbor.domain_name, neighbor_node=neighbor.node, neighbor_interface=neighbor.interface )
+                    neighbor_ref = DomainsNeighborModel(id=self.neighbor_id, domain_info_id=self.info_id, neighbor_domain_name=neighbor.domain_name, neighbor_node=neighbor.node, neighbor_interface=neighbor.interface)
                     session.add(neighbor_ref)
                     self.neighbor_id = self.neighbor_id + 1                    
                 for gre_tunnel in interface.gre_tunnels:

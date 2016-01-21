@@ -34,7 +34,6 @@ class TenantModel(Base):
     id = Column(VARCHAR(64), primary_key=True)
     name = Column(VARCHAR(64))
     description = Column(VARCHAR(128))
-    
 
 class User(object):
     
@@ -46,21 +45,21 @@ class User(object):
         try:
             return session.query(UserModel).filter_by(name = username).one()
         except Exception as ex:
-            logging.error(ex)
-            raise UserNotFound("User not found: "+str(username))
+            #logging.error(ex)
+            raise UserNotFound("User not found: "+str(username)) from None
     
     def getUserFromID(self, user_id):
         session = get_session()
         try:
             return session.query(UserModel).filter_by(id = user_id).one()
         except Exception as ex:
-            logging.error(ex)
-            raise UserNotFound("User not found id: "+str(user_id))
+            #logging.error(ex)
+            raise UserNotFound("User not found id: "+str(user_id)) from None
     
     def getTenantName(self, tenant_id):
         session = get_session()
         try:
             return session.query(TenantModel).filter_by(id = tenant_id).one().name
         except Exception as ex:
-            logging.error(ex)
-            raise TenantNotFound("User not found: "+str(tenant_id))
+            #logging.error(ex)
+            raise TenantNotFound("User not found: "+str(tenant_id)) from None

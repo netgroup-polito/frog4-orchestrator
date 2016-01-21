@@ -36,7 +36,6 @@ class CA_Interface(object):
             self.headers = {'Content-Type': 'application/json',
             'cache-control': 'no-cache',
             'X-Auth-Token': self.token}
-        #self.headers = {'Content-Type': 'application/json'}
         
     def getNFFGStatus(self, nffg_id):
         if self.token is None:
@@ -132,8 +131,6 @@ class CA_Interface(object):
         resp = requests.post(self.authentication_url, data=json.dumps(authenticationData), headers=headers, timeout=int(self.timeout))
         try:
             resp.raise_for_status()
-            #response = json.loads(resp.text)
-            #self.token = response['token']
             self.token = resp.text
             self.headers = {'Content-Type': 'application/json',
                 'cache-control': 'no-cache',

@@ -16,6 +16,8 @@ from orchestrator_core.userAuthentication import UserData
 from orchestrator_core.config import Configuration
 from collections import OrderedDict
 from orchestrator_core.ca_rest import CA_Interface
+from sqlalchemy.orm.exc import NoResultFound
+from requests.exceptions import HTTPError, ConnectionError
 
 DEBUG_MODE = Configuration().DEBUG_MODE
 
@@ -39,7 +41,7 @@ class UpperLayerOrchestratorController(object):
             instantiated_nffgs.append(CA_Interface(self.user_data, domain).getNFFG(graph_ref.id))
         
         if not instantiated_nffgs:
-            return None
+            raise NoResultFound()
         # If the graph has been split, we need to rebuild the original nffg
         if len(instantiated_nffgs) == 2:
             return instantiated_nffgs[0].join(instantiated_nffgs[1]).getJSON()
@@ -243,11 +245,16 @@ class UpperLayerOrchestratorController(object):
                     
                 #debug   
                 #Session().set_error(session_id)
+            except (HTTPError, ConnectionError) as ex:
+                logging.exception(ex)
+                Graph().delete_graph(nffg.db_id)
+                Session().set_error(session_id)
+                raise ex
             except Exception as ex:
                 logging.exception(ex)
                 '''
                 Graph().delete_graph(nffg.db_id)
-                ''' 
+                '''
                 Session().set_error(session_id)
                 raise ex
         
@@ -316,15 +323,13 @@ class UpperLayerOrchestratorController(object):
             #scheduler = Scheduler(graph_ref.id, self.user_data)  
             #orchestrator = scheduler.getInstance(node)
             #status = orchestrator.getStatus(node)
-            
-            
-            status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
-            logging.debug(status)
-            
+            """
             status = {}
             status['status'] = 'complete'
             status['percentage_completed'] = 100
-            
+            """
+            status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
+            logging.debug(status)
             return status
     
     def convertRemoteNodeID(self, nffg):
