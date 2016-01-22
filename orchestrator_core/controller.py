@@ -158,7 +158,9 @@ class UpperLayerOrchestratorController(object):
                     
                 new_nffg.id = str(new_nffg.db_id)
                 
-                if DEBUG_MODE is False:
+                if DEBUG_MODE is True:
+                    logging.debug(new_nffg.getJSON())
+                else:
                     CA_Interface(self.user_data, new_domain).put(new_nffg)
                
                 """
@@ -233,8 +235,9 @@ class UpperLayerOrchestratorController(object):
                     # Instantiate profile
                     logging.info('Call CA to instantiate NF-FG')
                     nffg.id = str(nffg.db_id)
-                    logging.debug(nffg.getJSON())
-                    if DEBUG_MODE is False:
+                    if DEBUG_MODE is True:
+                        logging.debug(nffg.getJSON())
+                    else:
                         CA_Interface(self.user_data, domain).put(nffg)
                     logging.debug('NF-FG instantiated')
                      

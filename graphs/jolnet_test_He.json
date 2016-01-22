@@ -1,0 +1,57 @@
+{
+  "forwarding-graph": {
+    "id": "57",
+    "domain": "odl_do",
+    "name": "Jolnet ODL-DO Test Graph He",
+    "end-points": [
+      {
+        "id": "ucs_MI",
+        "name": "ucs_endpoint",
+        "type": "interface",
+        "interface": {
+          "switch-id": "openflow:110953238267840",
+          "interface": "5097"
+        }
+      },
+      {
+        "id": "ucs_TO",
+        "name": "user_endpoint",
+        "type": "interface",
+        "interface": {
+          "switch-id": "openflow:110953238266560",
+          "interface": "5098"
+        }
+      }
+    ],
+    "big-switch": {
+      "flow-rules": [
+        {
+          "id": "1",
+          "priority": 100,
+          "match": {
+            "port_in": "endpoint:ucs_MI",
+            "vlan_id": "295"
+          },
+          "actions": [
+            {
+              "output_to_port": "endpoint:ucs_TO"
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "priority": 100,
+          "match": {
+            "port_in": "endpoint:ucs_TO",
+            "vlan_id": "295"
+          },
+          "actions": [
+            {
+              "output_to_port": "endpoint:ucs_MI"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
