@@ -2,8 +2,9 @@
 Created on Oct 1, 2014
 
 @author: fabiomignini
+@author: stefanopetrangeli
 '''
-from orchestrator_core.exception import NodeNotFound, DomainNotFound, GraphError
+from orchestrator_core.exception import DomainNotFound, GraphError
 from orchestrator_core.sql.graph import Graph
 from orchestrator_core.sql.domain import Domain
 from orchestrator_core.sql.domains_info import DomainInformation
@@ -170,9 +171,7 @@ class Scheduler(object):
                 nffg_2_endp.gre_key = element.gre_key     
                 i = i+1
             else:
-                raise TypeError("Only DirectLink, Vlan and Gre characterizations are supported")
-        #print(nffg1.getJSON())
-        #print(nffg2.getJSON())    
+                raise TypeError("Only DirectLink, Vlan and Gre characterizations are supported") 
              
     """
     def matchCapabilites(self, domains_info, number_of_links, domain_id_1, domain_id_2):

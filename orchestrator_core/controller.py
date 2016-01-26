@@ -1,5 +1,6 @@
 '''
 @author: fabiomignini
+@author: stefanopetrangeli
 '''
 
 import json
@@ -35,8 +36,6 @@ class UpperLayerOrchestratorController(object):
         graphs_ref = Graph().getGraphs(session.id)
         instantiated_nffgs = []
         for graph_ref in graphs_ref:
-            #instantiated_nffgs.append(Graph().get_nffg(graph_ref.id))
-            #node = Node().getNode(Graph().getNodeID(graph_ref.id))
             domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
             instantiated_nffgs.append(CA_Interface(self.user_data, domain).getNFFG(graph_ref.id))
         
@@ -45,6 +44,9 @@ class UpperLayerOrchestratorController(object):
         # If the graph has been split, we need to rebuild the original nffg
         if len(instantiated_nffgs) == 2:
             return instantiated_nffgs[0].join(instantiated_nffgs[1]).getJSON()
+        if len(instantiated_nffgs) == 3:
+            # Second domain is discarded because not present in the original nffg
+            return instantiated_nffgs[0].join(instantiated_nffgs[2]).getJSON()        
             
         return instantiated_nffgs[0].getJSON()
     
@@ -102,19 +104,6 @@ class UpperLayerOrchestratorController(object):
             self.delete(nffg.id)
         else:
             #graph instantiated in a single domain
-            """
-            old_nffg = Graph().get_nffg(graphs_ref[0].id)
-            logging.debug('NF-FG that has to be updated: '+old_nffg.getJSON())
-            nffg.db_id = old_nffg.db_id
-            
-            # Get VNFs templates
-            self.prepareNFFG(nffg)
-    
-            # Get the component adapter associated  to the node where the nffg was instantiated
-            old_node = Node().getNode(Graph().getNodeID(graphs_ref[0].id))
-            scheduler = Scheduler(old_nffg.db_id, self.user_data)
-            orchestrator, new_node = scheduler.schedule(nffg)
-            """
             old_graph = graphs_ref[0]
             nffg.db_id = old_graph.id
             
@@ -135,7 +124,7 @@ class UpperLayerOrchestratorController(object):
                     break
             
             if old_domain_present is False:
-                logging.warning("The graph will be instantiated in a different node...deleting old graph")
+                logging.warning("The graph will be instantiated in a different domain...deleting old graph")
                 if DEBUG_MODE is False:
                     CA_Interface(self.user_data, old_domain).delete(old_graph.id)
                 Graph().delete_session(session.id)                
@@ -165,35 +154,11 @@ class UpperLayerOrchestratorController(object):
                 else:
                     CA_Interface(self.user_data, new_domain).put(new_nffg)
                
-                """
-                if new_node.id != old_node.id:
-                    logging.warning("The graph will be instantiated in a different node, in this case the smart update is not supported.")
-                    #orchestrator.deinstantiateProfile(nffg, old_node)
-                    Graph().delete_session(session.id)
-                    Graph().add_graph(nffg, session.id)
-                    Graph().setNodeID(graphs_ref[0].id, Node().getNodeFromDomainID(new_node.domain_id).id)
-                    try:
-                        #orchestrator.instantiateProfile(nffg, new_node)
-                        logging.debug(nffg.getJSON())
-                    except Exception as ex:
-                        logging.exception(ex)
-                        Session().set_error(session.id)          
-                        raise ex
-                else:
-                    # Update the nffg
-                    try:
-                        #orchestrator.updateProfile(nffg, old_nffg, new_node)
-                        logging.debug(nffg.getJSON())
-                    except Exception as ex:
-                        logging.exception(ex)
-                        Session().set_error(session.id)
-                        raise ex
-                """
             Session().updateStatus(session.id, 'complete')
             if len(domains)>1:
-                Session().updateSessionNode(session.id, domains[0].id, domain.id)
+                Session().updateSessionDomain(session.id, domains[0].id, domain.id)
             else:
-                Session().updateSessionNode(session.id, new_domain.id, new_domain.id)     
+                Session().updateSessionDomain(session.id, new_domain.id, new_domain.id)     
         
         #Session().updateSessionNode(session.id, new_node.id, new_node.id)
         return session.id
@@ -244,10 +209,10 @@ class UpperLayerOrchestratorController(object):
                     logging.debug('NF-FG instantiated')
                      
                 if len(domains)>1:
-                    Session().updateSessionNode(session_id, domains[0].id, domain.id)
+                    Session().updateSessionDomain(session_id, domains[0].id, domain.id)
                 else:
-                    Session().updateSessionNode(session_id, domain.id, domain.id)
-                    
+                    Session().updateSessionDomain(session_id, domain.id, domain.id)
+
                 #debug   
                 #Session().set_error(session_id)
             except (HTTPError, ConnectionError) as ex:

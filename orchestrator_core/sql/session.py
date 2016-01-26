@@ -19,14 +19,14 @@ class SessionModel(Base):
     Maps the database table session
     '''
     __tablename__ = 'session'
-    attributes = ['id', 'user_id', 'service_graph_id', 'service_graph_name', 'ingress_node','egress_node','status','started_at',
+    attributes = ['id', 'user_id', 'service_graph_id', 'service_graph_name', 'ingress_domain','egress_domain','status','started_at',
                   'last_update','error','ended']
     id = Column(VARCHAR(64), primary_key=True)
     user_id = Column(VARCHAR(64))
     service_graph_id = Column(VARCHAR(64))
     service_graph_name = Column(VARCHAR(64))
-    ingress_node = Column(VARCHAR(64))
-    egress_node = Column(VARCHAR(64))
+    ingress_domain = Column(VARCHAR(64))
+    egress_domain = Column(VARCHAR(64))
     status = Column(VARCHAR(64))
     started_at = Column(DateTime)
     last_update = Column(DateTime, default=func.now())
@@ -59,21 +59,21 @@ class Session(object):
         with session.begin():
             session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"user_id":user_id})
     
-    def updateSessionNode(self, session_id, ingress_node, egress_node):
+    def updateSessionDomain(self, session_id, ingress_domain, egress_domain):
         '''
         store the session in db
         '''
         session = get_session()  
         with session.begin():
-            session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"last_update":datetime.datetime.now(), "ingress_node":ingress_node, "egress_node": egress_node})
+            session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"last_update":datetime.datetime.now(), "ingress_domain":ingress_domain, "egress_domain": egress_domain})
     
-    def updateSession(self, session_id, ingress_node, egress_node, status):
+    def updateSession(self, session_id, ingress_domain, egress_domain, status):
         '''
         store the session in db
         '''
         session = get_session()  
         with session.begin():
-            session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"last_update":datetime.datetime.now(), "ingress_node":ingress_node, "egress_node": egress_node, 'status':status})
+            session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"last_update":datetime.datetime.now(), "ingress_node":ingress_domain, "egress_node": egress_domain, 'status':status})
                 
     '''   
     def update_session(self, service_graph_id, profile, infrastructure):
@@ -166,24 +166,24 @@ class Session(object):
         return session.query(SessionModel.service_graph_id, SessionModel.service_graph_name).filter_by(id = session_id).one()
         
         
-    def checkEgressNode(self, node, profile):
+    def checkEgressDomain(self, domain, profile):
         """
         Return False if the only ingress point in the node
         is that that we are deleting
         """
         session = get_session()
-        egs = session.query(SessionModel).filter_by(egress_node = node).filter(not_(Session.profile.contains(profile))).all()
+        egs = session.query(SessionModel).filter_by(egress_domain = domain).filter(not_(Session.profile.contains(profile))).all()
         if egs is not None and len(egs) == 0:
             return False
         return True 
 
-    def checkIngressNode(self, node, profile):
+    def checkIngressDomain(self, domain, profile):
         """
         Return False if the only ingress point in the node
         is that that we are deleting
         """
         session = get_session()
-        ings = session.query(SessionModel).filter_by(ingress_node = node).filter(not_(Session.profile.contains(profile))).all()
+        ings = session.query(SessionModel).filter_by(ingress_domain = domain).filter(not_(Session.profile.contains(profile))).all()
         if ings is not None and len(ings) == 0:
             return False
         return True
