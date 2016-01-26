@@ -6,7 +6,7 @@
 *.pydevproject
 *.DS_Store
 .DS_Store
-
+.settings
 orchestrator-core/.metadata/
 orchestrator-core/doubledecker/*
 FrogOrchestrator.log

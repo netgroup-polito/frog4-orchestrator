@@ -4,12 +4,12 @@ Created on Oct 20, 2015
 @author: fabiomignini
 '''
 import logging, json, requests, uuid, os, inspect
-from nffg_library.nffg import VNF, Port
+from nffg_library.nffg import VNF, Port, EndPoint, FlowRule
 from vnf_template_library.template import Template
 from vnf_template_library.validator import ValidateTemplate
 from orchestrator_core.config import Configuration
 from nffg_library.validator import ValidateNF_FG
-from nffg_library.nffg import NF_FG
+from nffg_library.nffg import NF_FG, Match, Action
 
 TEMPLATE_SOURCE = Configuration().TEMPLATE_SOURCE
 TEMPLATE_PATH = Configuration().TEMPLATE_PATH
@@ -179,4 +179,23 @@ class NFFG_Manager(object):
         # Delete the previous switches and their flow-rules
         self.nffg.vnfs.remove(switch1)
         self.nffg.vnfs.remove(switch2)
+        
+    def addEndpointsCoupleAndFlowrules(self, endpoint_id):
+        endpoint_1 = EndPoint(_id = str(endpoint_id)+"_1")
+        endpoint_2 = EndPoint(_id = str(endpoint_id)+"_2")
+        flowrule_1 = FlowRule()                  
+        flowrule_1.id = endpoint_1.id
+        flowrule_1.match = Match(port_in="endpoint:"+endpoint_1.id)
+        flowrule_1.actions = []
+        flowrule_1.actions.append(Action(output="endpoint:"+endpoint_2.id))
+        flowrule_2 = FlowRule()                  
+        flowrule_2.id = endpoint_2.id
+        flowrule_2.match = Match(port_in="endpoint:"+endpoint_2.id)
+        flowrule_2.actions = []
+        flowrule_2.actions.append(Action(output="endpoint:"+endpoint_1.id))
+        self.nffg.addEndPoint(endpoint_1)
+        self.nffg.addEndPoint(endpoint_2)
+        self.nffg.addFlowRule(flowrule_1)
+        self.nffg.addFlowRule(flowrule_2)
+        
     
