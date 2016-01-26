@@ -42,7 +42,7 @@ class Scheduler(object):
                     raise GraphError("Domains information are not present, so it's not possible to split and deploy the graph according to the domain tags you provided")
                 for domain, elements in domains_dict.items():
                     if Domain().getDomainFromName(domain).id not in domains_info:
-                        raise GraphError("At least one domain that you specified in the NF-FG has not sent domains information, so it's not possible to split and deploy the graph")
+                        raise GraphError("Domain " + domain + " that you specified in the NF-FG has not sent domains information, so it's not possible to split and deploy the graph")
                     domain_elements.append(elements)
                     
                 nffg1, nffg2 = nffg.split(domain_elements[0], domain_elements[1])
@@ -171,7 +171,6 @@ class Scheduler(object):
                 i = i+1
             else:
                 raise TypeError("Only DirectLink, Vlan and Gre characterizations are supported")
-            #i=i+1
         #print(nffg1.getJSON())
         #print(nffg2.getJSON())    
              

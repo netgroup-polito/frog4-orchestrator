@@ -180,16 +180,18 @@ class NFFG_Manager(object):
         self.nffg.vnfs.remove(switch1)
         self.nffg.vnfs.remove(switch2)
         
-    def addEndpointsCoupleAndFlowrules(self, endpoint_id):
+    def addEndpointsCoupleAndFlowrules(self, endpoint_id, flowrule_priority=10):
         endpoint_1 = EndPoint(_id = str(endpoint_id)+"_1")
         endpoint_2 = EndPoint(_id = str(endpoint_id)+"_2")
         flowrule_1 = FlowRule()                  
         flowrule_1.id = endpoint_1.id
+        flowrule_1.priority = flowrule_priority
         flowrule_1.match = Match(port_in="endpoint:"+endpoint_1.id)
         flowrule_1.actions = []
         flowrule_1.actions.append(Action(output="endpoint:"+endpoint_2.id))
         flowrule_2 = FlowRule()                  
         flowrule_2.id = endpoint_2.id
+        flowrule_2.priority = flowrule_priority
         flowrule_2.match = Match(port_in="endpoint:"+endpoint_2.id)
         flowrule_2.actions = []
         flowrule_2.actions.append(Action(output="endpoint:"+endpoint_1.id))
