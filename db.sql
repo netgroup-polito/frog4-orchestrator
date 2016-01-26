@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generato il: Gen 18, 2016 alle 16:10
--- Versione del server: 5.5.44-0ubuntu0.14.04.1
--- Versione PHP: 5.5.9-1ubuntu4.12
+-- Generato il: Gen 26, 2016 alle 16:59
+-- Versione del server: 5.5.46-0ubuntu0.14.04.2
+-- Versione PHP: 5.5.9-1ubuntu4.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -123,8 +123,8 @@ CREATE TABLE IF NOT EXISTS `session` (
   `user_id` varchar(64) DEFAULT NULL,
   `service_graph_id` varchar(64) NOT NULL,
   `service_graph_name` varchar(64) NOT NULL,
-  `ingress_node` varchar(64) DEFAULT NULL,
-  `egress_node` varchar(64) DEFAULT NULL,
+  `ingress_domain` varchar(64) DEFAULT NULL,
+  `egress_domain` varchar(64) DEFAULT NULL,
   `status` varchar(64) NOT NULL,
   `started_at` datetime DEFAULT NULL,
   `last_update` datetime DEFAULT NULL,
