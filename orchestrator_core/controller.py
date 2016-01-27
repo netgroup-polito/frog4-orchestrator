@@ -43,11 +43,12 @@ class UpperLayerOrchestratorController(object):
             raise NoResultFound()
         # If the graph has been split, we need to rebuild the original nffg
         if len(instantiated_nffgs) == 2:
-            return instantiated_nffgs[0].join(instantiated_nffgs[1]).getJSON()
+            instantiated_nffgs[0].join(instantiated_nffgs[1])
         if len(instantiated_nffgs) == 3:
             # Second domain is discarded because not present in the original nffg
-            return instantiated_nffgs[0].join(instantiated_nffgs[2]).getJSON()        
-            
+            instantiated_nffgs[0].join(instantiated_nffgs[2])
+       
+        instantiated_nffgs[0].id = str(nffg_id)
         return instantiated_nffgs[0].getJSON()
     
     def delete(self, nffg_id):        

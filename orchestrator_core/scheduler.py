@@ -332,7 +332,7 @@ class Scheduler(object):
         endp_and_vnf = nffg.end_points + nffg.vnfs
         for element in endp_and_vnf:
             if element.domain is None:
-                raise GraphError ("All endpoints and VNFs must have the domain field set")
+                raise GraphError ("Domain has to be set on the root of the NF-FG or all endpoints and VNFs must have the domain field set")
             if element.domain not in domains_dict:
                 domains_dict[element.domain] = []
             domains_dict[element.domain].append(element)
