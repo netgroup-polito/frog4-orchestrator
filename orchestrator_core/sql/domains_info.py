@@ -14,6 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 import logging
 from orchestrator_core.sql.domain import DomainModel
+from builtins import str
 
 Base = declarative_base()
 sqlserver = Configuration().CONNECTION
@@ -31,10 +32,11 @@ class DomainsInformationModel(Base):
     
 class DomainsVlanModel(Base):    
     __tablename__ = 'domain_vlan'
-    attributes = ['id', 'domain_info_id','vlan']
+    attributes = ['id', 'domain_info_id','vlan_start', 'vlan_end']
     id = Column(Integer, primary_key=True)
     domain_info_id = Column(Integer)
-    vlan = Column(Integer)
+    vlan_start = Column(Integer)
+    vlan_end = Column(Integer)
     
 class DomainsGreModel(Base):    
     __tablename__ = 'domain_gre'
@@ -83,7 +85,8 @@ class DomainInformation(object):
                 if intf.vlan is True:
                     vlan_refs = session.query(DomainsVlanModel).filter_by(domain_info_id=domain_ref.id).all()
                     for vlan_ref in vlan_refs:
-                        intf.addVlan(vlan_ref.vlan)
+                        for vlan_id in range(vlan_ref.vlan_start, vlan_ref.vlan_end+1):
+                            intf.addVlan(vlan_id)
                         
                 neighbor_refs = session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).all()
                 for neighbor_ref in neighbor_refs:
@@ -130,8 +133,14 @@ class DomainInformation(object):
                     gre_ref = DomainsGreModel(id=self.gre_id, name=gre_tunnel.name, domain_info_id=self.info_id, local_ip=gre_tunnel.local_ip, remote_ip=gre_tunnel.remote_ip, gre_key=gre_tunnel.gre_key)
                     session.add(gre_ref)
                     self.gre_id = self.gre_id + 1
-                for vlan in interface.vlans_used:
-                    vlan_ref = DomainsVlanModel(id=self.vlan_id, domain_info_id=self.info_id, vlan=vlan)
+                for vlan in interface.vlans_free:
+                    if type(vlan) is str and ".." in vlan:
+                        tmp = vlan.split("..")
+                        lower_vlan = tmp[0]
+                        upper_vlan = tmp[1]
+                        vlan_ref = DomainsVlanModel(id=self.vlan_id, domain_info_id=self.info_id, vlan_start=lower_vlan, vlan_end=upper_vlan)
+                    else:
+                        vlan_ref = DomainsVlanModel(id=self.vlan_id, domain_info_id=self.info_id, vlan_start=vlan, vlan_end=vlan)
                     session.add(vlan_ref)
                     self.vlan_id = self.vlan_id + 1
                     

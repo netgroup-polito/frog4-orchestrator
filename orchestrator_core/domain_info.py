@@ -33,7 +33,7 @@ class DomainInfo(object):
         
 class Interface(object):
     # Subinterfaces are ignored
-    def __init__(self, node=None, name=None, _type=None, enabled=None, neighbors=None, gre=False, gre_tunnels=None, vlan=False, vlans_used=None):
+    def __init__(self, node=None, name=None, _type=None, enabled=None, neighbors=None, gre=False, gre_tunnels=None, vlan=False, vlans_free=None):
         # Interface is composed of node and name
         self.node = node
         self.name = name
@@ -42,7 +42,7 @@ class Interface(object):
         self.gre = gre
         self.gre_tunnels = gre_tunnels or []
         self.vlan = vlan   
-        self.vlans_used = vlans_used or [] 
+        self.vlans_free = vlans_free or [] 
         self.neighbors = neighbors or []
         
     def parseDict(self, interface_dict):
@@ -76,7 +76,7 @@ class Interface(object):
                 vlan_config = interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']['openconfig-vlan:config']
                 if vlan_config['interface-mode']=="TRUNK":
                     for vlan in vlan_config['trunk-vlans']:
-                        self.vlans_used.append(vlan)
+                        self.vlans_free.append(vlan)
                         
     def addNeighbor(self, neighbor):
         if type(neighbor) is Neighbor:
@@ -91,7 +91,7 @@ class Interface(object):
             raise TypeError("Tried to add a gre tunnel with a wrong type. Expected GreTunnel, found "+type(gre_tunnel))
         
     def addVlan(self, vlan):
-        self.vlans_used.append(vlan)
+        self.vlans_free.append(vlan)
         
 class Neighbor(object):
     def __init__(self, domain_name=None, node=None, interface=None):

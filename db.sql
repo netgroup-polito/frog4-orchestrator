@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generato il: Gen 26, 2016 alle 16:59
+-- Generato il: Gen 29, 2016 alle 18:17
 -- Versione del server: 5.5.46-0ubuntu0.14.04.2
 -- Versione PHP: 5.5.9-1ubuntu4.14
 
@@ -93,7 +93,8 @@ CREATE TABLE IF NOT EXISTS `domain_neighbor` (
 CREATE TABLE IF NOT EXISTS `domain_vlan` (
   `id` int(64) NOT NULL,
   `domain_info_id` int(64) NOT NULL,
-  `vlan` int(11) NOT NULL,
+  `vlan_start` int(11) NOT NULL,
+  `vlan_end` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

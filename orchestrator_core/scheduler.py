@@ -219,12 +219,13 @@ class Scheduler(object):
                         if remote_interface is not None and self.isNeighbor(remote_interface, Domain().getDomain(domain_id_1).name, interface) is True:
                             if interface.vlan is True and remote_interface.vlan is True:
                                 while matches_found < number_of_links:
-                                    vlan_id = self.findFreeVlanId(interface.vlans_used, remote_interface.vlans_used)
+                                    vlan_id = self.findFreeVlanId(interface.vlans_free, remote_interface.vlans_free)
                                     if vlan_id is not None:
                                         print ("vlan match found")
                                         matches_found = matches_found + 1
                                         characterization.append(Vlan(interface.node, interface.name, domain_1.type, remote_node, remote_interface_name, remote_domain.type, vlan_id))
                                     else:
+                                        logging.debug("vlan id free not found")
                                         break
                                 if matches_found == number_of_links:
                                     break
@@ -269,8 +270,8 @@ class Scheduler(object):
                         middle_nffg.domain = middle_domain.name
                         nffg_manager = NFFG_Manager(middle_nffg)
                         while matches_found < number_of_links:
-                            vlan_id_1 = self.findFreeVlanId(interface.vlans_used, middle_interface_1.vlans_used)
-                            vlan_id_2 = self.findFreeVlanId(middle_interface_2.vlans_used, remote_interface.vlans_used)
+                            vlan_id_1 = self.findFreeVlanId(interface.vlans_free, middle_interface_1.vlans_free)
+                            vlan_id_2 = self.findFreeVlanId(middle_interface_2.vlans_free, remote_interface.vlans_free)
                             if vlan_id_1 is not None and vlan_id_2 is not None:
                                 print ("vlan match through an external domain found")
                                 nffg_manager.addEndpointsCoupleAndFlowrules(matches_found)
@@ -278,6 +279,7 @@ class Scheduler(object):
                                 characterization.append(Vlan(interface.node, interface.name, domain_1.type, middle_interface_1.node, middle_interface_1.name, middle_domain.type, vlan_id_1, partial=1))
                                 characterization.append(Vlan(middle_interface_2.node, middle_interface_2.name, middle_domain.type, remote_interface.node, remote_interface.name, Domain().getDomain(domain_id_2).type, vlan_id_2, partial=2))
                             else:
+                                logging.debug("vlan id free not found")
                                 break
                         if matches_found == number_of_links:
                             break
@@ -343,14 +345,12 @@ class Scheduler(object):
             raise GraphError ("You can't annotate a NF-FG with more than 2 domains")
         return domains_dict
     
-    def findFreeVlanId(self, vlans_used_1, vlans_used_2):
-        vlan_id = 2
-        while (vlan_id < 4095):
-            if vlan_id not in vlans_used_1 and vlan_id not in vlans_used_2:
-                vlans_used_1.append(vlan_id)
-                vlans_used_2.append(vlan_id)
+    def findFreeVlanId(self, vlans_free_1, vlans_free_2):
+        for vlan_id in vlans_free_1:
+            if vlan_id in vlans_free_2:
+                vlans_free_1.remove(vlan_id)
+                vlans_free_2.remove(vlan_id)
                 return vlan_id
-            vlan_id = vlan_id + 1
     """
     def calculateScore(self, characterization):
         #TODO: different score if multiple characterizations over the same interface?
