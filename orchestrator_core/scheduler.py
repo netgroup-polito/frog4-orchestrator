@@ -265,6 +265,7 @@ class Scheduler(object):
                     # TODO: Direct links support?
                     if interface.vlan is True and middle_interface_1.vlan is True and middle_interface_2.vlan is True and remote_interface.vlan is True:
                         middle_nffg = NF_FG()
+                        middle_nffg.name = "Passthrough"
                         middle_nffg.domain = middle_domain.name
                         nffg_manager = NFFG_Manager(middle_nffg)
                         while matches_found < number_of_links:
