@@ -48,8 +48,12 @@ class Configuration(object):
             self._ORCH_PORT = config.get('orchestrator','port')
             self._ORCH_IP = config.get('orchestrator','ip')
             self._ORCH_TIMEOUT = config.get('orchestrator','timeout')
-            self._BROKER_ADDRESS = config.get('orchestrator','broker_address')
-            self._DD_KEYFILE = config.get('orchestrator','dd_keyfile')
+            
+            
+            self._DD_NAME = config.get('doubledecker','dd_name')
+            self._DD_CUSTOMER = config.get('doubledecker','dd_customer')
+            self._BROKER_ADDRESS = config.get('doubledecker','broker_address')
+            self._DD_KEYFILE = config.get('doubledecker','dd_keyfile')
 
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
             self._TEMPLATE_SOURCE = config.get('templates','source')
@@ -61,6 +65,14 @@ class Configuration(object):
     @property
     def ORCH_TIMEOUT(self):
         return self._ORCH_TIMEOUT
+    
+    @property
+    def DD_NAME(self):
+        return self._DD_NAME
+    
+    @property
+    def DD_CUSTOMER(self):
+        return self._DD_CUSTOMER    
     
     @property
     def BROKER_ADDRESS(self):
