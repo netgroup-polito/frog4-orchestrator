@@ -137,10 +137,10 @@ class UpperLayerOrchestratorController(object):
             for new_domain, new_nffg in domain_nffg_dict.items():
                 # If the orchestrator has to connect two graphs in different nodes,
                 # the end-points must be characterized to allow a connection between nodes
-                remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_domain)
+                ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_domain)
             
                 # If needed, update the remote graph
-                self.updateRemoteGraph(remote_nffgs_dict)
+                ##self.updateRemoteGraph(remote_nffgs_dict)
                 
                 if new_domain.id == old_domain.id:
                     Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict)>1)
@@ -190,10 +190,10 @@ class UpperLayerOrchestratorController(object):
                 for domain, nffg in domain_nffg_dict.items():
                     # If the orchestrator has to connect two graphs in different nodes,
                     # the end-points must be characterized to allow a connection between nodes
-                    remote_nffgs_dict = self.analizeRemoteConnection(nffg, domain)
+                    ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, domain)
                     
                     # If needed, update the remote graph
-                    self.updateRemoteGraph(remote_nffgs_dict)
+                    ##self.updateRemoteGraph(remote_nffgs_dict)
                     
                     # Save the graph in the database, with the state initializing
                     Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict)>1)
@@ -245,7 +245,7 @@ class UpperLayerOrchestratorController(object):
         manager.mergeUselessVNFs()   
         
         # Change the remote node ID in remote_endpoint_id and in prepare_connection_to_remote_endpoint_id to the internal value
-        self.convertRemoteNodeID(nffg)
+        ##self.convertRemoteNodeID(nffg)
         
     def checkNFFGStatus(self, service_graph_id):
         # TODO: Check if the graph exists, if true
