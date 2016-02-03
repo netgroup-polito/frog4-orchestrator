@@ -187,13 +187,11 @@ class NFFG_Manager(object):
         flowrule_1.id = endpoint_1.id
         flowrule_1.priority = flowrule_priority
         flowrule_1.match = Match(port_in="endpoint:"+endpoint_1.id)
-        flowrule_1.actions = []
         flowrule_1.actions.append(Action(output="endpoint:"+endpoint_2.id))
         flowrule_2 = FlowRule()                  
         flowrule_2.id = endpoint_2.id
         flowrule_2.priority = flowrule_priority
         flowrule_2.match = Match(port_in="endpoint:"+endpoint_2.id)
-        flowrule_2.actions = []
         flowrule_2.actions.append(Action(output="endpoint:"+endpoint_1.id))
         self.nffg.addEndPoint(endpoint_1)
         self.nffg.addEndPoint(endpoint_2)
