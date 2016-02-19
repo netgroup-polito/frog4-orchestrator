@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generato il: Gen 29, 2016 alle 18:17
+-- Generato il: Feb 19, 2016 alle 16:08
 -- Versione del server: 5.5.46-0ubuntu0.14.04.2
 -- Versione PHP: 5.5.9-1ubuntu4.14
 
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `domain_vlan` (
 CREATE TABLE IF NOT EXISTS `graph` (
   `id` int(64) NOT NULL,
   `session_id` varchar(64) NOT NULL,
-  `domain_id` varchar(64) DEFAULT NULL,
+  `domain_id` int(11) DEFAULT NULL,
   `partial` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `service_graph_id` (`session_id`,`domain_id`)

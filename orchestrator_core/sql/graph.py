@@ -24,7 +24,7 @@ class GraphModel(Base):
     attributes = ['id', 'session_id','domain_id','partial']
     id = Column(Integer, primary_key=True)
     session_id = Column(VARCHAR(64))
-    domain_id = Column(VARCHAR(64))
+    domain_id = Column(Integer)
     partial = Column(Boolean())
 
 class Graph(object):
