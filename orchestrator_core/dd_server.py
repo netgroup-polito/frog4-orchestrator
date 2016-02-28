@@ -1,4 +1,7 @@
-from .doubledecker.clientSafe import ClientSafe
+try:
+    from .doubledecker.clientSafe import ClientSafe
+except ImportError:
+    from doubledecker.clientSafe import ClientSafe
 from .domain_info import DomainInfo
 from .sql.domains_info import DomainInformation
 from .sql.domain import Domain
