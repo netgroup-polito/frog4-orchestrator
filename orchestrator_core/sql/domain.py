@@ -50,7 +50,7 @@ class Domain(object):
     def updateToken(self, domain_id, token):
         session = get_session()
         with session.begin():
-            logging.debug(session.query(DomainModel).filter_by(id = domain_id).update({"token":token}))
+            session.query(DomainModel).filter_by(id = domain_id).update({"token":token})
     
     def addDomain(self, domain_name, domain_type, domain_ip, domain_port, token=None, update=False):
         session = get_session()

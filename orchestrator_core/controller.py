@@ -139,7 +139,6 @@ class UpperLayerOrchestratorController(object):
                 self.convertRemoteGraphID(new_nffg, new_domain)
                 # If the orchestrator has to connect two graphs in different nodes,
                 # the end-points must be characterized to allow a connection between nodes
-                
                 ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_domain)
             
                 # If needed, update the remote graph
