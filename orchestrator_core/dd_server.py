@@ -5,11 +5,9 @@ except ImportError:
 
 import json
 import logging
-
 from .domain_info import DomainInfo
 from .sql.domain import Domain
 from .sql.domains_info import DomainInformation
-
 
 class DD_Server(ClientSafe):
     def __init__(self, name, dealerurl, customer, keyfile):
@@ -22,7 +20,7 @@ class DD_Server(ClientSafe):
         # when a new domain information is published, it is parsed and stored on db
         msgstr = "PUB %s from %s: %s" % (str(topic), str(src), str(msg))
         print(msgstr)
-        # TODO: validation of msg needed
+        #TODO: validation of msg needed
         try:
             domain = src.decode("utf-8")
             domain_ip = domain.split(':')[0]
@@ -42,7 +40,7 @@ class DD_Server(ClientSafe):
         except Exception as ex:
             logging.exception(ex)
 
-    def on_reg(self, **kwargs):
+    def on_reg(self):
         self.subscribe("frog:domain-description", "/0/0/0/")
 
     def on_discon(self):

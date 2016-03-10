@@ -30,7 +30,7 @@ elif conf.VERBOSE is True:
 else:
     log_level = logging.WARNING
 
-# format = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
+#format = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
 log_format = '%(asctime)s %(levelname)s %(message)s - %(filename)s'
 
 logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%m/%d/%Y %I:%M:%S %p')
@@ -54,7 +54,7 @@ app.add_route('/template/{image_id}', template)
 app.add_route('/template/location/{template_location}', template_location)
 app.add_route('/yang/{image_id}', yang)
 
-# start the dd orchestrator client to recieve information about new domains
+# start the dd orchestrator client to receive information about new domains
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
 dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
 thread = Thread(target=dd_server.start)
