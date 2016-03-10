@@ -4,12 +4,15 @@ Created on Oct 1, 2014
 @author: fabiomignini
 '''
 
-import falcon, logging
+import falcon
+import logging
+import os
+import inspect
+
 from threading import Thread
 from orchestrator_core.config import Configuration
 from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus
 from orchestrator_core.dd_server import DD_Server
-import os, inspect
 
 conf = Configuration()
 
@@ -27,18 +30,16 @@ elif conf.VERBOSE is True:
 else:
     log_level = logging.WARNING
 
-#format = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
+# format = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
 log_format = '%(asctime)s %(levelname)s %(message)s - %(filename)s'
 
-logging.basicConfig( filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%m/%d/%Y %I:%M:%S %p')
 logging.debug("Orchestrator Starting")
 print("Welcome to the UN orchestrator_core")
-    
 
 # Falcon starts
 app = falcon.API()
 logging.info("Starting Orchestration Server application")
-
 
 upper_layer_API = UpperLayerOrchestrator()
 nffg_status = NFFGStatus()
@@ -53,11 +54,10 @@ app.add_route('/template/{image_id}', template)
 app.add_route('/template/location/{template_location}', template_location)
 app.add_route('/yang/{image_id}', yang)
 
-
-base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
-dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE) 
+# start the dd orchestrator client to recieve information about new domains
+base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
 thread = Thread(target=dd_server.start)
 thread.start()
 
 logging.info("Falcon Successfully started")
-
