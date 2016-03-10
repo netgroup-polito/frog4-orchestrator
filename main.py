@@ -54,7 +54,7 @@ app.add_route('/template/{image_id}', template)
 app.add_route('/template/location/{template_location}', template_location)
 app.add_route('/yang/{image_id}', yang)
 
-# start the dd orchestrator client to receive information about new domains
+# start the dd client to receive information about domains
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
 dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
 thread = Thread(target=dd_server.start)
