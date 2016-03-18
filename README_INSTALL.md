@@ -20,7 +20,7 @@ The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDe
 	
 		$ git clone https://github.com/Acreo/DoubleDecker
 		$ cd DobuleDecker/python/
-Now you can follow the instruction provided in the cloned folder. You can choose to install it in your system or simply copy the doubledecker folder in the [orchestrator_core](orchestrator_core) folder with the following command:
+Now you can follow the instruction provided in that folder. You can choose to install it in your system or simply copy the doubledecker folder in the [orchestrator_core](orchestrator_core) folder with the following command:
 
 		cp -R doubledecker/ {orchestrator_root}/orchestrator_core/
 In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
