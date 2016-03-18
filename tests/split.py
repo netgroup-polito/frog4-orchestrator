@@ -14,27 +14,19 @@ from nffg_library.validator import ValidateNF_FG
 #in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo0_AR.json","r")
 #in_file = open("/home/stack/Documents/LiClipse Workspace/frog4/grafo1.json","r")
 #in_file = open("../../frog4/grafo2.json","r")
-#in_file = open("../../frog4/grafo3_4vnf.json","r")
-in_file = open("../../frog4/jolnet_graphHe_3endp.json","r")
+in_file = open("../../frog4/grafo3_4vnf.json","r")
+in_file = open("../../frog4/grafo_ivano.json","r")
+in_file = open("../../frog4/UNs_jolnet/candidate.json","r")
 
 
 nf_fg_file = json.loads(in_file.read())
+#nf_fg_file = {"forwarding-graph":{"id":"2","name":"Forwarding graph","VNFs":[{"vnf_template":"example.json","id":"00000001","name":"Client function","ports":[{"id":"inout:0","name":"data-port"}],"domain":"bella"}],"end-points":[{"id":"00000001","name":"user","type":"interface","interface":{"node-id":"10.1.1.1","interface":"eth0"},"domain":"bella"}],"big-switch":{"flow-rules":[{"id":"000000001","priority":2,"match":{"port_in":"endpoint:00000001"},"actions":[{"output_to_port":"vnf:00000001:inout:0"}]},{"id":"000000002","priority":1,"match":{"port_in":"vnf:00000001:inout:0"},"actions":[{"output_to_port":"endpoint:00000001"}]}]}}}
 
 ValidateNF_FG().validate(nf_fg_file)
 nffg = NF_FG()
 nffg.parseDict(nf_fg_file)
 print(nffg.getJSON())
 #nffg1, nffg2 = nffg.split(nffg.end_points, nffg.vnfs) # for graph 0,2
-left = []
-for endpoint in nffg.end_points:
-    if endpoint.type == 'interface' and endpoint.name == "user":
-        splittable = True
-        left.append(endpoint)
-        right = nffg.end_points + nffg.vnfs
-        right.remove(endpoint)
-        break
-nffg1, nffg2 = nffg.split(left, right)
-
 
 # 3
 """
@@ -42,15 +34,15 @@ left = []
 left.append(nffg.end_points[0])
 nffg1, nffg2 = nffg.split(left, nffg.vnfs) # for graph 3
 """
-"""
+
 left = []
-left.append(nffg.vnfs[0])
-left.append(nffg.vnfs[1])
+left.append(nffg.end_points[0])
+left.append(nffg.end_points[1])
+left.append(nffg.end_points[2])
 right= []
-right.append(nffg.vnfs[2])
-right.append(nffg.vnfs[3])
+right.append(nffg.vnfs[0])
 nffg1, nffg2 = nffg.split(left, right) # for graph 3
-"""
+
 
 """
 left = []
