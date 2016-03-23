@@ -28,15 +28,29 @@ class Scheduler(object):
             nffg_list.append(nffg)
             return domain_list, nffg_list
         else:
-            # Determine if all VNFs and endpoints are marked with "domain" and the domains number must be 1 or 2
             domains_dict = self.checkElementsAnnotations(nffg)
             domain_names = list(domains_dict.keys())
+            if len(domains_dict) == 0:
+                # Elements are not tagged with the domain field. If there is only one domain orchestrator send the nffg to it 
+                domains_info = DomainInformation().get_domain_info()
+                if len(domains_info) == 1:
+                    domain_id = list(domains_info.keys())[0]
+                    domain = Domain().getDomain(domain_id)
+                    domain_list.append(domain)
+                    nffg_list.append(nffg)
+                    return domain_list, nffg_list
+                else:
+                    raise GraphError("The NF-FG does not contain info related to any domain and there is not a suitable domain available")
             if len(domains_dict) == 1:
+                # All elements are tagged with the same domain. This the same as specifying the domain in the root of the NF-FG
                 domain = Domain().getDomainFromName(domain_names[0])
                 domain_list.append(domain)
                 nffg_list.append(nffg)
                 return domain_list, nffg_list
             else:
+                # This limitation should be removed in the next future
+                if len(domains_dict) > 2:
+                    raise GraphError ("You can't annotate a NF-FG with more than 2 domains")
                 domain_elements = []
                 domains_info = DomainInformation().get_domain_info()
                 if not domains_info:
@@ -333,16 +347,16 @@ class Scheduler(object):
     def checkElementsAnnotations(self, nffg):
         domains_dict = OrderedDict()
         endp_and_vnf = nffg.end_points + nffg.vnfs
+        partial_annotation = False
         for element in endp_and_vnf:
             if element.domain is None:
-                raise GraphError ("Domain has to be set on the root of the NF-FG or all endpoints and VNFs must have the domain field set")
-            if element.domain not in domains_dict:
-                domains_dict[element.domain] = []
-            domains_dict[element.domain].append(element)
-        if not domains_dict:
-            raise GraphError ("Endpoints and VNFs must have the domain field set")
-        if len(domains_dict) > 2:
-            raise GraphError ("You can't annotate a NF-FG with more than 2 domains")
+                partial_annotation = True
+            else:
+                if element.domain not in domains_dict:
+                    domains_dict[element.domain] = []
+                domains_dict[element.domain].append(element)
+        if domains_dict and partial_annotation:
+            raise GraphError ("Not all elements have the domain field set")
         return domains_dict
     
     def findFreeVlanId(self, vlans_free_1, vlans_free_2):
