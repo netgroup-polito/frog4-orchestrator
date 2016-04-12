@@ -48,6 +48,7 @@ class Configuration(object):
             self._ORCH_PORT = config.get('orchestrator','port')
             self._ORCH_IP = config.get('orchestrator','ip')
             self._ORCH_TIMEOUT = config.get('orchestrator','timeout')
+            self._DEFAULT_DOMAIN = config.get('orchestrator','default_domain')
             
             
             self._DD_NAME = config.get('doubledecker','dd_name')
@@ -65,7 +66,11 @@ class Configuration(object):
     @property
     def ORCH_TIMEOUT(self):
         return self._ORCH_TIMEOUT
-    
+
+    @property
+    def DEFAULT_DOMAIN(self):
+        return self._DEFAULT_DOMAIN
+
     @property
     def DD_NAME(self):
         return self._DD_NAME

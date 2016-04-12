@@ -4,6 +4,7 @@ Created on Oct 1, 2014
 @author: fabiomignini
 @author: stefanopetrangeli
 '''
+from orchestrator_core.config import Configuration
 from orchestrator_core.exception import DomainNotFound, GraphError
 from orchestrator_core.sql.graph import Graph
 from orchestrator_core.sql.domain import Domain
@@ -13,6 +14,8 @@ import logging
 from collections import OrderedDict
 from nffg_library.nffg import NF_FG
 from orchestrator_core.nffg_manager import NFFG_Manager
+
+DEFAULT_DOMAIN = Configuration().DEFAULT_DOMAIN
 
 class Scheduler(object):
     def __init__(self):
@@ -31,16 +34,11 @@ class Scheduler(object):
             domains_dict = self.checkElementsAnnotations(nffg)
             domain_names = list(domains_dict.keys())
             if len(domains_dict) == 0:
-                # Elements are not tagged with the domain field. If there is only one domain orchestrator send the nffg to it 
-                domains_info = DomainInformation().get_domain_info()
-                if len(domains_info) == 1:
-                    domain_id = list(domains_info.keys())[0]
-                    domain = Domain().getDomain(domain_id)
-                    domain_list.append(domain)
-                    nffg_list.append(nffg)
-                    return domain_list, nffg_list
-                else:
-                    raise GraphError("The NF-FG does not contain info related to any domain and there is not a suitable domain available")
+                # Elements are not tagged with the domain field. Send the graph to the default domain
+                domain = Domain().getDomainFromName(DEFAULT_DOMAIN)
+                domain_list.append(domain)
+                nffg_list.append(nffg)
+                return domain_list, nffg_list
             if len(domains_dict) == 1:
                 # All elements are tagged with the same domain. This the same as specifying the domain in the root of the NF-FG
                 domain = Domain().getDomainFromName(domain_names[0])
