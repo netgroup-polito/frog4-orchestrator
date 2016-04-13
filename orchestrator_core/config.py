@@ -48,7 +48,10 @@ class Configuration(object):
             self._ORCH_PORT = config.get('orchestrator','port')
             self._ORCH_IP = config.get('orchestrator','ip')
             self._ORCH_TIMEOUT = config.get('orchestrator','timeout')
-            self._DEFAULT_DOMAIN = config.get('orchestrator','default_domain')
+            if config.has_option('orchestrator', 'default_domain'):
+                self._DEFAULT_DOMAIN = config.get('orchestrator','default_domain')
+            else:
+                self._DEFAULT_DOMAIN = None
             
             
             self._DD_NAME = config.get('doubledecker','dd_name')

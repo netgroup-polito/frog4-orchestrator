@@ -34,11 +34,14 @@ class Scheduler(object):
             domains_dict = self.checkElementsAnnotations(nffg)
             domain_names = list(domains_dict.keys())
             if len(domains_dict) == 0:
-                # Elements are not tagged with the domain field. Send the graph to the default domain
-                domain = Domain().getDomainFromName(DEFAULT_DOMAIN)
-                domain_list.append(domain)
-                nffg_list.append(nffg)
-                return domain_list, nffg_list
+                # Elements are not tagged with the domain field. Send the graph to the default domain if specified
+                if DEFAULT_DOMAIN is not None:
+                    domain = Domain().getDomainFromName(DEFAULT_DOMAIN)
+                    domain_list.append(domain)
+                    nffg_list.append(nffg)
+                    return domain_list, nffg_list
+                else:
+                    raise GraphError ("Unable to deploy the graph: neither graph nor its elements are associated to a domain and DEFAULT_DOMAIN is not specified in the configuration file")
             if len(domains_dict) == 1:
                 # All elements are tagged with the same domain. This the same as specifying the domain in the root of the NF-FG
                 domain = Domain().getDomainFromName(domain_names[0])
