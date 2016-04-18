@@ -36,7 +36,8 @@ class TemplateAPILocation(object):
             UserAuthentication().authenticateUserFromRESTRequest(request)
             response.body = json.dumps(NFFG_Manager(None).getTemplate(template_location).getDict())
         except (unauthorizedRequest, UserNotFound) as err:
-            logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
+            if request.get_header("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
             raise falcon.HTTPUnauthorized("Unauthorized", err.message)
         except Exception as ex:
             logging.exception(ex)
@@ -68,7 +69,8 @@ class NFFGStatus(object):
             logging.exception(err.message)
             raise falcon.HTTPInternalServerError('ManifestValidationError',err.message)
         except (unauthorizedRequest, UserNotFound) as err:
-            logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
+            if request.get_header("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
             raise falcon.HTTPUnauthorized("Unauthorized", err.message)
         except Exception as ex:
             logging.exception(ex)
@@ -102,7 +104,8 @@ class UpperLayerOrchestrator(object):
             logging.exception(err.message)
             raise falcon.HTTPInternalServerError('ManifestValidationError',err.message)
         except (unauthorizedRequest, UserNotFound) as err:
-            logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
+            if request.get_header("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
             raise falcon.HTTPUnauthorized("Unauthorized", err.message)
         except Exception as ex:
             logging.exception(ex)
@@ -136,7 +139,8 @@ class UpperLayerOrchestrator(object):
             logging.exception(err.message)
             raise falcon.HTTPInternalServerError('ManifestValidationError',err.message)
         except (unauthorizedRequest, UserNotFound) as err:
-            logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
+            if request.get_header("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
             raise falcon.HTTPUnauthorized("Unauthorized", err.message)
         except Exception as ex:
             logging.exception(ex)
@@ -163,7 +167,8 @@ class UpperLayerOrchestrator(object):
             logging.exception(err)
             raise falcon.HTTPBadRequest("Bad Request", err.description)
         except (unauthorizedRequest, UserNotFound) as err:
-            logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
+            if request.get_header("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
             raise falcon.HTTPUnauthorized("Unauthorized", err.message)
         except requests.HTTPError as err:
             logging.exception(err)

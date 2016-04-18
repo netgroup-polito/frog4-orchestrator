@@ -36,7 +36,7 @@ class UserAuthentication(object):
     
     def authenticateUserFromCredentials(self, username, password, tenant):
         if username is None or password is None or tenant is None:
-                raise unauthorizedRequest('Authentication credentials required')
+            raise unauthorizedRequest('Authentication credentials required')
         
         user = User().getUser(username)
         if user.password == password:
