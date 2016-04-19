@@ -220,7 +220,7 @@ class Scheduler(object):
         #Vlan
         for interface in domain_1.interfaces: 
             for neighbor in interface.neighbors:
-                if neighbor.domain_name != "internet" and neighbor.node is not None and neighbor.interface is not None:
+                if neighbor.domain_name != "internet" and neighbor.interface is not None:
                     #Search for direct connections
                     try:
                         remote_domain = Domain().getDomainFromName(neighbor.domain_name)
@@ -250,7 +250,7 @@ class Scheduler(object):
         if matches_found < number_of_links:
             for interface in domain_1.interfaces:
                 for neighbor in interface.neighbors: 
-                    if neighbor.domain_name != "internet" and neighbor.node is not None and neighbor.interface is not None:
+                    if neighbor.domain_name != "internet" and neighbor.interface is not None:
                         #Search for direct connections
                         try:
                             remote_domain = Domain().getDomainFromName(neighbor.domain_name)
@@ -408,7 +408,7 @@ class Scheduler(object):
         If the connection is found returns the domain in the middle, middle_interface_1 that is the interface connected to domain_id_1, middle_interface_2 that is the interface connected to domain_id_2 and remote_interface of the domain_id_2
         '''
         for neighbor_1 in interface.neighbors: 
-            if neighbor_1.domain_name != "internet" and neighbor_1.node is not None and neighbor_1.interface is not None:
+            if neighbor_1.domain_name != "internet" and neighbor_1.interface is not None:
                 try:
                     middle_domain = Domain().getDomainFromName(neighbor_1.domain_name)
                 except DomainNotFound:
@@ -423,7 +423,7 @@ class Scheduler(object):
                     # First half found
                     for middle_interface_2 in middle_domain_info.interfaces:
                         for neighbor_2 in middle_interface_2.neighbors:
-                            if neighbor_2.domain_name != "internet" and neighbor_2.node is not None and neighbor_2.interface is not None:
+                            if neighbor_2.domain_name != "internet" and neighbor_2.interface is not None:
                                 try:
                                     remote_domain = Domain().getDomainFromName(neighbor_2.domain_name)
                                 except DomainNotFound:

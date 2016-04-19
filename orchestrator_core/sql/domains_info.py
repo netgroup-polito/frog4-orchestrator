@@ -119,7 +119,7 @@ class DomainInformation(object):
                         session.query(DomainsGreModel).filter_by(domain_info_id=domain_ref.id).delete()
                         session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).delete()
                 except NoResultFound:
-                    pass                        
+                    pass
             self.id_generator(domain_info)
             for interface in domain_info.interfaces:
                 info_ref = DomainsInformationModel(id=self.info_id, domain_id=domain_info.domain_id, node=interface.node, interface=interface.name, 
