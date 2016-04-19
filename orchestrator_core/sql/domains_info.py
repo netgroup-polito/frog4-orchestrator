@@ -50,12 +50,13 @@ class DomainsGreModel(Base):
     
 class DomainsNeighborModel(Base):    
     __tablename__ = 'domain_neighbor'
-    attributes = ['id', 'domain_info_id', 'neighbor_domain_name','neighbor_node','neighbor_interface']
+    attributes = ['id', 'domain_info_id', 'neighbor_domain_name','neighbor_node','neighbor_interface','neighbor_domain_type']
     id = Column(Integer, primary_key=True)
     domain_info_id = Column(Integer)
     neighbor_domain_name = Column(VARCHAR(64))  
     neighbor_node = Column(VARCHAR(64))    
-    neighbor_interface = Column(VARCHAR(64))      
+    neighbor_interface = Column(VARCHAR(64))
+    neighbor_domain_type = Column(VARCHAR(64))
     
 class DomainInformation(object):
     def __init__(self):
@@ -90,7 +91,7 @@ class DomainInformation(object):
                         
                 neighbor_refs = session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).all()
                 for neighbor_ref in neighbor_refs:
-                    neighbor = Neighbor(domain_name=neighbor_ref.neighbor_domain_name, node=neighbor_ref.neighbor_node, interface=neighbor_ref.neighbor_interface)
+                    neighbor = Neighbor(domain_name=neighbor_ref.neighbor_domain_name, node=neighbor_ref.neighbor_node, interface=neighbor_ref.neighbor_interface, domain_type=neighbor_ref.neighbor_domain_type)
                     intf.addNeighbor(neighbor)
                        
                 domain_info.addInterface(intf)
@@ -126,7 +127,7 @@ class DomainInformation(object):
                                                    interface_type=interface.type, gre=interface.gre, vlan=interface.vlan)
                 session.add(info_ref)
                 for neighbor in interface.neighbors:
-                    neighbor_ref = DomainsNeighborModel(id=self.neighbor_id, domain_info_id=self.info_id, neighbor_domain_name=neighbor.domain_name, neighbor_node=neighbor.node, neighbor_interface=neighbor.interface)
+                    neighbor_ref = DomainsNeighborModel(id=self.neighbor_id, domain_info_id=self.info_id, neighbor_domain_name=neighbor.domain_name, neighbor_node=neighbor.node, neighbor_interface=neighbor.interface, neighbor_domain_type=neighbor.domain_type)
                     session.add(neighbor_ref)
                     self.neighbor_id = self.neighbor_id + 1                    
                 for gre_tunnel in interface.gre_tunnels:

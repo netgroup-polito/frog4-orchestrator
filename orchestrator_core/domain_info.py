@@ -105,10 +105,11 @@ class Interface(object):
         self.vlans_free.append(vlan)
         
 class Neighbor(object):
-    def __init__(self, domain_name=None, node=None, interface=None):
+    def __init__(self, domain_name=None, node=None, interface=None, domain_type=None):
         self.domain_name = domain_name
         self.node = node
         self.interface = interface
+        self.domain_type = domain_type
         
     def parseDict(self, neighbor_dict):
         self.domain_name = neighbor_dict['domain-name']
@@ -119,6 +120,8 @@ class Neighbor(object):
                 self.interface = tmp.split('/')[1]
             else:
                 self.interface = neighbor_dict['remote-interface']
+        if 'domain-type' in neighbor_dict:
+            self.domain_type = neighbor_dict['domain-type']
     
 class GreTunnel(object):
     def __init__(self, name=None, local_ip=None, remote_ip=None, gre_key=None):

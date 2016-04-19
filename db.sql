@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.10deb1
+-- version 4.4.13.1deb1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generato il: Feb 19, 2016 alle 16:08
--- Versione del server: 5.5.46-0ubuntu0.14.04.2
--- Versione PHP: 5.5.9-1ubuntu4.14
+-- Creato il: Apr 19, 2016 alle 14:03
+-- Versione del server: 5.6.28-0ubuntu0.15.10.1
+-- Versione PHP: 5.6.11-1ubuntu3.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -14,7 +14,7 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `orchestrator`
@@ -32,8 +32,7 @@ CREATE TABLE IF NOT EXISTS `domain` (
   `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `ip` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `port` int(11) NOT NULL,
-  `token` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `token` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -48,8 +47,7 @@ CREATE TABLE IF NOT EXISTS `domain_gre` (
   `domain_info_id` int(64) NOT NULL,
   `local_ip` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `remote_ip` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `gre_key` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `gre_key` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -61,12 +59,11 @@ CREATE TABLE IF NOT EXISTS `domain_gre` (
 CREATE TABLE IF NOT EXISTS `domain_information` (
   `id` int(64) NOT NULL,
   `domain_id` int(11) NOT NULL,
-  `node` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `node` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `interface` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `interface_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `gre` tinyint(1) NOT NULL,
-  `vlan` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`)
+  `vlan` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -81,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `domain_neighbor` (
   `neighbor_domain_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `neighbor_node` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `neighbor_interface` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `neighbor_domain_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -94,8 +91,7 @@ CREATE TABLE IF NOT EXISTS `domain_vlan` (
   `id` int(64) NOT NULL,
   `domain_info_id` int(64) NOT NULL,
   `vlan_start` int(11) NOT NULL,
-  `vlan_end` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `vlan_end` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -108,9 +104,7 @@ CREATE TABLE IF NOT EXISTS `graph` (
   `id` int(64) NOT NULL,
   `session_id` varchar(64) NOT NULL,
   `domain_id` int(11) DEFAULT NULL,
-  `partial` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `service_graph_id` (`session_id`,`domain_id`)
+  `partial` tinyint(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -130,8 +124,7 @@ CREATE TABLE IF NOT EXISTS `session` (
   `started_at` datetime DEFAULT NULL,
   `last_update` datetime DEFAULT NULL,
   `error` datetime DEFAULT NULL,
-  `ended` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `ended` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -143,8 +136,7 @@ CREATE TABLE IF NOT EXISTS `session` (
 CREATE TABLE IF NOT EXISTS `tenant` (
   `id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `name` varchar(64) CHARACTER SET utf8 NOT NULL,
-  `description` varchar(128) CHARACTER SET utf8 NOT NULL,
-  PRIMARY KEY (`id`)
+  `description` varchar(128) CHARACTER SET utf8 NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -158,8 +150,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `name` varchar(64) CHARACTER SET utf8 NOT NULL,
   `password` varchar(64) CHARACTER SET utf8 NOT NULL,
   `tenant_id` varchar(64) CHARACTER SET utf8 NOT NULL,
-  `mail` varchar(64) CHARACTER SET utf8 DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `mail` varchar(64) CHARACTER SET utf8 DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -172,9 +163,73 @@ CREATE TABLE IF NOT EXISTS `vnf_image` (
   `id` varchar(255) NOT NULL,
   `internal_id` varchar(255) NOT NULL,
   `template` text NOT NULL,
-  `configuration_model` text,
-  PRIMARY KEY (`id`)
+  `configuration_model` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Indici per le tabelle scaricate
+--
+
+--
+-- Indici per le tabelle `domain`
+--
+ALTER TABLE `domain`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `domain_gre`
+--
+ALTER TABLE `domain_gre`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `domain_information`
+--
+ALTER TABLE `domain_information`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `domain_neighbor`
+--
+ALTER TABLE `domain_neighbor`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `domain_vlan`
+--
+ALTER TABLE `domain_vlan`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `graph`
+--
+ALTER TABLE `graph`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `service_graph_id` (`session_id`,`domain_id`);
+
+--
+-- Indici per le tabelle `session`
+--
+ALTER TABLE `session`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `tenant`
+--
+ALTER TABLE `tenant`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `vnf_image`
+--
+ALTER TABLE `vnf_image`
+  ADD PRIMARY KEY (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
