@@ -8,7 +8,7 @@ import logging
 from .scheduler import Scheduler
 import uuid
 
-from orchestrator_core.exception import sessionNotFound, GraphError
+from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -100,9 +100,10 @@ class UpperLayerOrchestratorController(object):
         graphs_ref = Graph().getGraphs(session.id)
         if len(graphs_ref) > 1:
             # If the graph has been split, the smart update is not supported
-            logging.warning("The graph has been split in various nffg, in this case the smart update is not supported.")
+            logging.error("The graph has been split in various nffg, in this case the smart update is not supported and the already instantiated graph has not been updated")
             Session().updateStatus(session.id, 'complete')
-            self.delete(nffg.id)
+            #self.delete(nffg.id)
+            raise wrongRequest("The graph has been split in various nffg, in this case the smart update is not supported and the already instantiated graph has not been updated")
         else:
             try:
                 #graph instantiated in a single domain
