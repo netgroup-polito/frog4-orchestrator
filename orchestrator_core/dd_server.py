@@ -22,9 +22,9 @@ class DD_Server(ClientSafe):
         print(msgstr)
         #TODO: validation of msg needed
         try:
-            domain = src.decode("utf-8")
-            domain_ip = domain.split(':')[0]
-            domain_port = domain.split(':')[1]
+            source = src.decode("utf-8")
+            #domain_ip = domain.split(':')[0]
+            #domain_port = domain.split(':')[1]
 
             domain_info = json.loads(msg.decode("utf-8"))
 
@@ -32,10 +32,10 @@ class DD_Server(ClientSafe):
             di = DomainInfo()
             di.parseDict(domain_info)
 
-            domain_id = Domain().addDomain(di.name, di.type, domain_ip, domain_port)
+            domain_id = Domain().addDomain(di.name, di.type, di.domain_ip, di.domain_port)
             di.domain_id = domain_id
 
-            logging.debug("Domain information arrived from %s: %s" % (domain, json.dumps(domain_info)))
+            logging.debug("Domain information arrived from %s: %s" % (source, json.dumps(domain_info)))
             DomainInformation().add_domain_info(di)
         except Exception as ex:
             logging.exception(ex)
