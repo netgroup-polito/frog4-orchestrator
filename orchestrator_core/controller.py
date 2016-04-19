@@ -104,64 +104,78 @@ class UpperLayerOrchestratorController(object):
             Session().updateStatus(session.id, 'complete')
             self.delete(nffg.id)
         else:
-            #graph instantiated in a single domain
-            old_graph = graphs_ref[0]
-            nffg.db_id = old_graph.id
-            
-            # Get VNFs templates
-            self.prepareNFFG(nffg)
-            
-            #old_node = Node().getNode(Graph().getNodeID(old_graph.id))
-            old_domain = Domain().getDomain(Graph().getDomainID(old_graph.id))
+            try:
+                #graph instantiated in a single domain
+                old_graph = graphs_ref[0]
+                nffg.db_id = old_graph.id
+                
+                # Get VNFs templates
+                self.prepareNFFG(nffg)
+                
+                #old_node = Node().getNode(Graph().getNodeID(old_graph.id))
+                old_domain = Domain().getDomain(Graph().getDomainID(old_graph.id))
 
-            ##scheduler = Scheduler(old_graph.id, self.user_data)
-            ##new_node = scheduler.schedule(nffg)
-            domains, nffgs = Scheduler().schedule(nffg)
-            
-            old_domain_present=False
-            for domain in domains:
-                if domain.id == old_domain.id:
-                    old_domain_present = True
-                    break
-            
-            if old_domain_present is False:
-                logging.warning("The graph will be instantiated in a different domain...deleting old graph")
-                if DEBUG_MODE is False:
-                    CA_Interface(self.user_data, old_domain).delete(old_graph.id)
-                Graph().delete_session(session.id)                
-            
-            domain_nffg_dict = OrderedDict()
-            for i in range(0, len(domains)):
-                domain_nffg_dict[domains[i]]=nffgs[i]
-                
-            for new_domain, new_nffg in domain_nffg_dict.items():
-                # Change the remote graph ID in remote_endpoint_id to the internal value
-                self.convertRemoteGraphID(new_nffg, new_domain)
-                # If the orchestrator has to connect two graphs in different nodes,
-                # the end-points must be characterized to allow a connection between nodes
-                ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_domain)
-            
-                # If needed, update the remote graph
-                ##self.updateRemoteGraph(remote_nffgs_dict)
-                
-                if new_domain.id == old_domain.id:
-                    Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict)>1)
-                else:
-                    Graph().add_graph(new_nffg, session.id, partial=len(domain_nffg_dict)>1)
-                    Graph().setDomainID(new_nffg.db_id, new_domain.id)
+                ##scheduler = Scheduler(old_graph.id, self.user_data)
+                ##new_node = scheduler.schedule(nffg)
+                domains, nffgs = Scheduler().schedule(nffg)
+
+                old_domain_present=False
+                for domain in domains:
+                    if domain.id == old_domain.id:
+                        old_domain_present = True
+                        break
+
+                if old_domain_present is False:
+                    logging.warning("The graph will be instantiated in a different domain...deleting old graph")
+                    if DEBUG_MODE is False:
+                        CA_Interface(self.user_data, old_domain).delete(old_graph.id)
+                    Graph().delete_session(session.id)
+
+                domain_nffg_dict = OrderedDict()
+                for i in range(0, len(domains)):
+                    domain_nffg_dict[domains[i]]=nffgs[i]
                     
-                new_nffg.id = str(new_nffg.db_id)
-                
-                if DEBUG_MODE is True:
-                    logging.debug(new_domain.ip + ":"+  str(new_domain.port) + " "+ new_nffg.id+"\n"+new_nffg.getJSON())
+                for new_domain, new_nffg in domain_nffg_dict.items():
+                    # Change the remote graph ID in remote_endpoint_id to the internal value
+                    self.convertRemoteGraphID(new_nffg, new_domain)
+                    # If the orchestrator has to connect two graphs in different nodes,
+                    # the end-points must be characterized to allow a connection between nodes
+                    ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_domain)
+
+                    # If needed, update the remote graph
+                    ##self.updateRemoteGraph(remote_nffgs_dict)
+
+                    if new_domain.id == old_domain.id:
+                        Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict)>1)
+                    else:
+                        Graph().add_graph(new_nffg, session.id, partial=len(domain_nffg_dict)>1)
+                        Graph().setDomainID(new_nffg.db_id, new_domain.id)
+
+                    new_nffg.id = str(new_nffg.db_id)
+
+                    if DEBUG_MODE is True:
+                        logging.debug(new_domain.ip + ":"+  str(new_domain.port) + " "+ new_nffg.id+"\n"+new_nffg.getJSON())
+                    else:
+                        CA_Interface(self.user_data, new_domain).put(new_nffg)
+
+                Session().updateStatus(session.id, 'complete')
+                if len(domains)>1:
+                    Session().updateSessionDomain(session.id, domains[0].id, domain.id)
                 else:
-                    CA_Interface(self.user_data, new_domain).put(new_nffg)
-               
-            Session().updateStatus(session.id, 'complete')
-            if len(domains)>1:
-                Session().updateSessionDomain(session.id, domains[0].id, domain.id)
-            else:
-                Session().updateSessionDomain(session.id, new_domain.id, new_domain.id)     
+                    Session().updateSessionDomain(session.id, new_domain.id, new_domain.id)
+
+            except (HTTPError, ConnectionError) as ex:
+                logging.exception(ex)
+                Graph().delete_graph(nffg.db_id)
+                Session().set_error(session.id)
+                raise ex
+            except Exception as ex:
+                logging.exception(ex)
+                '''
+                Graph().delete_graph(nffg.db_id)
+                '''
+                Session().set_error(session.id)
+                raise ex
         
         #Session().updateSessionNode(session.id, new_node.id, new_node.id)
         return session.id
@@ -201,9 +215,9 @@ class UpperLayerOrchestratorController(object):
                     
                     # Save the graph in the database, with the state initializing
                     Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict)>1)
-                    
+
                     Graph().setDomainID(nffg.db_id, domain.id)
-                    
+
                     # Instantiate profile
                     logging.info('Call CA to instantiate NF-FG')
                     nffg.id = str(nffg.db_id)
@@ -212,7 +226,8 @@ class UpperLayerOrchestratorController(object):
                     else:
                         CA_Interface(self.user_data, domain).put(nffg)
                     logging.debug('NF-FG instantiated')
-                     
+
+                Session().updateStatus(session_id, 'complete')
                 if len(domains)>1:
                     Session().updateSessionDomain(session_id, domains[0].id, domain.id)
                 else:
@@ -233,7 +248,7 @@ class UpperLayerOrchestratorController(object):
                 Session().set_error(session_id)
                 raise ex
         
-        Session().updateStatus(session_id, 'complete')
+        #Session().updateStatus(session_id, 'complete')
                                 
         return session_id
         
@@ -288,19 +303,38 @@ class UpperLayerOrchestratorController(object):
         return json.dumps(status)
     
     def getResourcesStatus(self, session_id):
+        status = {}
+        if DEBUG_MODE is True:
+            status['status'] = 'complete'
+            status['percentage_completed'] = 100
+            return status
+
         graphs_ref = Graph().getGraphs(session_id)
+        num_graphs = len(graphs_ref)
+        num_graphs_completed = 0
         for graph_ref in graphs_ref:
             # Check where the nffg is instantiated and get the concerned domain orchestrator
             domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
-            
-            status = {}
-            if DEBUG_MODE is True:
-                status['status'] = 'complete'
-                status['percentage_completed'] = 100
+            nffg_status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
+            logging.debug(nffg_status)
+            if nffg_status['status'] == 'complete':
+                num_graphs_completed = num_graphs_completed + 1
+
+        logging.debug("num_graphs_completed "+str(num_graphs_completed))
+        logging.debug("num_graphs "+str(num_graphs))
+
+        if num_graphs_completed == num_graphs:
+            status['status'] = 'complete'
+            if num_graphs != 0:
+                status['percentage_completed'] = num_graphs_completed/num_graphs*100
             else:
-                status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
-            logging.debug(status)
-            return status
+                status['percentage_completed'] = 100
+        else:
+            status['status'] = 'in_progress'
+            if num_graphs != 0:
+                status['percentage_completed'] = num_graphs_completed/num_graphs*100
+
+        return status
     
     def convertRemoteGraphID(self, nffg, domain):
         '''

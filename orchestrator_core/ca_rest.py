@@ -44,7 +44,7 @@ class CA_Interface(object):
             resp = requests.get(self.get_status_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
             resp.raise_for_status()
             logging.debug("Check completed")
-            return resp.text
+            return json.loads(resp.text)
         except HTTPError as err:
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
@@ -52,7 +52,7 @@ class CA_Interface(object):
                 resp = requests.get(self.get_status_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug("Check completed")
-                return resp.text
+                return json.loads(resp.text)
             else:
                 raise err
     
