@@ -281,13 +281,13 @@ class UpperLayerOrchestratorController(object):
         # If the status of the graph is complete, return False
         if status['status'] == 'complete':
             return True
-        # If the graph is in ERROR.. raise a proper exception
-        if status['status'] == 'error':
-            raise GraphError("The graph has encountered a fatal error, contact the administrator")
         # TODO:  If the graph is still under instantiation returns 409
         if status['status'] == 'in_progress':
             raise Exception("Graph busy")
-        # If the graph is deleted, return True
+        # If the graph is in ERROR.. raise a proper exception # not currently managed
+        if status['status'] == 'error':
+            raise GraphError("The graph has encountered a fatal error, contact the administrator")
+        # If the graph is deleted, return True # not currently managed
         if status['status'] == 'ended' or status['status'] == 'not_found':
             return False
     
