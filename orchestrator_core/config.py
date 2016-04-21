@@ -29,9 +29,9 @@ class Configuration(object):
         base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])).rpartition('/')[0]
         try:
             if base_folder == "":
-                config.read(base_folder+'configuration/orchestrator.conf')
+                config.read(base_folder+'config/config.ini')
             else:
-                config.read(base_folder+'/configuration/orchestrator.conf')
+                config.read(base_folder+'/config/config.ini')
                 
             self._LOG_FILE = config.get('log', 'log_file')
             self._VERBOSE = config.getboolean('log', 'verbose')
