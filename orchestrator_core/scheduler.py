@@ -81,16 +81,10 @@ class Scheduler(object):
                 nffg_2_endp = nffg2.getEndPoint(gen_endpoints[i].id)
                 
                 nffg_1_endp.type = "interface"
-                if element.domain_1_type == "ODL":
-                    nffg_1_endp.switch_id = element.node_1
-                else:
-                    nffg_1_endp.node_id = element.node_1
+                nffg_1_endp.node_id = element.node_1
                 nffg_1_endp.interface = element.port_1
                 nffg_2_endp.type = "interface"
-                if element.domain_2_type == "ODL":
-                    nffg_2_endp.switch_id = element.node_2
-                else:
-                    nffg_2_endp.node_id = element.node_2
+                nffg_2_endp.node_id = element.node_2
                 nffg_2_endp.interface = element.port_2
                 i = i+1
             elif type(element) is Vlan:
@@ -99,18 +93,12 @@ class Scheduler(object):
                     nffg_3_endp = nffg3.getEndPoint(str(i)+"_1")
 
                     nffg_1_endp.type = "vlan"
-                    if element.domain_1_type == "ODL":
-                        nffg_1_endp.switch_id = element.node_1
-                    else:
-                        nffg_1_endp.node_id = element.node_1
+                    nffg_1_endp.node_id = element.node_1
                     nffg_1_endp.interface = element.port_1
                     nffg_1_endp.vlan_id = str(element.vlan)
                     nffg_3_endp.name = nffg_1_endp.id
                     nffg_3_endp.type = "vlan"
-                    if element.domain_2_type == "ODL":
-                        nffg_3_endp.switch_id = element.node_2
-                    else:
-                        nffg_3_endp.node_id = element.node_2
+                    nffg_3_endp.node_id = element.node_2
                     nffg_3_endp.interface = element.port_2         
                     nffg_3_endp.vlan_id = str(element.vlan)
                 elif element.partial == 2:
@@ -119,17 +107,11 @@ class Scheduler(object):
                     
                     nffg_3_endp.name = nffg_2_endp.id
                     nffg_3_endp.type = "vlan"
-                    if element.domain_1_type == "ODL":
-                        nffg_3_endp.switch_id = element.node_1
-                    else:
-                        nffg_3_endp.node_id = element.node_1
+                    nffg_3_endp.node_id = element.node_1
                     nffg_3_endp.interface = element.port_1
                     nffg_3_endp.vlan_id = str(element.vlan)
                     nffg_2_endp.type = "vlan"
-                    if element.domain_2_type == "ODL":
-                        nffg_2_endp.switch_id = element.node_2
-                    else:
-                        nffg_2_endp.node_id = element.node_2
+                    nffg_2_endp.node_id = element.node_2
                     nffg_2_endp.interface = element.port_2         
                     nffg_2_endp.vlan_id = str(element.vlan)  
                     i = i+1
@@ -138,17 +120,11 @@ class Scheduler(object):
                     nffg_2_endp = nffg2.getEndPoint(gen_endpoints[i].id)
                     
                     nffg_1_endp.type = "vlan"
-                    if element.domain_1_type == "ODL":
-                        nffg_1_endp.switch_id = element.node_1
-                    else:
-                        nffg_1_endp.node_id = element.node_1
+                    nffg_1_endp.node_id = element.node_1
                     nffg_1_endp.interface = element.port_1
                     nffg_1_endp.vlan_id = str(element.vlan)
                     nffg_2_endp.type = "vlan"
-                    if element.domain_2_type == "ODL":
-                        nffg_2_endp.switch_id = element.node_2
-                    else:
-                        nffg_2_endp.node_id = element.node_2
+                    nffg_2_endp.node_id = element.node_2
                     nffg_2_endp.interface = element.port_2         
                     nffg_2_endp.vlan_id = str(element.vlan)
                     i = i+1
