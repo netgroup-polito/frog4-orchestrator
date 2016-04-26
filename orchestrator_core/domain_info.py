@@ -58,8 +58,6 @@ class Interface(object):
             self.name = tmp.split('/')[1]
         else:
             self.name = interface_dict['name']
-        #if 'type' in interface_dict['config']:
-        #    self.type = interface_dict['config']['type']
         if 'frog-interface-type' in interface_dict:
             self.type = interface_dict['frog-interface-type']
         self.enabled = interface_dict['config']['enabled']
@@ -69,12 +67,13 @@ class Interface(object):
                 if subinterface_dict['config']['name'] == self.name:
                     if subinterface_dict['capabilities']['gre'] == True:
                         self.gre = True
+                        """
                         if 'frog-if-gre:gre' in subinterface_dict:
                             for gre_dict in subinterface_dict['frog-if-gre:gre']:
                                 gre_tunnel = GreTunnel()
                                 gre_tunnel.parseDict(gre_dict)
                                 self.gre_tunnels.append(gre_tunnel)
-                                
+                        """
         if 'frog-neighbor:neighbor' in interface_dict['openconfig-if-ethernet:ethernet']:
             for neighbor_dict in interface_dict['openconfig-if-ethernet:ethernet']['frog-neighbor:neighbor']:
                 neighbor = Neighbor()

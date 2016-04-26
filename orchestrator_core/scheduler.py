@@ -139,18 +139,18 @@ class Scheduler(object):
             elif type(element) is Gre:
                 nffg_1_endp = nffg1.getEndPoint(gen_endpoints_1[i].id)
                 nffg_2_endp = nffg2.getEndPoint(gen_endpoints_2[i].id)
-                ip_1 = element.node_1
-                ip_2 = element.node_2
+                ip_1 = element.local_ip
+                ip_2 = element.remote_ip
                 
                 nffg_1_endp.type = "gre-tunnel"
                 nffg_1_endp.local_ip = ip_1
                 nffg_1_endp.remote_ip = ip_2
-                nffg_1_endp.interface = element.port_1
+                #nffg_1_endp.interface = element.port_1
                 nffg_1_endp.gre_key = element.gre_key
                 nffg_2_endp.type = "gre-tunnel"
                 nffg_2_endp.local_ip = ip_2
                 nffg_2_endp.remote_ip = ip_1                
-                nffg_2_endp.interface = element.port_2         
+                #nffg_2_endp.interface = element.port_2
                 nffg_2_endp.gre_key = element.gre_key     
                 i = i+1
             else:
@@ -266,21 +266,21 @@ class Scheduler(object):
                                 break
                         if matches_found == number_of_links:
                             break
-        # Domains connected through the Internet
+        # Domains connected through an IP domain
         #GRE
         if matches_found < number_of_links:
             #Search for internet connections
             for interface in domain_1.interfaces: 
-                if self.hasInternetConnectivity(interface) is True and interface.gre is True:
+                if self.isConnectedToIPDomain(interface) is True and interface.gre is True:
                     #if self.checkActiveTunnels(interface, node_id_2) is True:
                     domain_2 = domains_info[domain_id_2]
                     for remote_interface in domain_2.interfaces:
-                        if self.hasInternetConnectivity(remote_interface) is True and remote_interface.gre is True:
+                        if self.isConnectedToIPDomain(remote_interface) is True and remote_interface.gre is True:
                             #Gre_tunnel endpoints found                            
                             while matches_found < number_of_links:
                                 print ("gre match found")
                                 matches_found = matches_found + 1
-                                characterization.append(Gre(interface.node, interface.name, remote_interface.node, remote_interface.name))
+                                characterization.append(Gre(Domain().getDomainIP(domain_id_1), Domain().getDomainIP(domain_id_2)))
                             break   
                 if matches_found == number_of_links:
                     break                       
@@ -362,12 +362,12 @@ class Scheduler(object):
                 return True
         return False
     
-    def hasInternetConnectivity(self, interface):
+    def isConnectedToIPDomain(self, interface):
         '''
-        Determines whether interface is connected to the Internet
+        Determines whether interface is connected to an IP domain
         '''
         for neighbor in interface.neighbors:
-            if neighbor.domain_name == "internet":
+            if neighbor.domain_type == "IP":
                 return True
         return False
     
@@ -452,11 +452,11 @@ class Vlan(object):
         self.partial = partial
         
 class Gre(object):
-    def __init__(self, node_1=None, port_1=None, node_2=None, port_2=None, gre_key=None):
-        self.node_1 = node_1
-        self.port_1 = port_1
-        self.node_2 = node_2
-        self.port_2 = port_2 
+    def __init__(self, local_ip=None, remote_ip=None, gre_key=None):
+        self.local_ip = local_ip
+        #self.local_port = port_1
+        self.remote_ip = remote_ip
+        #self.remote_port = port_2
         if gre_key is not None:
             self.gre_key = gre_key
         else:
