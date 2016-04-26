@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.13.1deb1
+-- version 4.5.4.1deb2ubuntu1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Apr 19, 2016 alle 14:03
--- Versione del server: 5.6.28-0ubuntu0.15.10.1
--- Versione PHP: 5.6.11-1ubuntu3.1
+-- Creato il: Apr 26, 2016 alle 15:30
+-- Versione del server: 5.7.11-0ubuntu6
+-- Versione PHP: 7.0.4-7ubuntu2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Struttura della tabella `domain`
 --
 
-CREATE TABLE IF NOT EXISTS `domain` (
+CREATE TABLE `domain` (
   `id` int(11) NOT NULL,
   `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `domain` (
 -- Struttura della tabella `domain_gre`
 --
 
-CREATE TABLE IF NOT EXISTS `domain_gre` (
+CREATE TABLE `domain_gre` (
   `id` int(64) NOT NULL,
   `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `domain_info_id` int(64) NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `domain_gre` (
 -- Struttura della tabella `domain_information`
 --
 
-CREATE TABLE IF NOT EXISTS `domain_information` (
+CREATE TABLE `domain_information` (
   `id` int(64) NOT NULL,
   `domain_id` int(11) NOT NULL,
   `node` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `domain_information` (
 -- Struttura della tabella `domain_neighbor`
 --
 
-CREATE TABLE IF NOT EXISTS `domain_neighbor` (
+CREATE TABLE `domain_neighbor` (
   `id` int(11) NOT NULL,
   `domain_info_id` int(11) NOT NULL,
   `neighbor_domain_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `domain_neighbor` (
 -- Struttura della tabella `domain_vlan`
 --
 
-CREATE TABLE IF NOT EXISTS `domain_vlan` (
+CREATE TABLE `domain_vlan` (
   `id` int(64) NOT NULL,
   `domain_info_id` int(64) NOT NULL,
   `vlan_start` int(11) NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `domain_vlan` (
 -- Struttura della tabella `graph`
 --
 
-CREATE TABLE IF NOT EXISTS `graph` (
+CREATE TABLE `graph` (
   `id` int(64) NOT NULL,
   `session_id` varchar(64) NOT NULL,
   `domain_id` int(11) DEFAULT NULL,
@@ -113,11 +113,11 @@ CREATE TABLE IF NOT EXISTS `graph` (
 -- Struttura della tabella `session`
 --
 
-CREATE TABLE IF NOT EXISTS `session` (
+CREATE TABLE `session` (
   `id` varchar(64) NOT NULL,
   `user_id` varchar(64) DEFAULT NULL,
   `service_graph_id` varchar(64) NOT NULL,
-  `service_graph_name` varchar(64) NOT NULL,
+  `service_graph_name` varchar(64) DEFAULT NULL,
   `ingress_domain` varchar(64) DEFAULT NULL,
   `egress_domain` varchar(64) DEFAULT NULL,
   `status` varchar(64) NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `session` (
 -- Struttura della tabella `tenant`
 --
 
-CREATE TABLE IF NOT EXISTS `tenant` (
+CREATE TABLE `tenant` (
   `id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `name` varchar(64) CHARACTER SET utf8 NOT NULL,
   `description` varchar(128) CHARACTER SET utf8 NOT NULL
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `tenant` (
 -- Struttura della tabella `user`
 --
 
-CREATE TABLE IF NOT EXISTS `user` (
+CREATE TABLE `user` (
   `id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `name` varchar(64) CHARACTER SET utf8 NOT NULL,
   `password` varchar(64) CHARACTER SET utf8 NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- Struttura della tabella `vnf_image`
 --
 
-CREATE TABLE IF NOT EXISTS `vnf_image` (
+CREATE TABLE `vnf_image` (
   `id` varchar(255) NOT NULL,
   `internal_id` varchar(255) NOT NULL,
   `template` text NOT NULL,
@@ -204,8 +204,7 @@ ALTER TABLE `domain_vlan`
 -- Indici per le tabelle `graph`
 --
 ALTER TABLE `graph`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `service_graph_id` (`session_id`,`domain_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indici per le tabelle `session`
