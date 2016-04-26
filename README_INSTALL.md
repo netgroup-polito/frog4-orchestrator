@@ -26,7 +26,7 @@ Now you can follow the instruction provided in that folder. You can choose to in
 In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
 
 #### Modify the configuration parameters
-For this, you need to modify the [configuration/orchestrator.conf](configuration/orchestrator.conf) file according to your preferences.
+For this, you need to modify the [conf/default-config.ini](conf/default-config.ini) file according to your preferences.
 
 #### Create database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
@@ -52,6 +52,6 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 - Change all the templates inside the ``templates`` directory with the correct information.
 
 #### Run the orchestrator
-You can launch the orchestrator by executing the following script in the orchestrator root folder:
+You can launch the orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
-        ./start_orchestrator.sh
+        python3 gunicorn.py [--d conf-file]

@@ -6,32 +6,32 @@ Created on Oct 1, 2014
 import configparser, os, inspect
 from orchestrator_core.exception import WrongConfigurationFile 
 
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-class Configuration(object):
-    
-    _instance = None
-    _AUTH_SERVER = None
-    
-    def __new__(cls, *args, **kwargs):
-        
-        if not cls._instance:
-            cls._instance = super(Configuration, cls).__new__(
-                                cls, *args, **kwargs)
-        return cls._instance 
+class Configuration(object, metaclass=Singleton):
     
     def __init__(self):
-        #if self._AUTH_SERVER is None:
+        if os.getenv("FROG4_ORCH_CONF") is not None:
+            self.conf_file = os.environ["FROG4_ORCH_CONF"]
+        else:
+            self.conf_file = "config/default-config.ini"
+
         self.inizialize()
-    
+
     def inizialize(self): 
         #TODO: clean obsolete parameters
         config = configparser.RawConfigParser()
         base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])).rpartition('/')[0]
         try:
             if base_folder == "":
-                config.read(base_folder+'config/config.ini')
+                config.read(base_folder + self.conf_file)
             else:
-                config.read(base_folder+'/config/config.ini')
+                config.read(base_folder + '/' + self.conf_file)
                 
             self._LOG_FILE = config.get('log', 'log_file')
             self._VERBOSE = config.getboolean('log', 'verbose')
