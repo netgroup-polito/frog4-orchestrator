@@ -460,4 +460,4 @@ class Gre(object):
         if gre_key is not None:
             self.gre_key = gre_key
         else:
-            self.gre_key = '%032x' % random.getrandbits(128)
+            self.gre_key = '%08x' % random.getrandbits(32)
