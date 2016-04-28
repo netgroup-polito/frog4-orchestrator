@@ -61,7 +61,14 @@ class Configuration(object, metaclass=Singleton):
 
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
             self._TEMPLATE_SOURCE = config.get('templates','source')
-            self._TEMPLATE_PATH = config.get('templates','path')
+            if config.has_option('templates', 'path'):
+                self._TEMPLATE_PATH = config.get('templates','path')
+            else:
+                self._TEMPLATE_PATH = None
+            if config.has_option('templates', 'repository_url'):
+                self._TEMPLATE_REPOSITORY_URL = config.get('templates', 'repository_url')
+            else:
+                self._TEMPLATE_REPOSITORY_URL = None
                 
         except Exception as ex:
             raise WrongConfigurationFile(str(ex))
@@ -97,8 +104,12 @@ class Configuration(object, metaclass=Singleton):
     @property
     def TEMPLATE_SOURCE(self):
         return self._TEMPLATE_SOURCE
-    
+
     @property
+    def TEMPLATE_REPOSITORY_URL(self):
+        return self._TEMPLATE_REPOSITORY_URL
+    @property
+
     def TEMPLATE_PATH(self):
         return self._TEMPLATE_PATH
      

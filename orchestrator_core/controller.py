@@ -8,7 +8,7 @@ import logging
 from .scheduler import Scheduler
 import uuid
 
-from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest
+from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest, VNFRepositoryError
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -170,6 +170,10 @@ class UpperLayerOrchestratorController(object):
             Graph().delete_graph(nffg.db_id)
             Session().set_error(session.id)
             raise ex
+        except VNFRepositoryError as ex:
+            logging.exception(ex)
+            Session().set_error(session.id)
+            raise ex
         except Exception as ex:
             logging.exception(ex)
             '''
@@ -240,6 +244,10 @@ class UpperLayerOrchestratorController(object):
             except (HTTPError, ConnectionError) as ex:
                 logging.exception(ex)
                 Graph().delete_graph(nffg.db_id)
+                Session().set_error(session_id)
+                raise ex
+            except VNFRepositoryError as ex:
+                logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex
             except Exception as ex:
