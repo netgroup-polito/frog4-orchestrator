@@ -159,12 +159,7 @@ class UpperLayerOrchestratorController(object):
                     CA_Interface(self.user_data, new_domain).put(new_nffg)
 
             Session().updateStatus(session.id, 'complete')
-            """
-            if len(domains)>1:
-                Session().updateSessionDomain(session.id, domains[0].id, domain.id)
-            else:
-                Session().updateSessionDomain(session.id, new_domain.id, new_domain.id)
-            """
+
         except (HTTPError, ConnectionError) as ex:
             logging.exception(ex)
             Graph().delete_graph(nffg.db_id)
@@ -172,7 +167,7 @@ class UpperLayerOrchestratorController(object):
             raise ex
         except VNFRepositoryError as ex:
             logging.exception(ex)
-            Session().set_error(session.id)
+            #Session().set_error(session.id)
             raise ex
         except Exception as ex:
             logging.exception(ex)
@@ -182,7 +177,6 @@ class UpperLayerOrchestratorController(object):
             Session().set_error(session.id)
             raise ex
         
-        #Session().updateSessionNode(session.id, new_node.id, new_node.id)
         return session.id
         
     def put(self, nffg):
@@ -233,12 +227,7 @@ class UpperLayerOrchestratorController(object):
                     logging.debug('NF-FG instantiated')
 
                 Session().updateStatus(session_id, 'complete')
-                """
-                if len(domains)>1:
-                    Session().updateSessionDomain(session_id, domains[0].id, domain.id)
-                else:
-                    Session().updateSessionDomain(session_id, domain.id, domain.id)
-                """
+
                 #debug   
                 #Session().set_error(session_id)
             except (HTTPError, ConnectionError) as ex:
