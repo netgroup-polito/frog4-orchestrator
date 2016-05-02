@@ -80,13 +80,14 @@ class Interface(object):
                 neighbor.parseDict(neighbor_dict)
                 self.neighbors.append(neighbor)
 
-        if 'openconfig-vlan:vlan' in interface_dict['openconfig-if-ethernet:ethernet']:
-            self.vlan = True
-            if 'openconfig-vlan:config' in interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']:
-                vlan_config = interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']['openconfig-vlan:config']
-                if vlan_config['interface-mode']=="TRUNK":
-                    for vlan in vlan_config['trunk-vlans']:
-                        self.vlans_free.append(vlan)
+        if 'openconfig-if-ethernet:ethernet' in interface_dict:
+            if 'openconfig-vlan:vlan' in interface_dict['openconfig-if-ethernet:ethernet']:
+                self.vlan = True
+                if 'openconfig-vlan:config' in interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']:
+                    vlan_config = interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan']['openconfig-vlan:config']
+                    if vlan_config['interface-mode']=="TRUNK":
+                        for vlan in vlan_config['trunk-vlans']:
+                            self.vlans_free.append(vlan)
                         
     def addNeighbor(self, neighbor):
         if type(neighbor) is Neighbor:

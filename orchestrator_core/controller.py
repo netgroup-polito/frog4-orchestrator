@@ -126,11 +126,14 @@ class UpperLayerOrchestratorController(object):
                 if found is False:
                     to_be_removed_domains.append(old_domain_id)
                     
-            for domain in to_be_removed_domains:
-                logging.warning("The domain " + str(domain) + " is no longer involved after the update...deleting (sub)graph(s) instantiated in it")
-                for graph in old_domain_graph[domain]:
-                    if DEBUG_MODE is False:
-                        CA_Interface(self.user_data, Domain().getDomain(domain)).delete(graph)
+            for domain_id in to_be_removed_domains:
+                logging.warning("The domain " + str(domain_id) + " is no longer involved after the update...deleting (sub)graph(s) instantiated in it")
+                for graph in old_domain_graph[domain_id]:
+                    domain = Domain().getDomain(domain_id)
+                    if DEBUG_MODE is True:
+                        logging.debug(domain.ip + ":"+  str(domain.port) + " "+ str(graph))
+                    else:
+                        CA_Interface(self.user_data, domain).delete(graph)
                     Graph().delete_graph(graph)
 
 
