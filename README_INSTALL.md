@@ -43,15 +43,20 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
     
         mysql -u orchestrator -p orchestrator < db.sql
 
-- Change the the parameters used to connect to the database in [configuration/orchestrator.conf](configuration/orchestrator.conf):
+- Change the the parameters used to connect to the database in the configuration file:
 
         [db]
         # Mysql DB
         connection = mysql+pymysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
         
-- Change all the templates inside the ``templates`` directory with the correct information.
-
 #### Run the orchestrator
 You can launch the orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
         python3 gunicorn.py [--d conf-file]
+
+#### Useful scripts
+You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
+        
+        python3 -m scripts.clean_db_sessions
+
+The same applies for other similar scripts like [clean_domains_and_info](scripts/clean_domains_and_info.py) that will remove data related to the domains connected to the orchestrator from the database. You just need to replace "clean_db_sessions" with "clean_domains_and_info" in the previous command.
