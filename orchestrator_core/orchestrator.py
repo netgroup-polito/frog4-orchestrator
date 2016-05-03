@@ -80,6 +80,7 @@ class UpperLayerOrchestrator(object):
     '''
     Admin class that intercept the REST call through the WSGI server
     '''
+    counter = 1
         
     def on_delete(self, request, response, nffg_id):
         try:
@@ -158,8 +159,9 @@ class UpperLayerOrchestrator(object):
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
             
-            controller = UpperLayerOrchestratorController(user_data)
+            controller = UpperLayerOrchestratorController(user_data, self.counter)
             response.body = controller.put(nffg)
+            self.counter +=1
 
             response.status = falcon.HTTP_202
             

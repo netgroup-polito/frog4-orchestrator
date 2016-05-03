@@ -27,8 +27,9 @@ class UpperLayerOrchestratorController(object):
     '''
         Class that performs the logic of orchestrator_core
     '''
-    def __init__(self, user_data):
+    def __init__(self, user_data, counter):
         self.user_data = user_data
+        self.counter = counter
 
     def get(self, nffg_id):
         session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
@@ -102,7 +103,7 @@ class UpperLayerOrchestratorController(object):
             # Get VNFs templates
             self.prepareNFFG(nffg)
 
-            domains, nffgs = Scheduler().schedule(nffg)
+            domains, nffgs = Scheduler(self.counter).schedule(nffg)
 
             domain_nffg_dict = OrderedDict()
             for i in range(0, len(domains)):
@@ -199,7 +200,7 @@ class UpperLayerOrchestratorController(object):
                 self.prepareNFFG(nffg)
                                  
                 ##Graph().id_generator(nffg, session_id)
-                domains, nffgs = Scheduler().schedule(nffg)
+                domains, nffgs = Scheduler(self.counter).schedule(nffg)
                 domain_nffg_dict = OrderedDict()
                 for i in range(0, len(domains)):
                     domain_nffg_dict[domains[i]]=nffgs[i]

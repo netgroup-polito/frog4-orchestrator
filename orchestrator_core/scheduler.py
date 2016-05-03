@@ -18,8 +18,8 @@ from orchestrator_core.nffg_manager import NFFG_Manager
 DEFAULT_DOMAIN = Configuration().DEFAULT_DOMAIN
 
 class Scheduler(object):
-    def __init__(self):
-        pass
+    def __init__(self, flow_prefix = None):
+        self.flow_prefix = flow_prefix
     
     def schedule(self, nffg):
         domain_list = []
@@ -49,7 +49,7 @@ class Scheduler(object):
                 for element in other_elements:
                     if element != domain_elements:
                         other_elements_list = other_elements_list + element
-                domain_to_nffg[domain_name] = nffg.split(domain_elements, other_elements_list)
+                domain_to_nffg[domain_name] = nffg.split(domain_elements, other_elements_list, flow_prefix = self.flow_prefix)
 
             # Search matches between each possible couple of domains
             for domain_relationship in itertools.combinations(domain_to_nffg.keys(), 2):
