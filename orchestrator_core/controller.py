@@ -27,7 +27,7 @@ class UpperLayerOrchestratorController(object):
     '''
         Class that performs the logic of orchestrator_core
     '''
-    def __init__(self, user_data, counter):
+    def __init__(self, user_data, counter=None):
         self.user_data = user_data
         self.counter = counter
 
@@ -93,7 +93,7 @@ class UpperLayerOrchestratorController(object):
         Graph().delete_session(session.id)
         Session().set_ended(session.id)
     
-    def update(self, nffg, delete = False):        
+    def update(self, nffg):
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
         Session().updateStatus(session.id, 'updating')
         
