@@ -131,6 +131,7 @@ class CA_Interface(object):
         resp = requests.post(self.authentication_url, data=json.dumps(authenticationData), headers=headers, timeout=int(self.timeout))
         try:
             resp.raise_for_status()
+            logging.debug("Authentication successfully performed")
             self.token = resp.text
             self.headers = {'Content-Type': 'application/json',
                 'cache-control': 'no-cache',
