@@ -162,7 +162,8 @@ class UpperLayerOrchestrator(object):
             controller = UpperLayerOrchestratorController(user_data, self.counter)
             response.body = controller.put(nffg)
             self.counter +=1
-
+            
+            response.content_type = "text/plain"
             response.status = falcon.HTTP_202
             
         except wrongRequest as err:

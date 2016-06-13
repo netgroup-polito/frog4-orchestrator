@@ -1,7 +1,6 @@
 '''
-Created on Oct 20, 2015
-
 @author: fabiomignini
+@author: stefanopetrangeli
 '''
 import logging, json, requests, uuid, os, inspect
 from nffg_library.nffg import VNF, Port, EndPoint, FlowRule
@@ -77,10 +76,12 @@ class NFFG_Manager(object):
             if uri in self.stored_templates:
                 return self.stored_templates[uri]
             return self.getDictFromVNFRepository(uri)
-        else:
+        elif TEMPLATE_SOURCE == "file":
             base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])).rpartition('/')[0]
             return self.getDictFromFile(base_folder+'/'+TEMPLATE_PATH, uri)
-        
+        else:
+            raise WrongConfigurationFile("source configuration inside the templates section has a value not allowed")
+                
     def getDictFromFile(self, path, filename):
         json_data=open(path+filename).read()
         return json.loads(json_data)
