@@ -32,6 +32,7 @@ class UpperLayerOrchestratorController(object):
         self.counter = counter
 
     def get(self, nffg_id):
+        #TODO: update this function taking into account the new split algorithm
         session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
         logging.debug("Getting session: "+str(session.id))
         graphs_ref = Graph().getGraphs(session.id)
@@ -59,24 +60,6 @@ class UpperLayerOrchestratorController(object):
         graphs_ref = Graph().getGraphs(session.id)
         for graph_ref in graphs_ref:
             domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
-            
-            # Get instantiated nffg
-            #TODO: get_nffg to the ca
-            #instantiated_nffg = Graph().get_nffg(graph_ref.id)
-            #logging.debug('NF-FG that we are going to delete: '+instantiated_nffg.getJSON())
-            
-            # Check external connections, if a graph is connected to this, the deletion will be cancelled
-            #if self.checkExternalConnections(instantiated_nffg):
-            #    raise Exception("This graph has been connected with other graph, delete these graph before to delete this.")
-            
-            # Analyze end-point connections
-            #remote_nffgs_dict = self.analizeRemoteConnection(instantiated_nffg, node, delete=True)
-            
-            # If needed, update the remote graph
-            #self.updateRemoteGraph(remote_nffgs_dict)
-            
-            # De-instantiate profile
-            #orchestrator = Scheduler(graph_ref.id, self.user_data).getInstance(node)
             
             try:
                 if DEBUG_MODE is True:
@@ -139,15 +122,6 @@ class UpperLayerOrchestratorController(object):
 
 
             for new_domain, new_nffg in domain_nffg_dict.items():
-                # Change the remote graph ID in remote_endpoint_id to the internal value
-                #self.convertRemoteGraphID(new_nffg, new_domain)
-                # If the orchestrator has to connect two graphs in different nodes,
-                # the end-points must be characterized to allow a connection between nodes
-                ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, new_domain)
-
-                # If needed, update the remote graph
-                ##self.updateRemoteGraph(remote_nffgs_dict)
-
                 if new_domain.id in old_domain_graph.keys():
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
                     Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict)>1)
@@ -206,16 +180,6 @@ class UpperLayerOrchestratorController(object):
                     domain_nffg_dict[domains[i]]=nffgs[i]
                 
                 for domain, nffg in domain_nffg_dict.items():
-                    # Change the remote graph ID in remote_endpoint_id to the internal value
-                    #self.convertRemoteGraphID(nffg, domain)
-                    
-                    # If the orchestrator has to connect two graphs in different nodes,
-                    # the end-points must be characterized to allow a connection between nodes
-                    ##remote_nffgs_dict = self.analizeRemoteConnection(nffg, domain)
-                    
-                    # If needed, update the remote graph
-                    ##self.updateRemoteGraph(remote_nffgs_dict)
-                    
                     # Save the graph in the database, with the state initializing
                     Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict)>1)
 
@@ -265,9 +229,6 @@ class UpperLayerOrchestratorController(object):
         
         # Optimize NF-FG, currently the switch VNF when possible will be collapsed
         manager.mergeUselessVNFs()   
-        
-        # Change the remote node ID in remote_endpoint_id and in prepare_connection_to_remote_endpoint_id to the internal value
-        #self.convertRemoteGraphID(nffg)
         
     def checkNFFGStatus(self, service_graph_id):
         # TODO: Check if the graph exists, if true
@@ -338,82 +299,3 @@ class UpperLayerOrchestratorController(object):
                 status['percentage_completed'] = num_graphs_completed/num_graphs*100
 
         return status
-    
-    def convertRemoteGraphID(self, nffg, domain):
-        '''
-        Convert the remote graph id present in the remote_endpoint_id (inside the end-point),
-        in the internal ID created by the orchestrator (that is the one sent to the domain orchestrator).
-        '''
-        for end_point in nffg.end_points:
-            remote_domain_found = False
-            if end_point.remote_endpoint_id is not None:
-                session_id = Session().get_active_user_session_by_nf_fg_id(end_point.remote_endpoint_id.split(':')[0], error_aware=True).id
-                graphs_ref = Graph().getGraphs(session_id)
-                for graph_ref in graphs_ref:
-                    if graph_ref.domain_id == domain.id:
-                        end_point.remote_endpoint_id = str(graph_ref.id)+ ':' +end_point.remote_endpoint_id.split(':')[1]
-                        remote_domain_found = True
-                        break
-                if remote_domain_found is False:
-                    raise GraphError("Local domain and remote domain are different for remote_endpoint_id: "+str(end_point.remote_endpoint_id))
-                
-    
-    def updateRemoteGraph(self, remote_nffgs_dict):
-        #Not used anymore
-        for remote_nffg in remote_nffgs_dict.values():
-            session = Session().get_active_user_session_by_nf_fg_id(remote_nffg.id, error_aware=True)
-            remote_user_data = UserData()
-            remote_user_data.getUserData(session.user_id)
-            Session().updateStatus(session.id, 'updating')
-            self.prepareNFFG(remote_nffg)
-            scheduler = Scheduler(remote_nffg.db_id, remote_user_data)
-            orchestrator, node = scheduler.schedule(remote_nffg)
-            old_nf_fg = Graph().get_nffg(remote_nffg.db_id)
-            try:
-                orchestrator.updateProfile(remote_nffg, old_nf_fg, node)
-            except Exception as ex:
-                logging.exception(ex)
-                '''
-                Graph().delete_graph(nffg.db_id)
-                '''
-                Session().set_error(session.id)
-                raise ex     
-            Session().updateStatus(session.id, 'complete')
-    
-    def analizeRemoteConnection(self, nffg, node, delete=False):
-        #Not used anymore
-        #TODO: nffg.db_id not set
-        '''
-        Check if the nffg will be installed on the same domain of an eventually remote graph.
-        In this case, the orchestrator has to characterize in a better way the end-point. 
-        '''
-        # Getting remote graphs
-        remote_nffgs_dict = {}
-        for end_point in nffg.end_points:
-            if end_point.remote_endpoint_id is not None:
-                remote_graph_id = end_point.remote_endpoint_id.split(':')[0]
-                if remote_graph_id in remote_nffgs_dict:
-                    remote_nffg = remote_nffgs_dict[remote_graph_id]
-                else:
-                    #remote_nffg = Graph().get_nffg(end_point.remote_endpoint_id.split(':')[0])
-                    domain = Domain().getDomain(Graph().getDomainID(remote_graph_id))
-                    remote_nffg = CA_Interface(self.user_data, domain).getNFFG(remote_graph_id)
-                    remote_nffgs_dict[remote_graph_id] = remote_nffg
-                    #remote_nffgs_dict[str(remote_nffg.db_id)] = remote_nffg
-                for remote_end_point in remote_nffg.end_points:
-                    if remote_end_point.id == end_point.remote_endpoint_id.split(':')[1]:
-                        if delete is False:
-                            remote_end_point.prepare_connection_to_remote_endpoint_ids.append(str(nffg.db_id)+':'+end_point.id)
-                        else:
-                            remote_end_point.prepare_connection_to_remote_endpoint_ids.remove(str(nffg.db_id)+':'+end_point.id)
-                            
-        # TODO: characterization in case of different node instantiation
-        
-        return remote_nffgs_dict
-    
-    def checkExternalConnections(self, nffg):
-        #Not used anymore
-        for end_point in nffg.end_points:
-            if end_point.prepare_connection_to_remote_endpoint_ids:
-                return True
-        return False
