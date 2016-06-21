@@ -41,7 +41,7 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
     
 - Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
     
-        mysql -u orchestrator -p orchestrator < db.sql
+        mysql -u orchestrator -p -Dorchestrator < db.sql
 
 - Change the the parameters used to connect to the database in the configuration file:
 
