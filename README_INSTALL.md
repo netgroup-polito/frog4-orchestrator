@@ -52,7 +52,7 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 #### Run the orchestrator
 You can launch the orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
-        python3 gunicorn.py [--d conf-file]
+        ./start_orchestrator.sh [--d conf-file]
 
 #### Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
