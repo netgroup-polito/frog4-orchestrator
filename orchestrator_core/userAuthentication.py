@@ -28,9 +28,9 @@ class UserAuthentication(object):
     
     def authenticateUserFromRESTRequest(self, request):
         
-        username = request.get_header("X-Auth-User")
-        password = request.get_header("X-Auth-Pass")
-        tenant = request.get_header("X-Auth-Tenant")  
+        username = request.headers.get("X-Auth-User")
+        password = request.headers.get("X-Auth-Pass")
+        tenant = request.headers.get("X-Auth-Tenant")  
         
         return self.authenticateUserFromCredentials(username, password, tenant)
     

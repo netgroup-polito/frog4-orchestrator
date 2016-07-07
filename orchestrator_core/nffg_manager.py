@@ -9,7 +9,7 @@ from vnf_template_library.validator import ValidateTemplate
 from orchestrator_core.config import Configuration
 from nffg_library.validator import ValidateNF_FG
 from nffg_library.nffg import NF_FG, Match, Action
-from orchestrator_core.exception import VNFRepositoryError
+from orchestrator_core.exception import VNFRepositoryError, WrongConfigurationFile
 
 TEMPLATE_SOURCE = Configuration().TEMPLATE_SOURCE
 TEMPLATE_REPOSITORY_URL = Configuration().TEMPLATE_REPOSITORY_URL

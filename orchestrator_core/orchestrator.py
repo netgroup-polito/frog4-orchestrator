@@ -9,6 +9,8 @@ import falcon
 import logging
 import requests
 import json
+from flask.views import MethodView
+from flask import request, jsonify, Response
 
 from sqlalchemy.orm.exc import NoResultFound
 from nffg_library.validator import ValidateNF_FG
@@ -16,12 +18,13 @@ from nffg_library.nffg import NF_FG
 
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, ingoingFlowruleMissing, ManifestValidationError, UserNotFound
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError
 from orchestrator_core.nffg_manager import NFFG_Manager
+from nffg_library.exception import NF_FGValidationError
 
 class YANGAPI(object):
     
-    def on_get(self, request, response, image_id):
+    def get(self, request, response, image_id):
         pass
     
 class TemplateAPI(object):
@@ -29,156 +32,337 @@ class TemplateAPI(object):
     def get(self, request, response, image_id):
         pass
     
-class TemplateAPILocation(object):
+class TemplateAPILocation(MethodView):
     
-    def on_get(self, request, response, template_location):
+    def get(self, template_name):
+        """
+        Get the template
+        ---
+        tags:
+          - NF-FG
+        produces:
+          - application/json             
+        parameters:
+          - name: template_name
+            in: path
+            description: Template to be retrieved
+            type: string            
+            required: true
+          - name: X-Auth-User
+            in: header
+            description: Username
+            required: true
+            type: string
+          - name: X-Auth-Pass
+            in: header
+            description: Password
+            required: true
+            type: string
+          - name: X-Auth-Tenant
+            in: header
+            description: Tenant
+            required: true
+            type: string                        
+                    
+        responses:
+          200:
+            description: Template found  
+          401:
+            description: Unauthorized
+          404:
+            description: Template not found
+          500:
+            description: Internal Error
+        """        
         try:
             UserAuthentication().authenticateUserFromRESTRequest(request)
-            response.body = json.dumps(NFFG_Manager(None).getTemplate(template_location).getDict())
+            return jsonify((NFFG_Manager(None).getTemplate(template_name).getDict()))
         except (unauthorizedRequest, UserNotFound) as err:
-            if request.get_header("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
-            raise falcon.HTTPUnauthorized("Unauthorized", err.message)
-        except Exception as ex:
-            logging.exception(ex)
-            raise falcon.HTTPInternalServerError('Contact the admin. ',str(ex))
+            if request.headers.get("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+            logging.debug(err.message)
+            return ("Unauthorized", 401)
+        except FileNotFoundError as err:
+            return ("Template not found", 404)
+        except VNFRepositoryError as err:
+            return ("VNFRepositoryError: Template not found or incorrect VNF-Repository configuration", 404)        
+        except Exception as err:
+            logging.exception(err)
+            return ("Contact the admin "+ str(err), 500)
 
-class NFFGStatus(object):
-    def on_get(self, request, response, nffg_id):
+class NFFGStatus(MethodView):
+    def get(self, nffg_id):
+        """
+        Get the status of a graph
+        ---
+        tags:
+          - NF-FG
+        produces:
+          - application/json             
+        parameters:
+          - name: nffg_id
+            in: path
+            description: Graph ID to be retrieved
+            type: string            
+            required: true
+          - name: X-Auth-User
+            in: header
+            description: Username
+            required: true
+            type: string
+          - name: X-Auth-Pass
+            in: header
+            description: Password
+            required: true
+            type: string
+          - name: X-Auth-Tenant
+            in: header
+            description: Tenant
+            required: true
+            type: string                        
+                    
+        responses:
+          200:
+            description: Status correctly retrieved       
+          401:
+            description: Unauthorized
+          404:
+            description: Graph not found
+          500:
+            description: Internal Error
+        """            
         try:
             user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
                    
             controller = UpperLayerOrchestratorController(user_data)
-            response.body = controller.getStatus(nffg_id)
-            
-            response.status = falcon.HTTP_200
-            
+            resp = Response(response=controller.getStatus(nffg_id), status=200, mimetype="application/json")
+            return resp
+
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            raise falcon.HTTPNotFound()
+            return ("EXCEPTION - NoResultFound", 404)
         except requests.HTTPError as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError(str(err), err.response.text)
+            return (str(err), 500)
         except sessionNotFound as err:
             logging.exception(err.message)
-            raise falcon.HTTPNotFound()
-        except ingoingFlowruleMissing as err:
-            logging.exception(err.message)
-            raise falcon.HTTPInternalServerError('ingoingFlowruleMissing',err.message)
-        except ManifestValidationError as err:
-            logging.exception(err.message)
-            raise falcon.HTTPInternalServerError('ManifestValidationError',err.message)
+            return (err.message, 404)
         except (unauthorizedRequest, UserNotFound) as err:
-            if request.get_header("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
-            raise falcon.HTTPUnauthorized("Unauthorized", err.message)
-        except Exception as ex:
-            logging.exception(ex)
-            raise falcon.HTTPInternalServerError('Contact the admin. ',str(ex))
+            if request.headers.get("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+            logging.debug(err.message)
+            return ("Unauthorized", 401)
+        except Exception as err:
+            logging.exception(err)
+            return ("Contact the admin "+ str(err), 500)
       
-class UpperLayerOrchestrator(object):
+class UpperLayerOrchestrator(MethodView):
     '''
     Admin class that intercept the REST call through the WSGI server
     '''
     counter = 1
         
-    def on_delete(self, request, response, nffg_id):
+    def delete(self, nffg_id):
+        """
+        Delete a graph
+        ---
+        tags:
+          - NF-FG   
+        parameters:
+          - name: nffg_id
+            in: path
+            description: Graph ID to be deleted
+            required: true
+            type: string            
+          - name: X-Auth-User
+            in: header
+            description: Username
+            required: true
+            type: string
+          - name: X-Auth-Pass
+            in: header
+            description: Password
+            required: true
+            type: string
+          - name: X-Auth-Tenant
+            in: header
+            description: Tenant
+            required: true
+            type: string          
+        responses:
+          200:
+            description: Graph deleted         
+          401:
+            description: Unauthorized
+          404:
+            description: Graph not found
+          500:
+            description: Internal Error
+        """          
         try:
             user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
                    
             controller = UpperLayerOrchestratorController(user_data)
-            response.body = controller.delete(nffg_id)
+            controller.delete(nffg_id)
+        
+            return ("Session deleted")
             
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            raise falcon.HTTPNotFound()
+            return ("EXCEPTION - NoResultFound", 404)
         except requests.HTTPError as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError(str(err), err.response.text)
+            return (str(err), 500)
         except sessionNotFound as err:
             logging.exception(err.message)
-            raise falcon.HTTPNotFound()
-        except ingoingFlowruleMissing as err:
-            logging.exception(err.message)
-            raise falcon.HTTPInternalServerError('ingoingFlowruleMissing',err.message)
-        except ManifestValidationError as err:
-            logging.exception(err.message)
-            raise falcon.HTTPInternalServerError('ManifestValidationError',err.message)
+            return (err.message, 404)
         except (unauthorizedRequest, UserNotFound) as err:
-            if request.get_header("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
-            raise falcon.HTTPUnauthorized("Unauthorized", err.message)
-        except Exception as ex:
-            logging.exception(ex)
-            raise falcon.HTTPInternalServerError('Contact the admin. ',str(ex))
+            if request.headers.get("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+            logging.debug(err.message)
+            return ("Unauthorized", 401) 
+        except Exception as err:
+            logging.exception(err)
+            return ("Contact the admin "+ str(err), 500)
     
-    def on_get(self, request, response, nffg_id):
+    def get(self, nffg_id):
+        """
+        Get a graph
+        Returns an already deployed graph
+        ---
+        tags:
+          - NF-FG
+        produces:
+          - application/json          
+        parameters:
+          - name: nffg_id
+            in: path
+            description: Graph ID to be retrieved
+            required: true
+            type: string            
+          - name: X-Auth-User
+            in: header
+            description: Username
+            required: true
+            type: string
+          - name: X-Auth-Pass
+            in: header
+            description: Password
+            required: true
+            type: string
+          - name: X-Auth-Tenant
+            in: header
+            description: Tenant
+            required: true
+            type: string      
+        responses:
+          200:
+            description: Graph retrieved        
+          401:
+            description: Unauthorized
+          404:
+            description: Graph not found
+          500:
+            description: Internal Error
+        """        
         try:
             user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
                    
             controller = UpperLayerOrchestratorController(user_data)
-            response.body = controller.get(nffg_id)
-            
-            response.status = falcon.HTTP_200
-            
+            resp = Response(response=controller.get(nffg_id), status=200, mimetype="application/json")
+            return resp
+                        
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            raise falcon.HTTPNotFound()
+            return ("EXCEPTION - NoResultFound", 404)
         except requests.HTTPError as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError(str(err), err.response.text)
+            return (str(err), 500)
         except requests.ConnectionError as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError(str(err), "Connection error")        
+            return (str(err), 500)       
         except sessionNotFound as err:
             logging.exception(err.message)
-            raise falcon.HTTPNotFound()
-        except ingoingFlowruleMissing as err:
-            logging.exception(err.message)
-            raise falcon.HTTPInternalServerError('ingoingFlowruleMissing',err.message)
-        except ManifestValidationError as err:
-            logging.exception(err.message)
-            raise falcon.HTTPInternalServerError('ManifestValidationError',err.message)
+            return (err.message, 404)
         except (unauthorizedRequest, UserNotFound) as err:
-            if request.get_header("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
-            raise falcon.HTTPUnauthorized("Unauthorized", err.message)
-        except Exception as ex:
-            logging.exception(ex)
-            raise falcon.HTTPInternalServerError('Contact the admin. ',str(ex))
+            if request.headers.get("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+            logging.debug(err.message)
+            return ("Unauthorized", 401) 
+        except Exception as err:
+            logging.exception(err)
+            return ("Contact the admin "+ str(err), 500)
         
-    def on_put(self, request, response):
+    def put(self):
         """
-        Take as body request the NF-FG      
+        Put a graph
+        Deploy a graph
+        ---
+        tags:
+          - NF-FG
+        parameters:
+          - name: X-Auth-User
+            in: header
+            description: Username
+            required: true
+            type: string
+          - name: X-Auth-Pass
+            in: header
+            description: Password
+            required: true
+            type: string
+          - name: X-Auth-Tenant
+            in: header
+            description: Tenant
+            required: true
+            type: string
+          - name: NF-FG
+            in: body
+            description: Graph to be deployed
+            required: true
+            schema:
+                type: string
+        responses:
+          202:
+            description: Graph correctly deployed          
+          401:
+            description: Unauthorized
+          400:
+            description: Bad request
+          500:
+            description: Internal Error
         """
         try:
             user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
             
-            nffg_dict = json.loads(request.stream.read().decode())
+            nffg_dict = json.loads(request.data.decode())
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
             
             controller = UpperLayerOrchestratorController(user_data, self.counter)
-            response.body = controller.put(nffg)
+            response = controller.put(nffg)
             self.counter +=1
-            
-            response.content_type = "text/plain"
-            response.status = falcon.HTTP_202
-            
+
+            return (response, 202)
+        
         except wrongRequest as err:
             logging.exception(err)
-            raise falcon.HTTPBadRequest("Bad Request", err.description)
+            return ("Bad Request", 400)
         except (unauthorizedRequest, UserNotFound) as err:
-            if request.get_header("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.get_header("X-Auth-User"))
-            raise falcon.HTTPUnauthorized("Unauthorized", err.message)
+            if request.headers.get("X-Auth-User") is not None:
+                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+            logging.debug(err.message)
+            return ("Unauthorized", 401)
+        except NF_FGValidationError as err:
+            logging.exception(err)            
+            return ("NF-FG Validation Error: "+ err.message, 400)
         except requests.HTTPError as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError(str(err), err.response.text)
+            return (str(err), 500)
         except requests.ConnectionError as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError(str(err), "Connection error")        
+            return (str(err), 500)
         except Exception as err:
             logging.exception(err)
-            raise falcon.HTTPInternalServerError('Contact the admin. ', str(err))
+            return ("Contact the admin "+ str(err), 500)

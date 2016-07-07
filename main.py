@@ -1,10 +1,9 @@
 '''
-Created on Oct 1, 2014
-
 @author: fabiomignini
+@author: stefanopetrangeli
 '''
-
-import falcon
+from flask import Flask
+from flasgger import Swagger
 import logging
 import os
 import inspect
@@ -37,22 +36,63 @@ logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, 
 logging.debug("Global Orchestrator Starting")
 print("Welcome to the Global Orchestrator")
 
-# Falcon starts
-app = falcon.API()
-logging.info("Starting Orchestration Server application")
-
-upper_layer_API = UpperLayerOrchestrator()
-nffg_status = NFFGStatus()
+"""
+Old routes, not supported
 template = TemplateAPI()
-template_location = TemplateAPILocation()
 yang = YANGAPI()
 
-app.add_route('/NF-FG', upper_layer_API)
-app.add_route('/NF-FG/{nffg_id}', upper_layer_API)
-app.add_route('/NF-FG/status/{nffg_id}', nffg_status)
 app.add_route('/template/{image_id}', template)
-app.add_route('/template/location/{template_location}', template_location)
 app.add_route('/yang/{image_id}', yang)
+"""
+
+app = Flask(__name__)
+
+swagger_config = {
+    "swagger_version": "2.0",
+    "title": "FROG4 - Global Orchestrator API",
+    "headers": [
+         ('Access-Control-Allow-Origin', '*')
+    ],
+    "specs": [
+        {
+            "version": "1.0.0",
+            "title": "Global Orchestrator API",
+            "endpoint": 'v1_spec',
+            "route": '/v1/spec',
+        }
+    ],
+        "static_url_path": "/apidocs",
+        "static_folder": "swaggerui",
+        "specs_route": "/specs"
+}
+
+Swagger(app, config=swagger_config)
+
+orch = UpperLayerOrchestrator.as_view('NF-FG')
+app.add_url_rule(
+    '/NF-FG/',
+    view_func=orch,
+    methods=["PUT"]
+)
+app.add_url_rule(
+    '/NF-FG/<nffg_id>',
+    view_func=orch,
+    methods=["GET", "DELETE"]
+)
+
+nffg_status = NFFGStatus.as_view('NFFGStatus')
+app.add_url_rule(
+    '/NF-FG/status/<nffg_id>',
+    view_func=nffg_status,
+    methods=["GET"]
+)
+
+template_location = TemplateAPILocation.as_view('template_location')
+app.add_url_rule(
+    '/template/location/<template_name>',
+    view_func=template_location,
+    methods=["GET"]
+)
 
 # start the dd client to receive information about domains
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
@@ -60,4 +100,4 @@ dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.
 thread = Thread(target=dd_server.start)
 thread.start()
 
-logging.info("Falcon Successfully started")
+logging.info("Flask Successfully started")
