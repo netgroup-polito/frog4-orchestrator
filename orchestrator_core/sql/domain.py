@@ -36,7 +36,7 @@ class Domain(object):
         try:
             return session.query(DomainModel).filter_by(id = domain_id).one()
         except Exception as ex:
-            #logging.error(ex)
+            logging.exception(ex)
             raise DomainNotFound("Domain not found: "+str(domain_id)) from None
     
     def getDomainFromName(self, name):
@@ -44,7 +44,7 @@ class Domain(object):
         try:
             return session.query(DomainModel).filter_by(name = name).one()
         except Exception as ex:
-            #logging.error(ex)
+            logging.exception(ex)
             raise DomainNotFound("Domain not found for name: "+str(name)) from None
         
     def getDomainIP(self, domain_id):
@@ -52,7 +52,7 @@ class Domain(object):
         try:
             return session.query(DomainModel).filter_by(id = domain_id).one().ip
         except Exception as ex:
-            #logging.error(ex)
+            logging.exception(ex)
             raise DomainNotFound("Domain not found: "+str(domain_id)) from None
 
     def updateToken(self, domain_id, token):

@@ -276,11 +276,20 @@ class Scheduler(object):
                     domain_2 = domains_info[domain_id_2]
                     for remote_interface in domain_2.interfaces:
                         if self.isConnectedToIPDomain(remote_interface) is True and remote_interface.gre is True:
-                            #Gre_tunnel endpoints found                            
+                            #Gre_tunnel endpoints found
+                            # If local and/or remote interfaces are Openstack compute nodes we need to set the local/remote GRE IP addresses accordingly
+                            if interface.node is not None:
+                                local_ip = interface.node
+                            else:
+                                local_ip = Domain().getDomainIP(domain_id_1)
+                            if remote_interface.node is not None:
+                                remote_ip = remote_interface.node
+                            else:
+                                remote_ip = Domain().getDomainIP(domain_id_2)
                             while matches_found < number_of_links:
                                 print ("gre match found")
                                 matches_found = matches_found + 1
-                                characterization.append(Gre(Domain().getDomainIP(domain_id_1), Domain().getDomainIP(domain_id_2)))
+                                characterization.append(Gre(local_ip, remote_ip))
                             break   
                 if matches_found == number_of_links:
                     break                       
