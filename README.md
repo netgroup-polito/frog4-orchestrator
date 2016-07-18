@@ -7,3 +7,5 @@ The Unify architecture splits this layer in three logical sub-layers. In FROG, t
 - VNFs consolidation: those VNFs implementing the L2 forwarding and that are connected together in the NF-FG, are replaced with a single VNF, in order to limit the resources required to implement the LANs on the physical infrastructure;
 
 The technology dependent part receives the NF-FG from the thechnology indipendendent part and it transform the NF-FG in an other formalism (even the same, like in case of the Universal node is used as infrastucture layer), according to the type of infrastructure layer on which the graph is going to be deployed.  In fact, the global orchestrator supports many implementation of the infrastructure layer.
+
+In order to discover which REST calls are supported by the global orchestrator you can see the API documentation at the URL {Global_Orchestrator_Address}/apidocs/index.html once the global orchestrator is installed and running.
