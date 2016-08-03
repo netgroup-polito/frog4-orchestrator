@@ -16,17 +16,18 @@ Now you have to clone this repository _and_ all the submodules. Submodules inclu
         git submodule init && git submodule update
 
 #### DoubleDecker
-The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker) messaging system to communicate with the domain orchestrators (UN and frog4-openflow-do). In order to launch the frog4-orchestrator you need to install DoubleDecker.
+The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker) messaging system to communicate with the domain orchestrators. In order to launch the frog4-orchestrator you need to install DoubleDecker, if it is not already installed.
 	
 		$ git clone https://github.com/Acreo/DoubleDecker
+		$ git checkout 93ffede
 		$ cd DobuleDecker/python/
-Now you can follow the instruction provided in that folder. You can choose to install it in your system or simply copy the doubledecker folder in the [orchestrator_core](orchestrator_core) folder with the following command:
+Now you can follow the instruction provided in that folder. You can choose to install it in your system (recommended if you are installing also other frog4 components) or simply copy the doubledecker folder in the [orchestrator_core](orchestrator_core) folder with the following command:
 
 		cp -R doubledecker/ {orchestrator_root}/orchestrator_core/
 In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
 
 #### Modify the configuration parameters
-For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
+For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences. It is very important to correctly set the templates section, in order to retrieve templates using a [VNF-Repository] (https://github.com/netgroup-polito/VNF-repository) or in a local directory.
 
 #### Create database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
