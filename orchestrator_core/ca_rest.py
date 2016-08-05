@@ -21,7 +21,7 @@ class CA_Interface(object):
     def __init__(self, user_data, domain):
         self.ip = domain.ip
         self.port = domain.port
-        self.token = domain.token
+        self.token = Domain().getUserToken(domain.id, user_data.id)
         self.domain_id = domain.id
         self.user_data = user_data
         self.base_url = "http://"+str(self.ip)+":"+str(self.port)
@@ -136,7 +136,7 @@ class CA_Interface(object):
             self.headers = {'Content-Type': 'application/json',
                 'cache-control': 'no-cache',
                 'X-Auth-Token': self.token}
-            Domain().updateToken(self.domain_id, self.token)
+            Domain().updateUserToken(self.domain_id, user_data.id, self.token)
         except HTTPError as err:
             logging.error(err)
             raise LoginError("login failed: " + str(err))

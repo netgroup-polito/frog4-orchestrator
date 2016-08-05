@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.4.1deb2ubuntu1
+-- version 4.5.4.1deb2ubuntu2
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Apr 26, 2016 alle 15:30
--- Versione del server: 5.7.11-0ubuntu6
--- Versione PHP: 7.0.4-7ubuntu2
+-- Creato il: Ago 05, 2016 alle 10:13
+-- Versione del server: 5.7.13-0ubuntu0.16.04.2
+-- Versione PHP: 7.0.8-0ubuntu0.16.04.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -31,8 +31,7 @@ CREATE TABLE `domain` (
   `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `ip` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `port` int(11) NOT NULL,
-  `token` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL
+  `port` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -84,6 +83,18 @@ CREATE TABLE `domain_neighbor` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `domain_token`
+--
+
+CREATE TABLE `domain_token` (
+  `user_id` int(11) NOT NULL,
+  `domain_id` int(11) NOT NULL,
+  `token` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `domain_vlan`
 --
 
@@ -118,8 +129,6 @@ CREATE TABLE `session` (
   `user_id` varchar(64) DEFAULT NULL,
   `service_graph_id` varchar(64) NOT NULL,
   `service_graph_name` varchar(64) DEFAULT NULL,
-  `ingress_domain` varchar(64) DEFAULT NULL,
-  `egress_domain` varchar(64) DEFAULT NULL,
   `status` varchar(64) NOT NULL,
   `started_at` datetime DEFAULT NULL,
   `last_update` datetime DEFAULT NULL,
@@ -139,6 +148,15 @@ CREATE TABLE `tenant` (
   `description` varchar(128) CHARACTER SET utf8 NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dump dei dati per la tabella `tenant`
+--
+
+INSERT INTO `tenant` (`id`, `name`, `description`) VALUES
+('0', 'admin_tenant', ''),
+('1', 'PoliTO_chain1', ''),
+('2', 'demo', '');
+
 -- --------------------------------------------------------
 
 --
@@ -152,6 +170,15 @@ CREATE TABLE `user` (
   `tenant_id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `mail` varchar(64) CHARACTER SET utf8 DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dump dei dati per la tabella `user`
+--
+
+INSERT INTO `user` (`id`, `name`, `password`, `tenant_id`, `mail`) VALUES
+('0', 'admin', 'stackstack', '0', NULL),
+('1', 'AdminPoliTO', 'AdminPoliTO', '1', NULL),
+('2', 'demo', 'demo', '2', NULL);
 
 -- --------------------------------------------------------
 
@@ -193,6 +220,12 @@ ALTER TABLE `domain_information`
 --
 ALTER TABLE `domain_neighbor`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `domain_token`
+--
+ALTER TABLE `domain_token`
+  ADD PRIMARY KEY (`user_id`,`domain_id`);
 
 --
 -- Indici per le tabelle `domain_vlan`

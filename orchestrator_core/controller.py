@@ -168,7 +168,7 @@ class UpperLayerOrchestratorController(object):
             logging.debug('Update completed')
         else:
             session_id  = uuid.uuid4().hex
-            Session().inizializeSession(session_id, self.user_data.getUserID(), nffg.id, nffg.name)
+            Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name)
             try:
                 # Manage profile
                 self.prepareNFFG(nffg)

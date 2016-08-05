@@ -9,14 +9,12 @@ from orchestrator_core.exception import unauthorizedRequest
 
 class UserData(object):
     
-    def __init__(self, usr=None, pwd=None, tnt=None):
+    def __init__(self, _id = None, usr=None, pwd=None, tnt=None):
+        self.id = _id
         self.username = usr
         self.password = pwd
         self.tenant = tnt
-    
-    def getUserID(self):
-        return User().getUser(self.username).id
-    
+
     def getUserData(self, user_id):
         user = User().getUserFromID(user_id)
         self.username = user.name
@@ -42,7 +40,7 @@ class UserAuthentication(object):
         if user.password == password:
             tenantName = User().getTenantName(user.tenant_id)
             if tenantName == tenant:
-                userobj = UserData(username, password, tenant)
+                userobj = UserData(user.id, username, password, tenant)
                 return userobj
         raise unauthorizedRequest('Invalid authentication credentials')
     
