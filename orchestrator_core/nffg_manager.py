@@ -10,6 +10,7 @@ from orchestrator_core.config import Configuration
 from nffg_library.validator import ValidateNF_FG
 from nffg_library.nffg import NF_FG, Match, Action
 from orchestrator_core.exception import VNFRepositoryError, WrongConfigurationFile
+from requests.exceptions import HTTPError
 
 TEMPLATE_SOURCE = Configuration().TEMPLATE_SOURCE
 TEMPLATE_REPOSITORY_URL = Configuration().TEMPLATE_REPOSITORY_URL
@@ -97,7 +98,12 @@ class NFFG_Manager(object):
             template_dict = json.loads(json.loads(resp.text))
             self.stored_templates[uri] = template_dict
             return template_dict
-        except Exception as ex:
+        except HTTPError as err:
+            if err.response.status_code == 404:
+                raise VNFRepositoryError("VNF Template "+ uri+ "not found!")
+            else:
+                raise VNFRepositoryError("An error occurred while contacting the VNF Repository")
+        except Exception:
             raise VNFRepositoryError("An error occurred while contacting the VNF Repository")
     
     # Graph optimization
