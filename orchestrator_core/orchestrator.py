@@ -153,7 +153,7 @@ class NFFGStatus(MethodView):
             return ("Unauthorized", 401)
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin "+ str(err), 500)
+            return ("Contact the admin: "+ str(err), 500)
       
 class UpperLayerOrchestrator(MethodView):
     '''
@@ -222,7 +222,7 @@ class UpperLayerOrchestrator(MethodView):
             return ("Unauthorized", 401) 
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin "+ str(err), 500)
+            return ("Contact the admin: "+ str(err), 500)
     
     def get(self, nffg_id):
         """
@@ -290,7 +290,7 @@ class UpperLayerOrchestrator(MethodView):
             return ("Unauthorized", 401) 
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin "+ str(err), 500)
+            return ("Contact the admin: "+ str(err), 500)
         
     def put(self):
         """
@@ -362,6 +362,8 @@ class UpperLayerOrchestrator(MethodView):
         except requests.ConnectionError as err:
             logging.exception(err)
             return (str(err), 500)
+        except VNFRepositoryError as err:
+            return (err.message, 500)        
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin "+ str(err), 500)
+            return ("Contact the admin: "+ str(err), 500)

@@ -100,7 +100,7 @@ class NFFG_Manager(object):
             return template_dict
         except HTTPError as err:
             if err.response.status_code == 404:
-                raise VNFRepositoryError("VNF Template "+ uri+ "not found!")
+                raise VNFRepositoryError("VNF Template "+ uri+ " not found!")
             else:
                 raise VNFRepositoryError("An error occurred while contacting the VNF Repository")
         except Exception:
