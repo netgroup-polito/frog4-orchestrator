@@ -10,7 +10,7 @@ import inspect
 
 from threading import Thread
 from orchestrator_core.config import Configuration
-from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus
+from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus, ActiveGraphs
 from orchestrator_core.dd_server import DD_Server
 
 conf = Configuration()
@@ -29,7 +29,7 @@ elif conf.VERBOSE is True:
 else:
     log_level = logging.WARNING
 
-#format = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
+#log_format = '%(asctime)s %(name)s %(funcName)s %(levelname)s %(message)s'
 log_format = '%(asctime)s %(levelname)s %(message)s - %(filename)s'
 
 logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%m/%d/%Y %I:%M:%S %p')
@@ -78,6 +78,13 @@ app.add_url_rule(
     '/NF-FG/<nffg_id>',
     view_func=orch,
     methods=["GET", "DELETE"]
+)
+
+active_graphs = ActiveGraphs.as_view("active_graphs")
+app.add_url_rule(
+    '/NF-FG/',
+    view_func=active_graphs,
+    methods=["GET"]
 )
 
 nffg_status = NFFGStatus.as_view('NFFGStatus')

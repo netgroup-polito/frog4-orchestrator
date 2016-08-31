@@ -33,25 +33,40 @@ class UpperLayerOrchestratorController(object):
 
     def get(self, nffg_id):
         #TODO: update this function taking into account the new split algorithm
-        session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
-        logging.debug("Getting session: "+str(session.id))
-        graphs_ref = Graph().getGraphs(session.id)
-        instantiated_nffgs = []
-        for graph_ref in graphs_ref:
-            domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
-            instantiated_nffgs.append(CA_Interface(self.user_data, domain).getNFFG(graph_ref.id))
-        
-        if not instantiated_nffgs:
-            raise NoResultFound()
-        # If the graph has been split, we need to rebuild the original nffg
-        if len(instantiated_nffgs) == 2:
-            instantiated_nffgs[0].join(instantiated_nffgs[1])
-        if len(instantiated_nffgs) == 3:
-            # Second domain is discarded because not present in the original nffg
-            instantiated_nffgs[0].join(instantiated_nffgs[2])
-       
-        instantiated_nffgs[0].id = str(nffg_id)
-        return instantiated_nffgs[0].getJSON()
+        if nffg_id is None:
+            # Get the list of active graphs
+            sessions = Session().get_active_user_sessions(self.user_data.id)
+            graphs = []
+            for session in sessions:
+                graph = {}
+                graph['graph_id'] = session.service_graph_id
+                graph['graph_name'] = session.service_graph_name
+                graph['deploy time'] = str(session.started_at)
+                graph['last_update_time'] = str(session.last_update)         
+                graphs.append(graph)
+            response_dict = {}
+            response_dict['active_graphs'] = graphs
+            return json.dumps(response_dict)
+        else:
+            session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
+            logging.debug("Getting session: "+str(session.id))
+            graphs_ref = Graph().getGraphs(session.id)
+            instantiated_nffgs = []
+            for graph_ref in graphs_ref:
+                domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
+                instantiated_nffgs.append(CA_Interface(self.user_data, domain).getNFFG(graph_ref.id))
+            
+            if not instantiated_nffgs:
+                raise NoResultFound()
+            # If the graph has been split, we need to rebuild the original nffg
+            if len(instantiated_nffgs) == 2:
+                instantiated_nffgs[0].join(instantiated_nffgs[1])
+            if len(instantiated_nffgs) == 3:
+                # Second domain is discarded because not present in the original nffg
+                instantiated_nffgs[0].join(instantiated_nffgs[2])
+           
+            instantiated_nffgs[0].id = str(nffg_id)
+            return instantiated_nffgs[0].getJSON()
     
     def delete(self, nffg_id):        
         session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)

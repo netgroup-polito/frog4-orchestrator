@@ -154,6 +154,44 @@ class NFFGStatus(MethodView):
         except Exception as err:
             logging.exception(err)
             return ("Contact the admin: "+ str(err), 500)
+
+class ActiveGraphs(MethodView):
+    def get(self):
+        """
+        Get the list of graphs currently deployed
+        Returns the list of the active graphs
+        ---
+        tags:
+          - NF-FG
+        produces:
+          - application/json          
+        parameters:
+          - name: X-Auth-User
+            in: header
+            description: Username
+            required: true
+            type: string
+          - name: X-Auth-Pass
+            in: header
+            description: Password
+            required: true
+            type: string
+          - name: X-Auth-Tenant
+            in: header
+            description: Tenant
+            required: true
+            type: string      
+        responses:
+          200:
+            description: List retrieved        
+          401:
+            description: Unauthorized
+          500:
+            description: Internal Error
+        """
+        # This class is necessary because there is a conflict in the swagger documentation of get operation
+        upper_layer_orch = UpperLayerOrchestrator()
+        return upper_layer_orch.get()
       
 class UpperLayerOrchestrator(MethodView):
     '''
@@ -224,7 +262,7 @@ class UpperLayerOrchestrator(MethodView):
             logging.exception(err)
             return ("Contact the admin: "+ str(err), 500)
     
-    def get(self, nffg_id):
+    def get(self, nffg_id = None):
         """
         Get a graph
         Returns an already deployed graph
@@ -238,7 +276,7 @@ class UpperLayerOrchestrator(MethodView):
             in: path
             description: Graph ID to be retrieved
             required: true
-            type: string            
+            type: string
           - name: X-Auth-User
             in: header
             description: Username

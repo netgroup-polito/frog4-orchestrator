@@ -75,6 +75,16 @@ class Session(object):
             raise sessionNotFound("Session Not Found")
         return session_ref
     
+    def get_active_user_sessions(self, user_id):
+        '''
+        returns if exists all active session of the user
+        '''
+        session = get_session()
+        session_ref = session.query(SessionModel).filter_by(user_id = user_id).filter_by(ended = None).filter_by(error = None).all()
+        if session_ref is None:
+            raise sessionNotFound("No active sessions")
+        return session_ref    
+    
     def set_ended(self, session_id):
         '''
         Set the ended status for the session identified with session_id
