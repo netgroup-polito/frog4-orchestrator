@@ -19,7 +19,7 @@ class Configuration(object, metaclass=Singleton):
         if os.getenv("FROG4_ORCH_CONF") is not None:
             self.conf_file = os.environ["FROG4_ORCH_CONF"]
         else:
-            self.conf_file = "config/default-config.ini"
+            self.conf_file = "config/config.ini"
 
         self.inizialize()
 

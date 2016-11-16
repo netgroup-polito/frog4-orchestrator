@@ -5,9 +5,10 @@ except ImportError:
 
 import json
 import logging
-from .domain_info import DomainInfo
+from .domain_info import DomainInfo, HardwareInfo
 from .sql.domain import Domain
 from .sql.domains_info import DomainInformation
+
 
 class DD_Server(ClientSafe):
     def __init__(self, name, dealerurl, customer, keyfile):
@@ -30,11 +31,9 @@ class DD_Server(ClientSafe):
 
             # domain info
             di = DomainInfo()
-            di.parseDict(domain_info)
-
+            di.parse_dict(domain_info)
             domain_id = Domain().addDomain(di.name, di.type, di.domain_ip, di.domain_port)
             di.domain_id = domain_id
-
             logging.debug("Domain information arrived from %s: %s" % (source, json.dumps(domain_info)))
             DomainInformation().add_domain_info(di)
         except Exception as ex:
