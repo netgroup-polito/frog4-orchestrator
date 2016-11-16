@@ -37,8 +37,10 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 	    
         mysql -u root -p
         mysql> CREATE DATABASE orchestrator;
+	mysql> CREATE USER 'orchestrator'@'localhost' IDENTIFIED BY 'ORCH_DBPASS';
         mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'localhost' IDENTIFIED BY 'ORCH_DBPASS';
-        mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'%' IDENTIFIED BY 'ORCH_DBPASS';	
+        mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'%' IDENTIFIED BY 'ORCH_DBPASS';
+	mysql> FLUSH PRIVILEGES;
         mysql> exit;
     
 - Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
