@@ -8,7 +8,7 @@ import logging
 from .scheduler import Scheduler
 import uuid
 
-from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest, VNFRepositoryError
+from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest, VNFRepositoryError, NoFunctionalCapabilityFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -19,6 +19,7 @@ from collections import OrderedDict
 from orchestrator_core.ca_rest import CA_Interface
 from sqlalchemy.orm.exc import NoResultFound
 from requests.exceptions import HTTPError, ConnectionError
+from orchestrator_core.sql.domains_info import DomainInformation
 
 DEBUG_MODE = Configuration().DEBUG_MODE
 
@@ -193,7 +194,25 @@ class UpperLayerOrchestratorController(object):
                 domain_nffg_dict = OrderedDict()
                 for i in range(0, len(domains)):
                     domain_nffg_dict[domains[i]]=nffgs[i]
-                
+
+                # check if all vnf are available on the selected domain as FC
+                for domain, nffg in domain_nffg_dict.items():
+                    logging.debug('Passato di qui1: domain id = %s', domain.id )
+                    domain_info = DomainInformation().get_domain_info()[domain.id]
+                    logging.debug(domain_info.get_dict())
+                    for vnf in nffg.vnfs:
+                        logging.debug('Passato di qui2: vnf name = %s', vnf.name)
+                        found = False
+                        for function_capability in domain_info.capabilities.functional_capabilities:
+                            if vnf.name.lower() == function_capability.type.lower():  #convert both of them to lower case for case insensitive comparison
+                                logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
+                                found = True
+                                break
+
+                        if found is False:
+                            raise NoFunctionalCapabilityFound("Error! NFFG can't be deployed. No functional capability found in the domain specified in the nffg.")
+
+
                 for domain, nffg in domain_nffg_dict.items():
                     # Save the graph in the database, with the state initializing
                     Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict)>1)
@@ -219,6 +238,10 @@ class UpperLayerOrchestratorController(object):
                 Session().set_error(session_id)
                 raise ex
             except VNFRepositoryError as ex:
+                logging.exception(ex)
+                Session().set_error(session_id)
+                raise ex
+            except NoFunctionalCapabilityFound as ex:
                 logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex

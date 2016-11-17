@@ -7,7 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from orchestrator_core.sql.sql_server import get_session
 from orchestrator_core.config import Configuration
 from orchestrator_core.sql.session import Session
-from orchestrator_core.domain_info import DomainInfo, GreTunnel, Interface, Neighbor
+from orchestrator_core.domain_info import DomainInfo, GreTunnel, Interface, Neighbor, Capabilities, \
+    FunctionalCapability, FunctionSpecification, HardwareInfo
 from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -80,10 +81,17 @@ class FunctionSpecificationModel(Base):
     mean = Column(VARCHAR(64))
 
 class DomainInformation(object):
+
     def __init__(self):
         pass
 
     def get_domain_info(self, domain_name=None):
+        """
+
+        :param domain_name:
+        :return:
+        :rtype: list of DomainInfo
+        """
         session = get_session()
         domains_info_list = {}
         if domain_name is not None:
@@ -93,12 +101,14 @@ class DomainInformation(object):
             for domain_ref in domains_refs:
                 if domain_ref.domain_id not in domains_info_list:
                     domain_type = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().type
-                    domain_info = DomainInfo(domain_id=domain_ref.domain_id, _type=domain_type)
+                    domain_ip_addr = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().ip
+                    domain_port_num = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().port
+                    domain_info = DomainInfo(domain_id=domain_ref.domain_id, _type=domain_type, domain_ip=domain_ip_addr, domain_port=str(domain_port_num))
                     domains_info_list[domain_ref.domain_id]=domain_info
                 else:
                     domain_info = domains_info_list[domain_ref.domain_id]
 
-                intf = Interface(node=domain_ref.node, name=domain_ref.interface, side=domain_ref.interface.side, gre=domain_ref.gre, vlan=domain_ref.vlan)
+                intf = Interface(node=domain_ref.node, name=domain_ref.interface, side=domain_ref.side, gre=domain_ref.gre, vlan=domain_ref.vlan)
                 if intf.gre is True:
                     gre_refs = session.query(DomainsGreModel).filter_by(domain_info_id=domain_ref.id).all()
                     for gre_ref in gre_refs:
@@ -115,7 +125,16 @@ class DomainInformation(object):
                     neighbor = Neighbor(domain_name=neighbor_ref.neighbor_domain_name, node=neighbor_ref.neighbor_node, remote_interface=neighbor_ref.neighbor_interface, neighbor_type=neighbor_ref.neighbor_domain_type)
                     intf.add_neighbor(neighbor)
 
+                domain_info.hardware_info = HardwareInfo()
                 domain_info.hardware_info.add_interface(intf)
+
+                domain_info.capabilities = Capabilities()
+
+                func_cap_refs = session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_ref.domain_id).all()
+                for func_cap_ref in func_cap_refs:
+                    func_cap = FunctionalCapability(_type=func_cap_ref.type, name=func_cap_ref.name, ready=func_cap_ref.ready, family=func_cap_ref.family, template=func_cap_ref.template, resources=func_cap_ref.resource_id)
+                    domain_info.capabilities.functional_capabilities.append(func_cap)
+
         return domains_info_list
 
     def getDomainIDfromNode(self, node):

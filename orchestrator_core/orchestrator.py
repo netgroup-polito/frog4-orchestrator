@@ -17,7 +17,7 @@ from nffg_library.nffg import NF_FG
 
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError, NoFunctionalCapabilityFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
@@ -376,7 +376,7 @@ class UpperLayerOrchestrator(MethodView):
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
-            
+
             controller = UpperLayerOrchestratorController(user_data, self.counter)
             response = controller.put(nffg)
             self.counter +=1
@@ -401,7 +401,9 @@ class UpperLayerOrchestrator(MethodView):
             logging.exception(err)
             return (str(err), 500)
         except VNFRepositoryError as err:
-            return (err.message, 500)        
+            return (err.message, 500)
+        except NoFunctionalCapabilityFound as err:
+            return (err.message, 400)
         except Exception as err:
             logging.exception(err)
             return ("Contact the admin: "+ str(err), 500)
