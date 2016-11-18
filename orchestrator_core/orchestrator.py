@@ -17,7 +17,7 @@ from nffg_library.nffg import NF_FG
 
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError, NoFunctionalCapabilityFound
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
@@ -403,6 +403,8 @@ class UpperLayerOrchestrator(MethodView):
         except VNFRepositoryError as err:
             return (err.message, 500)
         except NoFunctionalCapabilityFound as err:
+            return (err.message, 400)
+        except FunctionalCapabilityAlreadyInUse as err:
             return (err.message, 400)
         except Exception as err:
             logging.exception(err)

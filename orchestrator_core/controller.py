@@ -8,7 +8,7 @@ import logging
 from .scheduler import Scheduler
 import uuid
 
-from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest, VNFRepositoryError, NoFunctionalCapabilityFound
+from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -206,8 +206,14 @@ class UpperLayerOrchestratorController(object):
                         for function_capability in domain_info.capabilities.functional_capabilities:
                             if vnf.name.lower() == function_capability.type.lower():  #convert both of them to lower case for case insensitive comparison
                                 logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
-                                found = True
-                                break
+                                if function_capability.ready is True:
+                                    logging.debug("Ok! The function capability is ready!")
+                                    found = True
+                                    break
+                                else:
+                                    logging.debug("Error! The function capability is already in use!")
+                                    raise FunctionalCapabilityAlreadyInUse("Error! NFFG can't be deployed. The functional capability is already in use!")
+
 
                         if found is False:
                             raise NoFunctionalCapabilityFound("Error! NFFG can't be deployed. No functional capability found in the domain specified in the nffg.")
@@ -242,6 +248,10 @@ class UpperLayerOrchestratorController(object):
                 Session().set_error(session_id)
                 raise ex
             except NoFunctionalCapabilityFound as ex:
+                logging.exception(ex)
+                Session().set_error(session_id)
+                raise ex
+            except FunctionalCapabilityAlreadyInUse as ex:
                 logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex
