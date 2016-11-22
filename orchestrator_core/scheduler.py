@@ -376,7 +376,7 @@ class Scheduler(object):
         Determines whether interface is connected to an IP domain
         '''
         for neighbor in interface.neighbors:
-            if neighbor.domain_type == "IP":
+            if neighbor.neighbor_type == "IP":
                 return True
         return False
     
