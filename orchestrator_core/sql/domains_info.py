@@ -101,9 +101,10 @@ class DomainInformation(object):
             for domain_ref in domains_refs:
                 if domain_ref.domain_id not in domains_info_list:
                     domain_type = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().type
+                    domain_name = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().name
                     domain_ip_addr = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().ip
                     domain_port_num = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().port
-                    domain_info = DomainInfo(domain_id=domain_ref.domain_id, _type=domain_type, domain_ip=domain_ip_addr, domain_port=str(domain_port_num))
+                    domain_info = DomainInfo(domain_id=domain_ref.domain_id, name=domain_name, _type=domain_type, domain_ip=domain_ip_addr, domain_port=str(domain_port_num))
                     domains_info_list[domain_ref.domain_id]=domain_info
                 else:
                     domain_info = domains_info_list[domain_ref.domain_id]
@@ -127,6 +128,7 @@ class DomainInformation(object):
 
                 domain_info.hardware_info = HardwareInfo()
                 domain_info.hardware_info.add_interface(intf)
+                domain_info.interfaces = domain_info.hardware_info.interfaces #added because the old code references to di.interfaces and not di.hw_info.interfaces
 
                 domain_info.capabilities = Capabilities()
 
@@ -134,6 +136,7 @@ class DomainInformation(object):
                 for func_cap_ref in func_cap_refs:
                     func_cap = FunctionalCapability(_type=func_cap_ref.type, name=func_cap_ref.name, ready=func_cap_ref.ready, family=func_cap_ref.family, template=func_cap_ref.template, resources=func_cap_ref.resource_id)
                     domain_info.capabilities.functional_capabilities.append(func_cap)
+
 
         return domains_info_list
 
@@ -194,20 +197,20 @@ class DomainInformation(object):
                 self.info_id = self.info_id + 1
 
             for functional_capability in domain_info.capabilities.functional_capabilities:
-                func_cap_ref = FunctionalCapabilityModel(id=self.functional_capability_base_id, domain_id=domain_info.domain_id, type=functional_capability.type,
+                func_cap_ref = FunctionalCapabilityModel(id=self.functional_capability_id, domain_id=domain_info.domain_id, type=functional_capability.type,
                                                          name=functional_capability.name, ready=functional_capability.ready, family=functional_capability.family,
                                                          template=functional_capability.template)
                 session.add(func_cap_ref)
                 logging.debug("Added entry in functional_capability")
                 for function_specification in functional_capability.function_specifications:
-                    func_spec_ref = FunctionSpecificationModel(id=self.function_specification_base_id, functional_capability_id=self.functional_capability_base_id,
+                    func_spec_ref = FunctionSpecificationModel(id=self.function_specification_id, functional_capability_id=self.functional_capability_id,
                                                                name=function_specification.name, value=function_specification.value, unit=function_specification.unit,
                                                                mean=function_specification.mean)
                     session.add(func_spec_ref)
-                    self.function_specification_base_id = self.function_specification_base_id + 1
+                    self.function_specification_id = self.function_specification_id + 1
                     logging.debug("Added entry in function_specification")
 
-                self.functional_capability_base_id = self.functional_capability_base_id + 1
+                self.functional_capability_id = self.functional_capability_id + 1
 
     def id_generator(self, domain_info):
         info_base_id = self._get_higher_info_id()
@@ -233,13 +236,13 @@ class DomainInformation(object):
         else:
             self.neighbor_id = 0
         if functional_capability_base_id is not None:
-            self.functional_capability_base_id = int(functional_capability_base_id) + 1
+            self.functional_capability_id = int(functional_capability_base_id) + 1
         else:
-            self.functional_capability_base_id = 0
+            self.functional_capability_id = 0
         if function_specification_base_id is not None:
-            self.function_specification_base_id = int(function_specification_base_id) + 1
+            self.function_specification_id = int(function_specification_base_id) + 1
         else:
-            self.function_specification_base_id = 0
+            self.function_specification_id = 0
 
 
     def _get_higher_info_id(self):
@@ -264,4 +267,4 @@ class DomainInformation(object):
 
     def _get_higher_function_specification_id(self):
         session = get_session()
-        return session.query(func.max(FunctionalCapabilityModel.id).label("max_id")).one().max_id
+        return session.query(func.max(FunctionSpecificationModel.id).label("max_id")).one().max_id
