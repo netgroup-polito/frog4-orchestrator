@@ -189,64 +189,13 @@ class UpperLayerOrchestratorController(object):
                 # Manage profile
                 self.prepareNFFG(nffg)
 
-                # fetch a list of feasible domains for every nffg's vnf
+                # If nffg's vnf domain is not tagged, tag it:
 
-                feasible_domain_dictionary = {} #feasible means domains that have FC + GRE support
-                domains_info = DomainInformation().get_domain_info()
-                for vnf in nffg.vnfs:
-                    if vnf.domain is None: # checks if at least one vnf is without domain name
-                        #logging.debug('Passato di qui1. vnf name = %s', vnf.name)
-                        domain_list = []
-                        foundGRE = False
-                        for domain_id, domain_info in domains_info.items():
-                            #logging.debug('Passato di qui1. domain_info = %s', domain_info)
-                            logging.debug(domain_info.get_dict())
-                            for function_capability in domain_info.capabilities.functional_capabilities:
-                                if vnf.name.lower() == function_capability.type.lower():
-                                    for interface in domain_info.hardware_info.interfaces: #controlla tutte le interfacce ma alla prima che permette GRE esce dal ciclo
-                                        if interface.gre is True: #TODO: Con questo algoritmo controllo solo l'interfaccia del dominio di partenza. Da controllare che l'interfaccia remota a cui si collega permetta anche essa GRE
-                                            for neighbor in interface.neighbors: #controlla tutti i neighbors ma appena trova uno che permette GRE esce dal ciclo
-                                                if neighbor.neighbor_type == "IP":
-                                                    logging.debug('Passato di qui. La interfaccia %s permette di fare tunnel GRE ', interface.name)
-                                                    foundGRE = True
-                                                    domain_list.append(domain_info.name)
-                                                    break
-                                        if foundGRE is True:
-                                            break
+                # 1) Fetch a list of feasible domains for every nffg's vnf
+                feasible_domain_dictionary = self.generateFeasibleDomainDictionary(nffg)
 
-                                    #logging.debug('Passato di qui2. domain name = %s', domain_info.name)
-
-                        feasible_domain_dictionary[vnf.name.lower()] = domain_list
-
-                        logging.debug('Passato di qui3. feasible_domain_dictionary = %s', feasible_domain_dictionary)
-
-                # checks if endpoints' domain matches with a domain from the feasible_domain_dictionary
-                for vnf in nffg.vnfs:
-                    if vnf.domain is None: # checks if at least one vnf is without domain name
-                        for dict_vnf_name, dict_domain_list in feasible_domain_dictionary.items():
-                            if vnf.name.lower() == dict_vnf_name.lower():
-                                foundSameDomainName = False
-                                firstDomainFeasibleFlag = True
-                                for domain_name_from_list in dict_domain_list:
-                                    if firstDomainFeasibleFlag is True:
-                                        first_domain = domain_name_from_list  # primo dominio analizzato e primo endpoint analizzato
-                                        firstDomainFeasibleFlag = False
-                                    for endpoint in nffg.end_points:
-                                        if domain_name_from_list.lower() == endpoint.domain.lower():
-                                            vnf.domain = endpoint.domain.lower() #Taggo il vnf domain con lo stesso domain degli endpoint
-                                            foundSameDomainName = True
-                                            logging.debug('Passato di qui4. Trovato feasible domain=endpoint domain: %s', vnf.domain)
-                                            break
-
-                                    if foundSameDomainName is True: #domain coincidente trovato esco dal ciclo
-                                        break
-
-                                if foundSameDomainName is False:
-                                    vnf.domain = first_domain #se non trovo nessun endpoint domain che coincide taggo la vnf col primo feasible domain analizzato
-                                    logging.debug('Passato di qui5. Non trovato nessun endpoint domain coincidente. Taggo la vnf col primo feasible domain in lista: %s', vnf.domain)
-
-
-
+                # 2) Checks if endpoints' domain matches with a domain from the feasible_domain_dictionary and tag the vnf domain
+                self.checkEnpointDomainAndTagVNF(nffg, feasible_domain_dictionary)
 
                 ##Graph().id_generator(nffg, session_id)
                 domains, nffgs = Scheduler(self.counter).schedule(nffg)
@@ -254,28 +203,8 @@ class UpperLayerOrchestratorController(object):
                 for i in range(0, len(domains)):
                     domain_nffg_dict[domains[i]]=nffgs[i]
 
-                # check if all vnf are available on the selected domain as FC
-                for domain, nffg in domain_nffg_dict.items():
-                    #logging.debug('Passato di qui1: domain id = %s', domain.id )
-                    domain_info = DomainInformation().get_domain_info()[domain.id]
-                    logging.debug(domain_info.get_dict())
-                    for vnf in nffg.vnfs:
-                        #logging.debug('Passato di qui2: vnf name = %s', vnf.name)
-                        found = False
-                        for function_capability in domain_info.capabilities.functional_capabilities:
-                            if vnf.name.lower() == function_capability.type.lower():  #convert both of them to lower case for case insensitive comparison
-                                logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
-                                if function_capability.ready is True:
-                                    logging.debug("Ok! The function capability is ready!")
-                                    found = True
-                                    break
-                                else:
-                                    logging.debug("Error! The function capability is already in use!")
-                                    raise FunctionalCapabilityAlreadyInUse("Error! NFFG can't be deployed. The functional capability is already in use!")
-
-
-                        if found is False:
-                            raise NoFunctionalCapabilityFound("Error! NFFG can't be deployed. No functional capability found in the domain specified in the nffg.")
+                # Check if all vnf are available and ready to use on the selected domain as FC
+                self.checkVNFAvailabilityOnTheSelectedDomain(domain_nffg_dict)
 
 
                 for domain, nffg in domain_nffg_dict.items():
@@ -406,3 +335,94 @@ class UpperLayerOrchestratorController(object):
                 status['percentage_completed'] = num_graphs_completed/num_graphs*100
 
         return status
+
+    def generateFeasibleDomainDictionary(self, nffg):
+        # Fetch a list of feasible domains for every nffg's vnf
+
+        feasible_domain_dictionary = {}  # feasible means domains that have FC + GRE support
+        domains_info = DomainInformation().get_domain_info()
+        for vnf in nffg.vnfs:
+            if vnf.domain is None:  # checks if at least one vnf is without domain name
+                # logging.debug('Passato di qui1. vnf name = %s', vnf.name)
+                domain_list = []
+                foundGRE = False
+                for domain_id, domain_info in domains_info.items():
+                    # logging.debug('Passato di qui1. domain_info = %s', domain_info)
+                    logging.debug(domain_info.get_dict())
+                    for function_capability in domain_info.capabilities.functional_capabilities:
+                        if vnf.name.lower() == function_capability.type.lower():
+                            for interface in domain_info.hardware_info.interfaces:  # controlla tutte le interfacce ma alla prima che permette GRE esce dal ciclo
+                                if interface.gre is True:  # TODO: Con questo algoritmo controllo solo l'interfaccia del dominio di partenza. Da controllare che l'interfaccia remota a cui si collega permetta anche essa GRE
+                                    for neighbor in interface.neighbors:  # controlla tutti i neighbors ma appena trova uno che permette GRE esce dal ciclo
+                                        if neighbor.neighbor_type == "IP":
+                                            logging.debug(
+                                                'Ok! The interface %s supports tunnel GRE usage',
+                                                interface.name)
+                                            foundGRE = True
+                                            domain_list.append(domain_info.name)
+                                            break
+                                if foundGRE is True:
+                                    break
+
+                                    # logging.debug('Passato di qui2. domain name = %s', domain_info.name)
+
+                feasible_domain_dictionary[vnf.name.lower()] = domain_list
+
+                logging.debug('feasible_domain_dictionary = %s', feasible_domain_dictionary)
+
+        return feasible_domain_dictionary
+
+    def checkEnpointDomainAndTagVNF(self, nffg, feasible_domain_dictionary):
+        # Checks if endpoints' domain matches with a domain from the feasible_domain_dictionary
+
+        for vnf in nffg.vnfs:
+            if vnf.domain is None:  # checks if at least one vnf is without domain name
+                for dict_vnf_name, dict_domain_list in feasible_domain_dictionary.items():
+                    if vnf.name.lower() == dict_vnf_name.lower():
+                        foundSameDomainName = False
+                        firstDomainFeasibleFlag = True
+                        for domain_name_from_list in dict_domain_list:
+                            if firstDomainFeasibleFlag is True:
+                                first_domain = domain_name_from_list  # primo dominio analizzato e primo endpoint analizzato
+                                firstDomainFeasibleFlag = False
+                            for endpoint in nffg.end_points:
+                                if domain_name_from_list.lower() == endpoint.domain.lower():
+                                    vnf.domain = endpoint.domain.lower()  # Taggo il vnf domain con lo stesso domain degli endpoint
+                                    foundSameDomainName = True
+                                    logging.debug('Ok! Found a feasible domain=endpoint domain: %s', vnf.domain)
+                                    break
+
+                            if foundSameDomainName is True:  # domain coincidente trovato esco dal ciclo
+                                break
+
+                        if foundSameDomainName is False:
+                            vnf.domain = first_domain  # se non trovo nessun endpoint domain che coincide taggo la vnf col primo feasible domain analizzato
+                            logging.debug(
+                                'No matching endpoint domain found. Tagging the VNF with the first feasible domain in the list: %s',
+                                vnf.domain)
+
+    def checkVNFAvailabilityOnTheSelectedDomain(self, domain_nffg_dict):
+        # Checks if all vnf are available and ready to use on the selected domain as FC
+
+        for domain, nffg in domain_nffg_dict.items():
+            # logging.debug('Passato di qui1: domain id = %s', domain.id )
+            domain_info = DomainInformation().get_domain_info()[domain.id]
+            logging.debug(domain_info.get_dict())
+            for vnf in nffg.vnfs:
+                # logging.debug('Passato di qui2: vnf name = %s', vnf.name)
+                found = False
+                for function_capability in domain_info.capabilities.functional_capabilities:
+                    if vnf.name.lower() == function_capability.type.lower():  # convert both of them to lower case for case insensitive comparison
+                        logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
+                        if function_capability.ready is True:
+                            logging.debug("Ok! The function capability is ready!")
+                            found = True
+                            break
+                        else:
+                            logging.debug("Error! The function capability is already in use!")
+                            raise FunctionalCapabilityAlreadyInUse(
+                                "Error! NFFG can't be deployed. The functional capability is already in use!")
+
+                if found is False:
+                    raise NoFunctionalCapabilityFound(
+                        "Error! NFFG can't be deployed. No functional capability found in the domain specified in the nffg.")
