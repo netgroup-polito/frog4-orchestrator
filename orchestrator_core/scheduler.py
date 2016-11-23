@@ -188,7 +188,7 @@ class Scheduler(object):
         #Vlan
         for interface in domain_1.interfaces: 
             for neighbor in interface.neighbors:
-                if neighbor.domain_name != "internet" and neighbor.interface is not None:
+                if neighbor.domain_name != "internet" and neighbor.remote_interface is not None:
                     #Search for direct connections
                     try:
                         remote_domain = Domain().getDomainFromName(neighbor.domain_name)
@@ -196,7 +196,7 @@ class Scheduler(object):
                         #Remote_domain not found, continue
                         continue     
                     remote_node = neighbor.node
-                    remote_interface_name = neighbor.interface
+                    remote_interface_name = neighbor.remote_interface
                     if remote_domain.id == domain_id_2 and remote_domain.id in domains_info:
                         remote_interface = domains_info[remote_domain.id].getInterface(remote_node, remote_interface_name)
                         if remote_interface is not None and self.isNeighbor(remote_interface, Domain().getDomain(domain_id_1).name, interface) is True:
@@ -217,16 +217,16 @@ class Scheduler(object):
         #Direct links
         if matches_found < number_of_links:
             for interface in domain_1.interfaces:
-                for neighbor in interface.neighbors: 
-                    if neighbor.domain_name != "internet" and neighbor.interface is not None:
+                for neighbor in interface.neighbors:
+                    if neighbor.domain_name != "internet" and neighbor.remote_interface is not None:
                         #Search for direct connections
                         try:
                             remote_domain = Domain().getDomainFromName(neighbor.domain_name)
                         except DomainNotFound:
                             #Remote_domain not found, continue
                             continue
-                        remote_node = neighbor.node         
-                        remote_interface_name = neighbor.interface                   
+                        remote_node = neighbor.node
+                        remote_interface_name = neighbor.remote_interface
                         if remote_domain.id == domain_id_2 and remote_domain.id in domains_info:
                             remote_interface = domains_info[remote_domain.id].getInterface(remote_node, remote_interface_name)
                             if remote_interface is not None and self.isNeighbor(remote_interface, Domain().getDomain(domain_id_1).name, interface) is True:
@@ -237,7 +237,7 @@ class Scheduler(object):
                                     break
                 if matches_found == number_of_links:
                     break
-        # Domains not directly linked 
+        # Domains not directly linked
         if matches_found < number_of_links:
             for interface in domain_1.interfaces:
                 result = self.searchConnectionThroughADomain(domains_info, interface, domain_id_1, domain_id_2)
@@ -270,7 +270,7 @@ class Scheduler(object):
         #GRE
         if matches_found < number_of_links:
             #Search for internet connections
-            for interface in domain_1.interfaces: 
+            for interface in domain_1.interfaces:
                 if self.isConnectedToIPDomain(interface) is True and interface.gre is True:
                     #if self.checkActiveTunnels(interface, node_id_2) is True:
                     domain_2 = domains_info[domain_id_2]
@@ -290,21 +290,21 @@ class Scheduler(object):
                                 print ("gre match found")
                                 matches_found = matches_found + 1
                                 characterization.append(Gre(local_ip, remote_ip))
-                            break   
+                            break
                 if matches_found == number_of_links:
-                    break                       
+                    break
 
         if matches_found == number_of_links:
             print ("Characterization found")
             return characterization, middle_nffg
         else:
-            return None       
-    """                        
+            return None
+    """
     def checkEndpointLocation(self, nffg):
         '''
         Define the node where to instantiate the nffg
         '''
-        # TODO: scan until a valid node is found 
+        # TODO: scan until a valid node is found
         domain_info = DomainInformation()
         node = None
         for end_point in nffg.end_points:
@@ -321,7 +321,7 @@ class Scheduler(object):
             raise NodeNotFound("Unable to determine where to place this graph (endpoint.node_id or endpoint.switch_id or endpoint.local_ip missing)")
         return domain_info.getDomainIDfromNode(node)
     """
-    
+
     def checkElementsAnnotations(self, nffg):
         domains_dict = OrderedDict()
         endp_and_vnf = nffg.end_points + nffg.vnfs
@@ -337,7 +337,7 @@ class Scheduler(object):
                 domains_dict[element.domain] = []
             domains_dict[element.domain].append(element)
         return domains_dict
-    
+
     def findFreeVlanId(self, vlans_free_1, vlans_free_2):
         for vlan_id in vlans_free_1:
             if vlan_id in vlans_free_2:
@@ -350,7 +350,7 @@ class Scheduler(object):
         vlan_value = 3
         directlink_value = 2
         gre_value = 1
-        
+
         score=0
         for element in characterization:
             if type(element) is DirectLink:
@@ -358,19 +358,19 @@ class Scheduler(object):
             elif type(element) is Vlan:
                 score = score + vlan_value
             elif type(element) is Gre:
-                score = score + gre_value                
+                score = score + gre_value
         return score
     """
-    
+
     def isNeighbor(self, interface_1, domain_name_2, interface_2):
         '''
-        Determines whether among the neighbors of interface_1 there is interface_2 of domain_name_2 
+        Determines whether among the neighbors of interface_1 there is interface_2 of domain_name_2
         '''
         for neighbor in interface_1.neighbors:
-            if neighbor.domain_name == domain_name_2 and neighbor.node == interface_2.node and neighbor.interface == interface_2.name:
+            if neighbor.domain_name == domain_name_2 and neighbor.node == interface_2.node and neighbor.remote_interface == interface_2.name:
                 return True
         return False
-    
+
     def isConnectedToIPDomain(self, interface):
         '''
         Determines whether interface is connected to an IP domain
@@ -379,20 +379,20 @@ class Scheduler(object):
             if neighbor.neighbor_type == "IP":
                 return True
         return False
-    
+
     def searchConnectionThroughADomain(self, domains_info, interface, domain_id_1, domain_id_2):
         '''
-        Searches if there are domains that connect domain_id_1 and domain_id_2. 
+        Searches if there are domains that connect domain_id_1 and domain_id_2.
         If the connection is found returns the domain in the middle, middle_interface_1 that is the interface connected to domain_id_1, middle_interface_2 that is the interface connected to domain_id_2 and remote_interface of the domain_id_2
         '''
-        for neighbor_1 in interface.neighbors: 
-            if neighbor_1.domain_name != "internet" and neighbor_1.interface is not None:
+        for neighbor_1 in interface.neighbors:
+            if neighbor_1.domain_name != "internet" and neighbor_1.remote_interface is not None:
                 try:
                     middle_domain = Domain().getDomainFromName(neighbor_1.domain_name)
                 except DomainNotFound:
                     continue
-                middle_node = neighbor_1.node         
-                midle_interface_name = neighbor_1.interface                   
+                middle_node = neighbor_1.node
+                midle_interface_name = neighbor_1.remote_interface
                 if middle_domain.id in domains_info:
                     middle_domain_info = domains_info[middle_domain.id]
                     middle_interface_1 = middle_domain_info.getInterface(middle_node, midle_interface_name)
@@ -401,14 +401,14 @@ class Scheduler(object):
                     # First half found
                     for middle_interface_2 in middle_domain_info.interfaces:
                         for neighbor_2 in middle_interface_2.neighbors:
-                            if neighbor_2.domain_name != "internet" and neighbor_2.interface is not None:
+                            if neighbor_2.domain_name != "internet" and neighbor_2.remote_interface is not None:
                                 try:
                                     remote_domain = Domain().getDomainFromName(neighbor_2.domain_name)
                                 except DomainNotFound:
                                     continue
                                 if remote_domain.id == domain_id_2 and remote_domain.id in domains_info:
                                     remote_node = neighbor_2.node
-                                    remote_interface_name = neighbor_2.interface
+                                    remote_interface_name = neighbor_2.remote_interface
                                     remote_interface = domains_info[remote_domain.id].getInterface(remote_node, remote_interface_name)
                                     if remote_interface is not None and self.isNeighbor(remote_interface, middle_domain.name, middle_interface_2) is True:
                                         # Second half found
