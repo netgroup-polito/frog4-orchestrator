@@ -378,16 +378,17 @@ class UpperLayerOrchestratorController(object):
                                 try:
                                     CA_Interface(self.user_data, domain).checkVNFfromVNFRepository(vnf.name.lower())
                                 except VNFNotFoundInVNFRepository as ex:
-                                    logging.debug("Error! VNF not found in VNF repository!")
+                                    logging.debug("Error! VNF not found in VNF repository! Domain: %s", domain.id)
                                     #logging.exception(ex)
                                     continue
                                 except Exception as err:
                                     logging.exception(err)
-                                    raise VNFRepositoryError("Error contacting the VNF Repository!")
+                                    raise err
 
                                 infra_domain_list.append(domain_info.name)
                                 logging.debug('Trovata una infrastructural capability = %s', infrastructural_capability)
                                 break
+
 
 
 
@@ -420,7 +421,7 @@ class UpperLayerOrchestratorController(object):
                                     if domain_name_from_list.lower() == endpoint.domain.lower():
                                         vnf.domain = endpoint.domain.lower()  # Taggo il vnf domain con lo stesso domain degli endpoint
                                         foundSameDomainName = True
-                                        logging.debug('Ok! Found a feasible domain=endpoint domain: %s', vnf.domain)
+                                        logging.debug('Ok! FC. Found a feasible domain=endpoint domain: %s', vnf.domain)
                                         break
 
                                 if foundSameDomainName is True:  # domain coincidente trovato esco dal ciclo
@@ -436,9 +437,32 @@ class UpperLayerOrchestratorController(object):
                 if vnfFoundInDict is False: #se non trova la vnf nel dizionario controlla se c'è almeno una IC
                     for infra_cap_vnf_name, infra_cap_domain_list in infra_cap_domain_dictionary.items():
                         if vnf.name.lower() == infra_cap_vnf_name.lower():
-                            for domain_name_from_infra_cap_list in infra_cap_domain_list:
-                                vnf.domain = domain_name_from_infra_cap_list # Taggo il vnf domain con il primo domain che implementa le IC
-                                logging.debug('vnf domain della IC con cui sto taggando: %s', vnf.domain)
+                                if infra_cap_domain_list is not None:
+                                    foundSameDomainName = False
+                                    firstDomainFeasibleFlag = True
+                                    for domain_name_from_infra_cap_list in infra_cap_domain_list:
+                                        if firstDomainFeasibleFlag is True:
+                                            first_domain = domain_name_from_infra_cap_list  # primo dominio analizzato e primo endpoint analizzato
+                                            firstDomainFeasibleFlag = False
+                                        for endpoint in nffg.end_points:
+                                            if domain_name_from_infra_cap_list.lower() == endpoint.domain.lower():
+                                                vnf.domain = endpoint.domain.lower()  # Taggo il vnf domain con lo stesso domain degli endpoint
+                                                foundSameDomainName = True
+                                                logging.debug('Ok! IC. Found a feasible domain=endpoint domain: %s',
+                                                              vnf.domain)
+                                                break
+
+                                        if foundSameDomainName is True:  # domain coincidente trovato esco dal ciclo
+                                            break
+
+                                    for domain_name_from_infra_cap_list in infra_cap_domain_list:
+                                        if domain_name_from_infra_cap_list is not None:
+                                            if foundSameDomainName is False:
+                                                vnf.domain = first_domain  # se non trovo nessun endpoint domain che coincide taggo la vnf col primo feasible domain analizzato
+                                                logging.debug(
+                                                    'No matching endpoint domain found. Tagging the VNF with the first feasible domain in the list: %s',
+                                                    vnf.domain)
+                                #logging.debug('vnf domain della IC con cui sto taggando: %s', vnf.domain)
                                 break
                     #se non esiste nessun elemento neanche nel dizionario delle IC il vnf domain viene taggato col default domain
 
@@ -459,11 +483,11 @@ class UpperLayerOrchestratorController(object):
                     if vnf.name.lower() == function_capability.type.lower():  # convert both of them to lower case for case insensitive comparison
                         logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
                         if function_capability.ready is True:
-                            logging.debug("Ok! The function capability is ready!")
+                            logging.debug("Ok! The functional capability is ready!")
                             found = True
                             break
                         else:
-                            logging.debug("Error! The function capability is already in use!")
+                            logging.debug("Error! The functional capability is already in use!")
                             raise FunctionalCapabilityAlreadyInUse(
                                 "Error! NFFG can't be deployed. The functional capability is already in use!")
                 if found is False: #non ho trovato nemeno una function capability, allora controllo se esistono IC per quel dominio
