@@ -299,11 +299,11 @@ class VNFRepositoryError(Exception):
     def get_mess(self):
         return self.message
 
-class NoFunctionalCapabilityFound(Exception):
+class NoCapabilityFound(Exception):
     def __init__(self, message):
         self.message = message
         # Call the base class constructor with the parameters it needs
-        super(NoFunctionalCapabilityFound, self).__init__(message)
+        super(NoCapabilityFound, self).__init__(message)
 
     def get_mess(self):
         return self.message
@@ -313,6 +313,15 @@ class FunctionalCapabilityAlreadyInUse(Exception):
         self.message = message
         # Call the base class constructor with the parameters it needs
         super(FunctionalCapabilityAlreadyInUse, self).__init__(message)
+
+    def get_mess(self):
+        return self.message
+
+class VNFNotFoundInVNFRepository(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(VNFNotFoundInVNFRepository, self).__init__(message)
 
     def get_mess(self):
         return self.message

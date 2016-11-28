@@ -13,7 +13,7 @@ from vnf_template_library.validator import ValidateTemplate
 from nffg_library.nffg import NF_FG
 from nffg_library.validator import ValidateNF_FG
 from requests.exceptions import HTTPError
-from orchestrator_core.exception import LoginError
+from orchestrator_core.exception import LoginError, VNFRepositoryError, VNFNotFoundInVNFRepository
 
 class CA_Interface(object):
     timeout = Configuration().ORCH_TIMEOUT
@@ -31,6 +31,7 @@ class CA_Interface(object):
         self.get_status_url = self.base_url+"/NF-FG/status/%s"  
         self.get_template =  self.base_url+"/template/location/%s"
         self.authentication_url = self.base_url+"/login"
+        self.vnf_repository_url = self.base_url+"/vnf/%s"
         
         if self.token is not None:
             self.headers = {'Content-Type': 'application/json',
@@ -150,4 +151,26 @@ class CA_Interface(object):
             return True
         return False
     """
-        
+
+
+    def checkVNFfromVNFRepository(self, vnf_name):
+        if self.token is None:
+            self.getToken(self.user_data)
+        try:
+            resp = requests.get(self.vnf_repository_url % (vnf_name), headers=self.headers, timeout=int(self.timeout))
+            resp.raise_for_status()
+            logging.debug("checkVNFfromVNFRepository completed")
+            return resp
+        except HTTPError as err:
+            if err.response.status_code == 401:
+                logging.debug("Token expired, getting a new one...")
+                self.getToken(self.user_data)
+                resp = requests.get(self.vnf_repository_url % (vnf_name), headers=self.headers, timeout=int(self.timeout))
+                resp.raise_for_status()
+                logging.debug("checkVNFfromVNFRepository completed")
+                return resp
+            if err.response.status_code == 404:
+                logging.debug("checkVNFfromVNFRepository completed. VNF not found.")
+                raise VNFNotFoundInVNFRepository("Error! VNF not found in VNF repository!")
+            else:
+                raise err

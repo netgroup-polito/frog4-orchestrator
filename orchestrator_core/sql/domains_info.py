@@ -8,7 +8,7 @@ from orchestrator_core.sql.sql_server import get_session
 from orchestrator_core.config import Configuration
 from orchestrator_core.sql.session import Session
 from orchestrator_core.domain_info import DomainInfo, GreTunnel, Interface, Neighbor, Capabilities, \
-    FunctionalCapability, FunctionSpecification, HardwareInfo
+    FunctionalCapability, FunctionSpecification, HardwareInfo, InfrastructuralCapability
 from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -80,6 +80,14 @@ class FunctionSpecificationModel(Base):
     unit = Column(VARCHAR(64))
     mean = Column(VARCHAR(64))
 
+class InfrastructuralCapabilityModel(Base):
+    __tablename__ = 'infrastructural_capability'
+    attributes = ['id', 'domain_id', 'type', 'name']
+    id = Column(Integer, primary_key=True)
+    domain_id = Column(Integer)
+    type = Column(VARCHAR(64))
+    name = Column(VARCHAR(64))
+
 class DomainInformation(object):
 
     def __init__(self):
@@ -137,6 +145,10 @@ class DomainInformation(object):
                     func_cap = FunctionalCapability(_type=func_cap_ref.type, name=func_cap_ref.name, ready=func_cap_ref.ready, family=func_cap_ref.family, template=func_cap_ref.template, resources=func_cap_ref.resource_id)
                     domain_info.capabilities.functional_capabilities.append(func_cap)
 
+                infra_cap_refs = session.query(InfrastructuralCapabilityModel).filter_by(domain_id=domain_ref.domain_id).all()
+                for infra_cap_ref in infra_cap_refs:
+                    infra_cap = InfrastructuralCapability(_type=infra_cap_ref.type, name=infra_cap_ref.name)
+                    domain_info.capabilities.infrastructural_capabilities.append(infra_cap)
 
         return domains_info_list
 
@@ -162,10 +174,11 @@ class DomainInformation(object):
                         session.query(DomainsVlanModel).filter_by(domain_info_id=domain_ref.id).delete()
                         session.query(DomainsGreModel).filter_by(domain_info_id=domain_ref.id).delete()
                         session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).delete()
-                        func_caps = session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_info.domain_id).all()
-                        session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_info.domain_id).delete()
-                        for func_cap in func_caps:
-                            session.query(FunctionSpecificationModel).filter_by(functional_capability_id=func_cap.id).delete()
+                    session.query(InfrastructuralCapabilityModel).filter_by(domain_id=domain_info.domain_id).delete()
+                    func_caps = session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_info.domain_id).all()
+                    session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_info.domain_id).delete()
+                    for func_cap in func_caps:
+                        session.query(FunctionSpecificationModel).filter_by(functional_capability_id=func_cap.id).delete()
 
                 except NoResultFound:
                     pass
@@ -196,6 +209,13 @@ class DomainInformation(object):
 
                 self.info_id = self.info_id + 1
 
+            for infrastructural_capability in domain_info.capabilities.infrastructural_capabilities:
+                infra_cap_ref = InfrastructuralCapabilityModel(id=self.infrastructural_capability_id, domain_id=domain_info.domain_id, type=infrastructural_capability.type, name=infrastructural_capability.name)
+
+                session.add(infra_cap_ref)
+                logging.debug("Added entry in infrastructural_capability")
+                self.infrastructural_capability_id = self.infrastructural_capability_id + 1
+
             for functional_capability in domain_info.capabilities.functional_capabilities:
                 func_cap_ref = FunctionalCapabilityModel(id=self.functional_capability_id, domain_id=domain_info.domain_id, type=functional_capability.type,
                                                          name=functional_capability.name, ready=functional_capability.ready, family=functional_capability.family,
@@ -219,6 +239,7 @@ class DomainInformation(object):
         neighbor_base_id = self._get_higher_neighbor_id()
         functional_capability_base_id = self._get_higher_functional_capability_id()
         function_specification_base_id = self._get_higher_function_specification_id()
+        infrastructural_capability_base_id = self._get_higher_infrastructural_capability_id()
         if info_base_id is not None:
             self.info_id = int(info_base_id) + 1
         else:
@@ -243,7 +264,10 @@ class DomainInformation(object):
             self.function_specification_id = int(function_specification_base_id) + 1
         else:
             self.function_specification_id = 0
-
+        if infrastructural_capability_base_id is not None:
+            self.infrastructural_capability_id = int(infrastructural_capability_base_id) + 1
+        else:
+            self.infrastructural_capability_id = 0
 
     def _get_higher_info_id(self):
         session = get_session()
@@ -268,3 +292,7 @@ class DomainInformation(object):
     def _get_higher_function_specification_id(self):
         session = get_session()
         return session.query(func.max(FunctionSpecificationModel.id).label("max_id")).one().max_id
+
+    def _get_higher_infrastructural_capability_id(self):
+        session = get_session()
+        return session.query(func.max(InfrastructuralCapabilityModel.id).label("max_id")).one().max_id
