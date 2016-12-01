@@ -31,7 +31,8 @@ class NFFG_Manager(object):
         Retrieve the Templates of all the VNFs in the graph
         '''
         for vnf in self.nffg.vnfs[:]:
-            self.addTemplate(vnf, vnf.vnf_template_location)
+            if vnf.vnf_template_location is not None:
+                self.addTemplate(vnf, vnf.vnf_template_location)
    
     def addTemplate(self, vnf,  uri):
         '''
