@@ -213,7 +213,7 @@ class DomainInformation(object):
                 infra_cap_ref = InfrastructuralCapabilityModel(id=self.infrastructural_capability_id, domain_id=domain_info.domain_id, type=infrastructural_capability.type, name=infrastructural_capability.name)
 
                 session.add(infra_cap_ref)
-                logging.debug("Added entry in infrastructural_capability")
+                logging.debug("Added entry in infrastructural_capability for domain id: %s", domain_info.domain_id)
                 self.infrastructural_capability_id = self.infrastructural_capability_id + 1
 
             for functional_capability in domain_info.capabilities.functional_capabilities:
@@ -221,14 +221,14 @@ class DomainInformation(object):
                                                          name=functional_capability.name, ready=functional_capability.ready, family=functional_capability.family,
                                                          template=functional_capability.template)
                 session.add(func_cap_ref)
-                logging.debug("Added entry in functional_capability")
+                logging.debug("Added entry in functional_capability. Name: %s", func_cap_ref.name)
                 for function_specification in functional_capability.function_specifications:
                     func_spec_ref = FunctionSpecificationModel(id=self.function_specification_id, functional_capability_id=self.functional_capability_id,
                                                                name=function_specification.name, value=function_specification.value, unit=function_specification.unit,
                                                                mean=function_specification.mean)
                     session.add(func_spec_ref)
                     self.function_specification_id = self.function_specification_id + 1
-                    logging.debug("Added entry in function_specification")
+                    logging.debug("Added entry in function_specification for functional capability: %s", func_cap_ref.name)
 
                 self.functional_capability_id = self.functional_capability_id + 1
 
