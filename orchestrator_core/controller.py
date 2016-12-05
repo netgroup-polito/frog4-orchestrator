@@ -497,7 +497,7 @@ class UpperLayerOrchestratorController(object):
                                     "Error! NFFG can't be deployed. No functional capability and no infrastructural capability found in the domain specified in the nffg.")
                     for infrastructural_capability in domain_info.capabilities.infrastructural_capabilities:
                         if infrastructural_capability is not None:
-                            logging.debug("Ok! An IC exists for the vnf searched in the domain specified in the nffg")
+                            logging.debug("Ok! An Infrastructural Capability exists for the vnf searched in the domain specified in the nffg")
                             break
                         else:
                             raise NoCapabilityFound(
