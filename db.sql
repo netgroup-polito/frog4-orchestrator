@@ -142,6 +142,20 @@ CREATE TABLE `function_specification` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `infrastructural_capability`
+--
+
+CREATE TABLE `infrastructural_capability` (
+  `id` int(11) NOT NULL,
+  `domain_id` int(11),
+  `type` varchar(64),
+  `name` varchar(64)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+
+--
 -- Struttura della tabella `graph`
 --
 
@@ -279,6 +293,11 @@ ALTER TABLE `functional_capability`
 ALTER TABLE `function_specification`
   ADD PRIMARY KEY (`id`);
 
+--
+-- Indici per le tabelle `infrastructural_capability`
+--
+ALTER TABLE `infrastructural_capability`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indici per le tabelle `graph`
