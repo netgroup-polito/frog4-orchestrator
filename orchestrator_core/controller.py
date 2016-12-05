@@ -386,7 +386,7 @@ class UpperLayerOrchestratorController(object):
                                     raise err
 
                                 infra_domain_list.append(domain_info.name)
-                                logging.debug('Trovata una infrastructural capability = %s', infrastructural_capability)
+                                logging.debug('Found an infrastructural capability = %s', infrastructural_capability)
                                 break
 
 
@@ -421,7 +421,7 @@ class UpperLayerOrchestratorController(object):
                                     if domain_name_from_list.lower() == endpoint.domain.lower():
                                         vnf.domain = endpoint.domain.lower()  # Taggo il vnf domain con lo stesso domain degli endpoint
                                         foundSameDomainName = True
-                                        logging.debug('Ok! FC. Found a feasible domain=endpoint domain: %s', vnf.domain)
+                                        logging.debug('Ok! Functional Capability. Found a feasible domain=endpoint domain: %s', vnf.domain)
                                         break
 
                                 if foundSameDomainName is True:  # domain coincidente trovato esco dal ciclo
@@ -448,7 +448,7 @@ class UpperLayerOrchestratorController(object):
                                             if domain_name_from_infra_cap_list.lower() == endpoint.domain.lower():
                                                 vnf.domain = endpoint.domain.lower()  # Taggo il vnf domain con lo stesso domain degli endpoint
                                                 foundSameDomainName = True
-                                                logging.debug('Ok! IC. Found a feasible domain=endpoint domain: %s',
+                                                logging.debug('Ok! Infrastructural Capability. Found a feasible domain=endpoint domain: %s',
                                                               vnf.domain)
                                                 break
 
