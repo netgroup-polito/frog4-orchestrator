@@ -20,8 +20,9 @@ class DD_Server(ClientSafe):
     def on_pub(self, src, topic, msg):
         # when a new domain information is published, it is parsed and stored on db
         msgstr = "PUB %s from %s: %s" % (str(topic), str(src), str(msg))
-        print(msgstr)
-        #TODO: validation of msg needed
+        # print(msgstr)
+        logging.debug(msgstr)
+        # TODO: validation of msg needed
         try:
             source = src.decode("utf-8")
             #domain_ip = domain.split(':')[0]
@@ -34,8 +35,16 @@ class DD_Server(ClientSafe):
             di.parse_dict(domain_info)
             domain_id = Domain().addDomain(di.name, di.type, di.domain_ip, di.domain_port)
             di.domain_id = domain_id
-            logging.debug("Domain information arrived from %s: %s" % (source, json.dumps(domain_info)))
             DomainInformation().add_domain_info(di)
+
+            logging.debug("Domain information arrived from %s: %s" % (source, json.dumps(domain_info)))
+            print("\n[Domain Info] from '" + di.name + "'")
+
+            # print capabilities
+            fc_labels = []
+            for fc in di.capabilities.functional_capabilities:
+                fc_labels.append(fc.type)
+            print("Functional capabilities: " + str(fc_labels))
         except Exception as ex:
             logging.exception(ex)
 
