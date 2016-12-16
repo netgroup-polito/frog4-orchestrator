@@ -51,7 +51,7 @@ swagger_config = {
     "swagger_version": "2.0",
     "title": "FROG4 - Global Orchestrator API",
     "headers": [
-         ('Access-Control-Allow-Origin', '*')
+        ('Access-Control-Allow-Origin', '*')
     ],
     "specs": [
         {
@@ -61,9 +61,9 @@ swagger_config = {
             "route": '/v1/spec',
         }
     ],
-        "static_url_path": "/apidocs",
-        "static_folder": "swaggerui",
-        "specs_route": "/specs"
+    "static_url_path": "/apidocs",
+    "static_folder": "swaggerui",
+    "specs_route": "/specs"
 }
 
 Swagger(app, config=swagger_config)
