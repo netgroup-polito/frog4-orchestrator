@@ -1,9 +1,9 @@
-'''
+"""
 Created on Oct 1, 2014
 
 @author: fabiomignini
 @author: stefanopetrangeli
-'''
+"""
 
 import logging
 import requests
@@ -21,16 +21,19 @@ from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessi
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
+
 class YANGAPI(object):
     
     def get(self, request, response, image_id):
         pass
-    
+
+
 class TemplateAPI(object):
     
     def get(self, request, response, image_id):
         pass
-    
+
+
 class TemplateAPILocation(MethodView):
     
     def get(self, template_name):
@@ -38,40 +41,40 @@ class TemplateAPILocation(MethodView):
         Get the template
         ---
         tags:
-          - NF-FG
+            -   NF-FG
         produces:
-          - application/json             
+            -   application/json
         parameters:
-          - name: template_name
-            in: path
-            description: Template to be retrieved
-            type: string            
-            required: true
-          - name: X-Auth-User
-            in: header
-            description: Username
-            required: true
-            type: string
-          - name: X-Auth-Pass
-            in: header
-            description: Password
-            required: true
-            type: string
-          - name: X-Auth-Tenant
-            in: header
-            description: Tenant
-            required: true
-            type: string                        
+            -   name: template_name
+                in: path
+                description: Template to be retrieved
+                type: string
+                required: true
+            -   name: X-Auth-User
+                in: header
+                description: Username
+                required: true
+                type: string
+            -   name: X-Auth-Pass
+                in: header
+                description: Password
+                required: true
+                type: string
+            -   name: X-Auth-Tenant
+                in: header
+                description: Tenant
+                required: true
+                type: string
                     
         responses:
-          200:
-            description: Template found  
-          401:
-            description: Unauthorized
-          404:
-            description: Template not found
-          500:
-            description: Internal Error
+            200:
+                description: Template found
+            401:
+                description: Unauthorized
+            404:
+                description: Template not found
+            500:
+                description: Internal Error
         """        
         try:
             UserAuthentication().authenticateUserFromRESTRequest(request)
@@ -80,14 +83,15 @@ class TemplateAPILocation(MethodView):
             if request.headers.get("X-Auth-User") is not None:
                 logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
             logging.debug(err.message)
-            return ("Unauthorized", 401)
+            return "Unauthorized", 401
         except FileNotFoundError as err:
-            return ("Template not found", 404)
+            return "Template not found", 404
         except VNFRepositoryError as err:
-            return ("VNFRepositoryError: Template not found or incorrect VNF-Repository configuration", 404)        
+            return "VNFRepositoryError: Template not found or incorrect VNF-Repository configuration", 404
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin "+ str(err), 500)
+            return "Contact the admin " + str(err), 500
+
 
 class NFFGStatus(MethodView):
     def get(self, nffg_id):
