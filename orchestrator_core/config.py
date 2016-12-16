@@ -19,12 +19,12 @@ class Configuration(object, metaclass=Singleton):
         if os.getenv("FROG4_ORCH_CONF") is not None:
             self.conf_file = os.environ["FROG4_ORCH_CONF"]
         else:
-            self.conf_file = "config/config.ini"
+            self.conf_file = "config/default-config.ini"
 
         self.inizialize()
 
     def inizialize(self): 
-        #TODO: clean obsolete parameters
+        # TODO: clean obsolete parameters
         config = configparser.RawConfigParser()
         base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])).rpartition('/')[0]
         try:
