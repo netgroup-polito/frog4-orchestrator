@@ -10,14 +10,14 @@ import requests
 import json
 from flask.views import MethodView
 from flask import request, jsonify, Response
-
 from sqlalchemy.orm.exc import NoResultFound
 from nffg_library.validator import ValidateNF_FG
 from nffg_library.nffg import NF_FG
 
+from orchestrator_core.user_validator import UserValidate
 from orchestrator_core.controller import UpperLayerOrchestratorController
-from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError
+from orchestrator_core.userAuthentication import UserAuthentication, UserLoginAuthentication, UserLoginAuthenticationController
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError, UserValidationError
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
@@ -405,3 +405,67 @@ class UpperLayerOrchestrator(MethodView):
         except Exception as err:
             logging.exception(err)
             return ("Contact the admin: "+ str(err), 500)
+
+class User_login(MethodView):
+	'''
+	User login class that intercept the REST call through the WSGI server
+	'''
+	def post(self):
+		"""
+		User login
+		---
+		tags:
+		  - login
+		parameters:
+		  - name: login info
+		    in: body
+		    description: User authentication details like ...
+			{
+			    "username":"username",
+			    "password":"password"
+			}
+		    required: true
+		    schema:
+		        type: string
+		responses:
+			200:
+				description: login successfully
+			401:
+				description: UNAUTHORIZED
+			400:
+				description: BAD REQUEST
+			500:
+				description: INTERNAL SERVER ERROR
+		"""
+		try:
+
+			login_data = json.loads(request.data.decode())
+			UserValidate().validate(login_data)
+			user_data = UserLoginAuthentication().UserLoginAuthenticateFromRESTRequest(login_data)
+			response = UserLoginAuthenticationController().put(user_data)
+			#return jsonify(response)
+			return (response, 200)
+
+		except wrongRequest as err:
+			logging.exception(err)
+			return ("BAD REQUEST \n", 400)
+
+		except (unauthorizedRequest, UserNotFound) as err:
+			logging.debug(err.message)
+			return ("UNAUTHORIZED \n", 401)
+
+		except UserValidationError as err:
+			logging.exception(err)
+			return ("Login Validation Error: "+ err.message +"\n", 400)
+
+		except requests.HTTPError as err:
+			logging.exception(err)
+			return (str(err)+ "\n", 500)
+
+		except requests.ConnectionError as err:
+			logging.exception(err)
+			return (str(err) + "\n", 500)
+
+		except Exception as err:
+			logging.exception(err)
+			return ("Contact the admin: "+ str(err) +"\n", 500)

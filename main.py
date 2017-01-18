@@ -10,7 +10,7 @@ import inspect
 
 from threading import Thread
 from orchestrator_core.config import Configuration
-from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus, ActiveGraphs
+from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus, ActiveGraphs, User_login
 from orchestrator_core.dd_server import DD_Server
 
 conf = Configuration()
@@ -100,6 +100,8 @@ app.add_url_rule(
     view_func=template_location,
     methods=["GET"]
 )
+
+app.add_url_rule( '/login/', view_func=User_login.as_view('login'), methods=['POST'] )
 
 # start the dd client to receive information about domains
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
