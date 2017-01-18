@@ -58,7 +58,6 @@ class Configuration(object, metaclass=Singleton):
             self._DD_CUSTOMER = config.get('doubledecker','dd_customer')
             self._BROKER_ADDRESS = config.get('doubledecker','broker_address')
             self._DD_KEYFILE = config.get('doubledecker','dd_keyfile')
-
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
             self._TEMPLATE_SOURCE = config.get('templates','source')
             if config.has_option('templates', 'path'):
@@ -69,7 +68,8 @@ class Configuration(object, metaclass=Singleton):
                 self._TEMPLATE_REPOSITORY_URL = config.get('templates', 'repository_url')
             else:
                 self._TEMPLATE_REPOSITORY_URL = None
-                
+            self._TENANT_NAME = config.get('tenant','tenant_name')
+
         except Exception as ex:
             raise WrongConfigurationFile(str(ex))
     
@@ -152,3 +152,7 @@ class Configuration(object, metaclass=Singleton):
     @property
     def SWITCH_TEMPLATE(self):
         return self._SWITCH_TEMPLATE
+
+    @property
+    def TENANT_NAME(self):
+        return self._TENANT_NAME
