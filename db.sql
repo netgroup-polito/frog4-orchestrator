@@ -176,11 +176,23 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `name`, `password`, `tenant_id`, `mail`) VALUES
-('0', 'admin', 'stackstack', '0', NULL),
+('0', 'admin', 'admin', '0', NULL),
 ('1', 'AdminPoliTO', 'AdminPoliTO', '1', NULL),
 ('2', 'demo', 'demo', '2', NULL);
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `user_token`
+--
+
+CREATE TABLE IF NOT EXISTS `user_token` (
+  `user_id` int(11) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `timestamp` varchar(64) NOT NULL,
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 
 --
 -- Struttura della tabella `vnf_image`
