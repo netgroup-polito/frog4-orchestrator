@@ -32,7 +32,7 @@ class DomainInfo(object):
         self.domain_port = domain_port
         self.hardware_info = hardware_info
         self.capabilities = capabilities
-        self.interfaces = interfaces or []  # this field is not used. interfaces are saved in hardwareInfo.interfaces
+        self.interfaces = interfaces or []
 
     def parse_dict(self, domain_info_dict):
         self.domain_id = domain_info_dict['netgroup-domain:informations']['id']
@@ -51,7 +51,8 @@ class DomainInfo(object):
             self.capabilities.parse_dict(domain_info_dict['netgroup-domain:informations']['capabilities'])
 
     def get_dict(self):
-        domain_info_dict = {'netgroup-domain:informations': {}}
+        domain_info_dict = {}
+        domain_info_dict['netgroup-domain:informations'] = {}
         domain_info_dict['netgroup-domain:informations']['id'] = self.domain_id
         domain_info_dict['netgroup-domain:informations']['name'] = self.name
         domain_info_dict['netgroup-domain:informations']['type'] = self.type
@@ -70,7 +71,8 @@ class DomainInfo(object):
 
         :param file_name: name of json file in the /config folder
         :type file_name: str
-        :return: DomainInfo
+        :return: DomainInfo object
+        :rtype: DomainInfo
         """
 
         json_data = open(file_name).read()
@@ -188,7 +190,10 @@ class Cpu(object):
         self.free = cpu_dict['free']
 
     def get_dict(self):
-        cpu_dict = {'number': self.number, 'frequency': self.frequency, 'free': self.free}
+        cpu_dict = {}
+        cpu_dict['number'] = self.number
+        cpu_dict['frequency'] = self.frequency
+        cpu_dict['free'] = self.free
 
         return cpu_dict
 
@@ -218,7 +223,11 @@ class Memory(object):
         self.free = memory_dict['free']
 
     def get_dict(self):
-        memory_dict = {'size': self.size, 'frequency': self.frequency, 'latency': self.latency, 'free': self.free}
+        memory_dict = {}
+        memory_dict['size'] = self.size
+        memory_dict['frequency'] = self.frequency
+        memory_dict['latency'] = self.latency
+        memory_dict['free'] = self.free
 
         return memory_dict
 
@@ -244,7 +253,10 @@ class Storage(object):
         self.free = storage_dict['free']
 
     def get_dict(self):
-        storage_dict = {'size': self.size, 'latency': self.latency, 'free': self.free}
+        storage_dict = {}
+        storage_dict['size'] = self.size
+        storage_dict['latency'] = self.latency
+        storage_dict['free'] = self.free
 
         return storage_dict
 
@@ -303,7 +315,7 @@ class Interface(object):
                 if subinterface_dict['config']['name'] == self.name:
                     if subinterface_dict['netgroup-if-capabilities:capabilities']['gre']:
                         self.gre = True
-                        if 'frog-if-gre:gre' in subinterface_dict:
+                        if 'netgroup-if-gre:gre' in subinterface_dict:
                             for gre_dict in subinterface_dict['netgroup-if-gre:gre']:
                                 gre_tunnel = GreTunnel()
                                 gre_tunnel.parse_dict(gre_dict)
@@ -314,10 +326,14 @@ class Interface(object):
                 neighbor.parse_dict(neighbor_dict)
                 self.neighbors.append(neighbor)
 
-        if 'openconfig-if-ethernet:ethernet' in interface_dict:
-            if 'openconfig-vlan:vlan' in interface_dict['openconfig-if-ethernet:ethernet']:
+        if 'netgroup-if-ethernet:ethernet' in interface_dict:
+            if 'netgroup-vlan:vlans' in interface_dict['netgroup-if-ethernet:ethernet']:
                 self.vlan = True
-                if 'openconfig-vlan:config' in interface_dict['openconfig-if-ethernet:ethernet'][
+                for vlan_dict in interface_dict['netgroup-if-ethernet:ethernet']['netgroup-vlan:vlans'][
+                        'netgroup-vlan:vlan']:
+                    self.vlans_free.append(vlan_dict['vlan-id'])
+                ''' - old way, does not follow openconfig model
+                if 'netgroup-vlan:config' in interface_dict['openconfig-if-ethernet:ethernet'][
                         'openconfig-vlan:vlan']:
                     vlan_config = interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan'][
                             'openconfig-vlan:config']
@@ -325,6 +341,7 @@ class Interface(object):
                     if vlan_config['interface-mode'] == 'TRUNK':
                         for vlan in vlan_config['trunk-vlans']:
                             self.vlans_free.append(vlan)
+                '''
 
     def get_dict(self):
         interface_dict = {}
@@ -339,7 +356,8 @@ class Interface(object):
 
         interface_dict['subinterfaces'] = {}
         interface_dict['subinterfaces']['subinterface'] = []
-        subinterface_dict = {'config': {}}
+        subinterface_dict = {}
+        subinterface_dict['config'] = {}
         subinterface_dict['config']['name'] = self.name
         if self.gre:
             subinterface_dict['netgroup-if-capabilities:capabilities'] = {}
@@ -358,8 +376,10 @@ class Interface(object):
             interface_dict['netgroup-neighbor:neighbors']['netgroup-neighbor:neighbor'] = neighbors
 
         if self.vlan:
+            ''' - old way, does not follow openconfig model
             if self.vlan_mode:
-                config_dict = {'interface-mode': self.vlan_mode}
+                config_dict = {}
+                config_dict['interface-mode'] = self.vlan_mode
                 if self.vlan_mode == 'TRUNK':
                     trunk_vlans = []
                     for vlan in self.vlans_free:
@@ -369,6 +389,16 @@ class Interface(object):
                 interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan'] = {}
                 interface_dict['openconfig-if-ethernet:ethernet']['openconfig-vlan:vlan'][
                     'openconfig-vlan:config'] = config_dict
+            '''
+            interface_dict['netgroup-if-ethernet:ethernet'] = {}
+            vlans = []
+            for vlan_id in self.vlans_free:
+                vlan_dict = {'netgroup-vlan:vlan-id': vlan_id}
+                config_dict = {'netgroup-vlan:vlan-id': vlan_id}
+                vlan_dict['netgroup-vlan:config'] = config_dict
+                vlans.append(vlan_dict)
+            interface_dict['netgroup-if-ethernet:ethernet']['netgroup-vlan:vlans'] = {}
+            interface_dict['netgroup-if-ethernet:ethernet']['netgroup-vlan:vlans']['netgroup-vlan:vlan'] = vlans
 
         return interface_dict
 
@@ -420,7 +450,8 @@ class Neighbor(object):
             self.neighbor_type = neighbor_dict['neighbor-type']
 
     def get_dict(self):
-        neighbor_dict = {'domain-name': self.domain_name}
+        neighbor_dict = {}
+        neighbor_dict['domain-name'] = self.domain_name
         if self.remote_interface is not None:
             if self.node is not None:
                 neighbor_dict['remote-interface'] = self.node + '/' + self.remote_interface
@@ -460,7 +491,8 @@ class GreTunnel(object):
             self.gre_key = gre_dict['options']['key']
 
     def get_dict(self):
-        gre_dict = {'name': self.name}
+        gre_dict = {}
+        gre_dict['name'] = self.name
 
         if self.local_ip is not None:
             gre_dict['local_ip'] = self.local_ip
@@ -486,9 +518,9 @@ class Capabilities(object):
 
     def parse_dict(self, capabilities_dict):
         if 'infrastructural-capabilities' in capabilities_dict:
-            for inf_capability_dict in capabilities_dict['infrastructural-capabilities']['infrastructural-capability']:
+            for infr_capability_dict in capabilities_dict['infrastructural-capabilities']['infrastructural-capability']:
                 infrastructural_capability = InfrastructuralCapability()
-                infrastructural_capability.parse_dict(inf_capability_dict)
+                infrastructural_capability.parse_dict(infr_capability_dict)
                 self.infrastructural_capabilities.append(infrastructural_capability)
         if 'functional-capabilities' in capabilities_dict:
             for func_capability_dict in capabilities_dict['functional-capabilities']['functional-capability']:
@@ -528,14 +560,15 @@ class InfrastructuralCapability(object):
         self.name = infrastructural_capability_dict['name']
 
     def get_dict(self):
-        ic_dict = {'type': self.type, 'name': self.name}
+        ic_dict = {}
+        ic_dict['type'] = self.type
+        ic_dict['name'] = self.name
 
         return ic_dict
 
 
 class FunctionalCapability(object):
-    def __init__(self, _type=None, name=None, ready=False, family=None, template=None, resources=None,
-                 function_specifications=None):
+    def __init__(self, _type=None, name=None, ready=False, family=None, template=None, resources=None, function_specifications=None):
         """
 
         :param _type:
@@ -578,7 +611,10 @@ class FunctionalCapability(object):
                 self.function_specifications.append(function_specification)
 
     def get_dict(self):
-        fc_dict = {'type': self.type, 'name': self.name, 'ready': self.ready}
+        fc_dict = {}
+        fc_dict['type'] = self.type
+        fc_dict['name'] = self.name
+        fc_dict['ready'] = self.ready
         if self.family is not None:
             fc_dict['family'] = self.family
         if self.template is not None:
@@ -618,6 +654,10 @@ class FunctionSpecification(object):
         self.mean = function_specification_dict['mean']
 
     def get_dict(self):
-        fc_dict = {'name': self.name, 'value': self.value, 'unit': self.unit, 'mean': self.mean}
+        fc_dict = {}
+        fc_dict['name'] = self.name
+        fc_dict['value'] = self.value
+        fc_dict['unit'] = self.unit
+        fc_dict['mean'] = self.mean
 
         return fc_dict
