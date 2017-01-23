@@ -305,8 +305,8 @@ class Interface(object):
         if 'subinterfaces' in interface_dict:
             for subinterface_dict in interface_dict['subinterfaces']['subinterface']:
                 if subinterface_dict['config']['name'] == self.name:
-                    if subinterface_dict['netgroup-if-capabilities:capabilities']['netgroup-if-capabilities:gre']:
-                        self.gre = True
+                    self.gre = subinterface_dict['netgroup-if-capabilities:capabilities']['netgroup-if-capabilities:gre']
+                    if self.gre:
                         if 'netgroup-if-gre:gre' in subinterface_dict:
                             for gre_dict in subinterface_dict['netgroup-if-gre:gre']:
                                 gre_tunnel = GreTunnel()
@@ -351,9 +351,8 @@ class Interface(object):
         subinterface_dict = {}
         subinterface_dict['config'] = {}
         subinterface_dict['config']['name'] = self.name
-        if self.gre:
-            subinterface_dict['netgroup-if-capabilities:capabilities'] = {}
-            subinterface_dict['netgroup-if-capabilities:capabilities']['netgroup-if-capabilities:gre'] = True
+        subinterface_dict['netgroup-if-capabilities:capabilities'] = {}
+        subinterface_dict['netgroup-if-capabilities:capabilities']['netgroup-if-capabilities:gre'] = self.gre
         gre_tunnels = []
         for gre_tunnel in self.gre_tunnels:
             gre_tunnels.append(gre_tunnel.get_dict())
