@@ -351,7 +351,11 @@ class UpperLayerOrchestratorController(object):
                     logging.debug(domain_info.get_dict())
                     for function_capability in domain_info.capabilities.functional_capabilities:
                         if vnf.name.lower() == function_capability.type.lower():
+                            # TODO GRE check below is WRONG, because we don't know the way (and if) the domains will be connected. But it should be checked somewhere
+                            domain_list.append(domain_info.name)
+                            '''
                             for interface in domain_info.hardware_info.interfaces:  # controlla tutte le interfacce ma alla prima che permette GRE esce dal ciclo
+                                domain_list.append(domain_info.name)
                                 if interface.gre is True:  # TODO: Con questo algoritmo controllo solo l'interfaccia del dominio di partenza. Da controllare che l'interfaccia remota a cui si collega permetta anche essa GRE
                                     for neighbor in interface.neighbors:  # controlla tutti i neighbors ma appena trova uno che permette GRE esce dal ciclo
                                         if neighbor.neighbor_type == "IP":
@@ -363,8 +367,8 @@ class UpperLayerOrchestratorController(object):
                                             break
                                 if foundGRE is True:
                                     break
-
                                     # logging.debug('Passato di qui2. domain name = %s', domain_info.name)
+                            '''
 
                 feasible_domain_dictionary[vnf.name.lower()] = domain_list
 
