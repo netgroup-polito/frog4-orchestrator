@@ -105,7 +105,8 @@ class DomainInformation(object):
                     domain_ip_addr = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().ip
                     domain_port_num = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().port
                     domain_info = DomainInfo(domain_id=domain_ref.domain_id, name=domain_name, _type=domain_type, domain_ip=domain_ip_addr, domain_port=str(domain_port_num))
-                    domains_info_list[domain_ref.domain_id]=domain_info
+                    domain_info.hardware_info = HardwareInfo()
+                    domains_info_list[domain_ref.domain_id] = domain_info
                 else:
                     domain_info = domains_info_list[domain_ref.domain_id]
 
@@ -126,7 +127,6 @@ class DomainInformation(object):
                     neighbor = Neighbor(domain_name=neighbor_ref.neighbor_domain_name, node=neighbor_ref.neighbor_node, remote_interface=neighbor_ref.neighbor_interface, neighbor_type=neighbor_ref.neighbor_domain_type)
                     intf.add_neighbor(neighbor)
 
-                domain_info.hardware_info = HardwareInfo()
                 domain_info.hardware_info.add_interface(intf)
                 domain_info.interfaces = domain_info.hardware_info.interfaces #added because the old code references to di.interfaces and not di.hw_info.interfaces
 
