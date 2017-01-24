@@ -180,6 +180,15 @@ class Scheduler(object):
     """
                 
     def searchMatchesBetweenDomains(self, domains_info, domain_id_1, domain_id_2, number_of_links):
+        """
+
+        :param domains_info:
+        :type domains_info: dict of DomainInformation
+        :param domain_id_1:
+        :param domain_id_2:
+        :param number_of_links:
+        :return:
+        """
         matches_found = 0
         characterization = []
         middle_nffg = None
@@ -198,13 +207,13 @@ class Scheduler(object):
                     remote_node = neighbor.node
                     remote_interface_name = neighbor.remote_interface
                     if remote_domain.id == domain_id_2 and remote_domain.id in domains_info:
-                        remote_interface = domains_info[remote_domain.id].getInterface(remote_node, remote_interface_name)
+                        remote_interface = domains_info[remote_domain.id].hardware_info.get_interface(remote_node, remote_interface_name)
                         if remote_interface is not None and self.isNeighbor(remote_interface, Domain().getDomain(domain_id_1).name, interface) is True:
                             if interface.vlan is True and remote_interface.vlan is True:
                                 while matches_found < number_of_links:
                                     vlan_id = self.findFreeVlanId(interface.vlans_free, remote_interface.vlans_free)
                                     if vlan_id is not None:
-                                        print ("vlan match found")
+                                        print("vlan match found")
                                         matches_found = matches_found + 1
                                         characterization.append(Vlan(interface.node, interface.name, domain_1.type, remote_node, remote_interface_name, remote_domain.type, vlan_id))
                                     else:
@@ -228,7 +237,7 @@ class Scheduler(object):
                         remote_node = neighbor.node
                         remote_interface_name = neighbor.remote_interface
                         if remote_domain.id == domain_id_2 and remote_domain.id in domains_info:
-                            remote_interface = domains_info[remote_domain.id].getInterface(remote_node, remote_interface_name)
+                            remote_interface = domains_info[remote_domain.id].hardware_info.get_interface(remote_node, remote_interface_name)
                             if remote_interface is not None and self.isNeighbor(remote_interface, Domain().getDomain(domain_id_1).name, interface) is True:
                                 print ("direct link match found")
                                 matches_found = matches_found + 1
@@ -395,7 +404,7 @@ class Scheduler(object):
                 midle_interface_name = neighbor_1.remote_interface
                 if middle_domain.id in domains_info:
                     middle_domain_info = domains_info[middle_domain.id]
-                    middle_interface_1 = middle_domain_info.getInterface(middle_node, midle_interface_name)
+                    middle_interface_1 = middle_domain_info.hardware_info.get_interface(middle_node, midle_interface_name)
                     if middle_interface_1 is None or self.isNeighbor(middle_interface_1, Domain().getDomain(domain_id_1).name, interface) is False:
                         continue
                     # First half found
@@ -409,7 +418,7 @@ class Scheduler(object):
                                 if remote_domain.id == domain_id_2 and remote_domain.id in domains_info:
                                     remote_node = neighbor_2.node
                                     remote_interface_name = neighbor_2.remote_interface
-                                    remote_interface = domains_info[remote_domain.id].getInterface(remote_node, remote_interface_name)
+                                    remote_interface = domains_info[remote_domain.id].hardware_info.get_interface(remote_node, remote_interface_name)
                                     if remote_interface is not None and self.isNeighbor(remote_interface, middle_domain.name, middle_interface_2) is True:
                                         # Second half found
                                         return (middle_domain, middle_interface_1, middle_interface_2, remote_interface)
