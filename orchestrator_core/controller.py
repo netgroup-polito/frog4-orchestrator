@@ -8,18 +8,18 @@ import logging
 from .scheduler import Scheduler
 import uuid
 
-from orchestrator_core.exception import sessionNotFound, GraphError, wrongRequest, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
+from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
 from orchestrator_core.sql.domain import Domain
-from orchestrator_core.userAuthentication import UserData
 from orchestrator_core.config import Configuration
 from collections import OrderedDict
 from orchestrator_core.ca_rest import CA_Interface
 from sqlalchemy.orm.exc import NoResultFound
 from requests.exceptions import HTTPError, ConnectionError
 from orchestrator_core.sql.domains_info import DomainInformation
+from nffg_library import nffg
 
 DEBUG_MODE = Configuration().DEBUG_MODE
 
@@ -183,7 +183,7 @@ class UpperLayerOrchestratorController(object):
             session_id = self.update(nffg)
             logging.debug('Update completed')
         else:
-            session_id  = uuid.uuid4().hex
+            session_id = uuid.uuid4().hex
             Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name)
             try:
                 # Manage profile
@@ -337,7 +337,12 @@ class UpperLayerOrchestratorController(object):
         return status
 
     def generateFeasibleDomainDictionary(self, nffg):
-        # Fetch a list of feasible domains for every nffg's vnf
+        """
+        Fetch a list of feasible domains for every nffg's vnf
+        :param nffg:
+        :type nffg: NF_FG
+        :return:
+        """
 
         feasible_domain_dictionary = {}  # feasible means domains that have FC + GRE support
         domains_info = DomainInformation().get_domain_info()

@@ -5,7 +5,11 @@ except ImportError:
 
 import json
 import logging
-from .domain_info import DomainInfo, HardwareInfo
+
+from domain_information_library.domain_info import DomainInfo
+from domain_information_library.validator import ValidateDomainInfo
+from domain_information_library.exception import DomainInfoValidationError
+
 from .sql.domain import Domain
 from .sql.domains_info import DomainInformation
 
@@ -22,13 +26,14 @@ class DD_Server(ClientSafe):
         msgstr = "PUB %s from %s: %s" % (str(topic), str(src), str(msg))
         # print(msgstr)
         logging.debug(msgstr)
-        # TODO: validation of msg needed
+
         try:
             source = src.decode("utf-8")
             #domain_ip = domain.split(':')[0]
             #domain_port = domain.split(':')[1]
 
             domain_info = json.loads(msg.decode("utf-8"))
+            ValidateDomainInfo().validate(domain_info)
 
             # domain info
             di = DomainInfo()
@@ -45,6 +50,8 @@ class DD_Server(ClientSafe):
             for fc in di.capabilities.functional_capabilities:
                 fc_labels.append(fc.type)
             print("Functional capabilities: " + str(fc_labels))
+        except DomainInfoValidationError as err:
+            logging.exception(err)
         except Exception as ex:
             logging.exception(ex)
 

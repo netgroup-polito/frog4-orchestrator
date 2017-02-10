@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from orchestrator_core.sql.sql_server import get_session
 from orchestrator_core.config import Configuration
 from orchestrator_core.sql.session import Session
-from orchestrator_core.domain_info import DomainInfo, GreTunnel, Interface, Neighbor, Capabilities, \
+from domain_information_library.domain_info import DomainInfo, GreTunnel, Interface, Neighbor, Capabilities, \
     FunctionalCapability, FunctionSpecification, HardwareInfo
 from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import NoResultFound
