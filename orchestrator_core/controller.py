@@ -5,7 +5,10 @@
 
 import json
 import logging
-from .scheduler import Splitter
+
+from orchestrator_core.scheduler import Scheduler
+from orchestrator_core.virtual_topology import VirtualTopology
+from .splitter import Splitter
 import uuid
 
 from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
@@ -102,6 +105,10 @@ class UpperLayerOrchestratorController(object):
             # Get VNFs templates
             self.prepareNFFG(nffg)
 
+            # TODO add here code depending of what we want:
+            # 1. relocate old NF if a better placement is available -> label here old NF and then copy first part of put
+            # 2. keep old NF placement and schedule just new one -> copy code from put
+
             domains, nffgs = Splitter(self.counter).split(nffg)
 
             domain_nffg_dict = OrderedDict()
@@ -136,7 +143,6 @@ class UpperLayerOrchestratorController(object):
                         CA_Interface(self.user_data, domain).delete(graph)
                     Graph().delete_graph(graph)
 
-
             for new_domain, new_nffg in domain_nffg_dict.items():
                 if new_domain.id in old_domain_graph.keys():
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
@@ -148,7 +154,7 @@ class UpperLayerOrchestratorController(object):
                 new_nffg.id = str(new_nffg.db_id)
 
                 if DEBUG_MODE is True:
-                    logging.debug(new_domain.ip + ":"+  str(new_domain.port) + " "+ new_nffg.id+"\n"+new_nffg.getJSON())
+                    logging.debug(new_domain.ip + ":" + str(new_domain.port) + " " + new_nffg.id+"\n"+new_nffg.getJSON())
                 else:
                     CA_Interface(self.user_data, new_domain).put(new_nffg)
 
@@ -189,13 +195,14 @@ class UpperLayerOrchestratorController(object):
                 # Manage profile
                 self.prepareNFFG(nffg)
 
-                # If nffg's vnf domain is not tagged, tag it:
+                # 0) Create virtual topology basing on current domain information
+                virtual_topology = VirtualTopology(DomainInformation().get_domain_info())
 
                 # 1) Fetch a map with a list of feasible domains for each NF of the nffg
                 feasible_domains_dictionary = self.get_feasible_domains_map(nffg)
 
-                # 2) Checks if endpoints domain matches with a domain from the feasible_domains_dictionary and tag the vnf domain
-                self.checkEnpointDomainAndTagVNF(nffg, feasible_domains_dictionary)
+                # 2) Perform the scheduling algorithm (tag nffg untagged elements with domain)
+                Scheduler(virtual_topology).schedule(nffg, feasible_domains_dictionary)
 
                 # 3) Generate a sub-graph for each involved domain
                 domains, nffgs = Splitter(self.counter).split(nffg)
@@ -217,7 +224,7 @@ class UpperLayerOrchestratorController(object):
                     logging.info('Call CA to instantiate NF-FG')
                     nffg.id = str(nffg.db_id)
                     if DEBUG_MODE is True:
-                        logging.debug(domain.ip + ":"+  str(domain.port) + " "+ nffg.id+"\n"+nffg.getJSON())
+                        logging.debug(domain.ip + ":" + str(domain.port) + " " + nffg.id+"\n"+nffg.getJSON())
                     else:
                         CA_Interface(self.user_data, domain).put(nffg)
                     logging.debug('NF-FG instantiated')
