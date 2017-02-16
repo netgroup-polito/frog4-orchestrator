@@ -5,7 +5,7 @@
 
 import json
 import logging
-from .scheduler import Scheduler
+from .scheduler import Splitter
 import uuid
 
 from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
@@ -25,9 +25,9 @@ DEBUG_MODE = Configuration().DEBUG_MODE
 
 
 class UpperLayerOrchestratorController(object):
-    '''
+    """
         Class that performs the logic of orchestrator_core
-    '''
+    """
     def __init__(self, user_data, counter=None):
         self.user_data = user_data
         self.counter = counter
@@ -102,7 +102,7 @@ class UpperLayerOrchestratorController(object):
             # Get VNFs templates
             self.prepareNFFG(nffg)
 
-            domains, nffgs = Scheduler(self.counter).schedule(nffg)
+            domains, nffgs = Splitter(self.counter).split(nffg)
 
             domain_nffg_dict = OrderedDict()
             for i in range(0, len(domains)):
@@ -191,21 +191,21 @@ class UpperLayerOrchestratorController(object):
 
                 # If nffg's vnf domain is not tagged, tag it:
 
-                # 1) Fetch a list of feasible domains for every nffg's vnf
-                feasible_domain_dictionary = self.generateFeasibleDomainDictionary(nffg)
+                # 1) Fetch a map with a list of feasible domains for each NF of the nffg
+                feasible_domains_dictionary = self.get_feasible_domains_map(nffg)
 
-                # 2) Checks if endpoints' domain matches with a domain from the feasible_domain_dictionary and tag the vnf domain
-                self.checkEnpointDomainAndTagVNF(nffg, feasible_domain_dictionary)
+                # 2) Checks if endpoints domain matches with a domain from the feasible_domains_dictionary and tag the vnf domain
+                self.checkEnpointDomainAndTagVNF(nffg, feasible_domains_dictionary)
 
-                ##Graph().id_generator(nffg, session_id)
-                domains, nffgs = Scheduler(self.counter).schedule(nffg)
+                # 3) Generate a sub-graph for each involved domain
+                domains, nffgs = Splitter(self.counter).split(nffg)
                 domain_nffg_dict = OrderedDict()
                 for i in range(0, len(domains)):
-                    domain_nffg_dict[domains[i]]=nffgs[i]
+                    domain_nffg_dict[domains[i]] = nffgs[i]
 
                 # Check if all vnf are available and ready to use on the selected domain as FC
+                # [Gabriele] I think this check is partially redundant, except for pre-tagged NF, so should be moved up
                 self.checkVNFAvailabilityOnTheSelectedDomain(domain_nffg_dict)
-
 
                 for domain, nffg in domain_nffg_dict.items():
                     # Save the graph in the database, with the state initializing
@@ -336,28 +336,27 @@ class UpperLayerOrchestratorController(object):
 
         return status
 
-    def generateFeasibleDomainDictionary(self, nffg):
+    def get_feasible_domains_map(self, nffg):
         """
-        Fetch a list of feasible domains for every nffg's vnf
+        Fetch a list of feasible domains for each nffg's NF
         :param nffg:
         :type nffg: NF_FG
         :return:
+        :rtype: dict of str: N
         """
 
-        feasible_domain_dictionary = {}  # feasible means domains that have FC + GRE support
+        feasible_domain_dictionary = {}  # feasible means domains that have FC
         domains_info = DomainInformation().get_domain_info()
         for vnf in nffg.vnfs:
-            if vnf.domain is None:  # checks if at least one vnf is without domain name
-                # logging.debug('Passato di qui1. vnf name = %s', vnf.name)
-                domain_list = []
-                foundGRE = False
+            # look for feasible domains for this NF just if there is no pre-assigned domain
+            if vnf.domain is None:
+                feasible_domain_dictionary[vnf.name.lower()] = []
+                # foundGRE = False
                 for domain_id, domain_info in domains_info.items():
-                    # logging.debug('Passato di qui1. domain_info = %s', domain_info)
                     logging.debug(domain_info.get_dict())
-                    for function_capability in domain_info.capabilities.functional_capabilities:
-                        if vnf.name.lower() == function_capability.type.lower():
+                    for functional_capability in domain_info.capabilities.functional_capabilities:
+                        if vnf.name.lower() == functional_capability.type.lower():
                             # TODO GRE check below is WRONG, because we don't know the way (and if) the domains will be connected. But it should be checked somewhere
-                            domain_list.append(domain_info.name)
                             '''
                             for interface in domain_info.hardware_info.interfaces:  # controlla tutte le interfacce ma alla prima che permette GRE esce dal ciclo
                                 domain_list.append(domain_info.name)
@@ -374,10 +373,12 @@ class UpperLayerOrchestratorController(object):
                                     break
                                     # logging.debug('Passato di qui2. domain name = %s', domain_info.name)
                             '''
+                            # check also if the FC is in ready status
+                            if functional_capability.ready:
+                                feasible_domain_dictionary[vnf.name.lower()].append(domain_info.name)
+                                logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")
 
-                feasible_domain_dictionary[vnf.name.lower()] = domain_list
-
-                logging.debug('feasible_domain_dictionary = %s', feasible_domain_dictionary)
+        logging.debug('feasible_domain_dictionary = %s', feasible_domain_dictionary)
 
         return feasible_domain_dictionary
 
@@ -420,10 +421,10 @@ class UpperLayerOrchestratorController(object):
             for vnf in nffg.vnfs:
                 # logging.debug('Passato di qui2: vnf name = %s', vnf.name)
                 found = False
-                for function_capability in domain_info.capabilities.functional_capabilities:
-                    if vnf.name.lower() == function_capability.type.lower():  # convert both of them to lower case for case insensitive comparison
+                for functional_capability in domain_info.capabilities.functional_capabilities:
+                    if vnf.name.lower() == functional_capability.type.lower():  # convert both of them to lower case for case insensitive comparison
                         logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
-                        if function_capability.ready is True:
+                        if functional_capability.ready is True:
                             logging.debug("Ok! The function capability is ready!")
                             found = True
                             break

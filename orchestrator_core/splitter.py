@@ -18,11 +18,19 @@ from orchestrator_core.nffg_manager import NFFG_Manager
 DEFAULT_DOMAIN = Configuration().DEFAULT_DOMAIN
 
 
-class Scheduler(object):
+class Splitter(object):
     def __init__(self, flow_prefix = None):
         self.flow_prefix = flow_prefix
     
-    def schedule(self, nffg):
+    def split(self, nffg):
+        """
+        Given an nffg with NF and end-points labeled with a domain,
+        returns a sub-graph for each domain.
+        Also characterize auto-generated endpoints with inter-domain traffic steering information
+        :param nffg:
+        :type nffg: NF_FG
+        :return:
+        """
         domain_list = []
         nffg_list = [] 
         additional_subgraphs = []
