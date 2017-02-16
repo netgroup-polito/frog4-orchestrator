@@ -61,7 +61,7 @@ class Splitter(object):
 
             # Search matches between each possible couple of domains
             for domain_relationship in itertools.combinations(domain_to_nffg.keys(), 2):
-                #print (domain_relationship)
+                # print (domain_relationship)
                 domain_1_nffg = domain_to_nffg[domain_relationship[0]]
                 domain_2_nffg = domain_to_nffg[domain_relationship[1]]
                 # Gets endpoints of domain_1 that have to be connected to domain_2
