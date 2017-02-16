@@ -386,7 +386,7 @@ class UpperLayerOrchestrator(MethodView):
 
             controller = UpperLayerOrchestratorController(user_data, self.counter)
             response = controller.put(nffg)
-            self.counter +=1
+            self.counter += 1
 
             return response, 202
         
