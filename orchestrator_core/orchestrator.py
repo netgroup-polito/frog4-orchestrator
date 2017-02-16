@@ -17,7 +17,8 @@ from nffg_library.nffg import NF_FG
 
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
+    VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
@@ -143,21 +144,22 @@ class NFFGStatus(MethodView):
 
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            return ("EXCEPTION - NoResultFound", 404)
+            return "EXCEPTION - NoResultFound", 404
         except requests.HTTPError as err:
             logging.exception(err)
-            return (str(err), 500)
+            return str(err), 500
         except sessionNotFound as err:
             logging.exception(err.message)
-            return (err.message, 404)
+            return err.message, 404
         except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-User") is not None:
                 logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
             logging.debug(err.message)
-            return ("Unauthorized", 401)
+            return "Unauthorized", 401
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin: "+ str(err), 500)
+            return "Contact the admin: " + str(err), 500
+
 
 class ActiveGraphs(MethodView):
     def get(self):
@@ -196,7 +198,8 @@ class ActiveGraphs(MethodView):
         # This class is necessary because there is a conflict in the swagger documentation of get operation
         upper_layer_orch = UpperLayerOrchestrator()
         return upper_layer_orch.get()
-      
+
+
 class UpperLayerOrchestrator(MethodView):
     '''
     Admin class that intercept the REST call through the WSGI server
@@ -246,25 +249,25 @@ class UpperLayerOrchestrator(MethodView):
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
         
-            return ("Session deleted")
+            return "Session deleted"
             
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            return ("EXCEPTION - NoResultFound", 404)
+            return "EXCEPTION - NoResultFound", 404
         except requests.HTTPError as err:
             logging.exception(err)
-            return (str(err), 500)
+            return str(err), 500
         except sessionNotFound as err:
             logging.exception(err.message)
-            return (err.message, 404)
+            return err.message, 404
         except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-User") is not None:
                 logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
             logging.debug(err.message)
-            return ("Unauthorized", 401) 
+            return "Unauthorized", 401
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin: "+ str(err), 500)
+            return "Contact the admin: " + str(err), 500
     
     def get(self, nffg_id = None):
         """
@@ -315,24 +318,24 @@ class UpperLayerOrchestrator(MethodView):
                         
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            return ("EXCEPTION - NoResultFound", 404)
+            return "EXCEPTION - NoResultFound", 404
         except requests.HTTPError as err:
             logging.exception(err)
-            return (str(err), 500)
+            return str(err), 500
         except requests.ConnectionError as err:
             logging.exception(err)
-            return (str(err), 500)       
+            return str(err), 500
         except sessionNotFound as err:
             logging.exception(err.message)
-            return (err.message, 404)
+            return err.message, 404
         except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-User") is not None:
                 logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
             logging.debug(err.message)
-            return ("Unauthorized", 401) 
+            return "Unauthorized", 401
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin: "+ str(err), 500)
+            return "Contact the admin: " + str(err), 500
         
     def put(self):
         """
@@ -385,31 +388,31 @@ class UpperLayerOrchestrator(MethodView):
             response = controller.put(nffg)
             self.counter +=1
 
-            return (response, 202)
+            return response, 202
         
         except wrongRequest as err:
             logging.exception(err)
-            return ("Bad Request", 400)
+            return "Bad Request", 400
         except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-User") is not None:
                 logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
             logging.debug(err.message)
-            return ("Unauthorized", 401)
+            return "Unauthorized", 401
         except NF_FGValidationError as err:
             logging.exception(err)            
-            return ("NF-FG Validation Error: "+ err.message, 400)
+            return "NF-FG Validation Error: " + err.message, 400
         except requests.HTTPError as err:
             logging.exception(err)
-            return (str(err), 500)
+            return str(err), 500
         except requests.ConnectionError as err:
             logging.exception(err)
-            return (str(err), 500)
+            return str(err), 500
         except VNFRepositoryError as err:
-            return (err.message, 500)
+            return err.message, 500
         except NoFunctionalCapabilityFound as err:
-            return (err.message, 400)
+            return err.message, 400
         except FunctionalCapabilityAlreadyInUse as err:
-            return (err.message, 400)
+            return err.message, 400
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin: "+ str(err), 500)
+            return "Contact the admin: " + str(err), 500
