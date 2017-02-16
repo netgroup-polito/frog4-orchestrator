@@ -6,7 +6,6 @@ Created on Oct 1, 2014
 """
 from orchestrator_core.config import Configuration
 from orchestrator_core.exception import DomainNotFound, GraphError
-from orchestrator_core.sql.graph import Graph
 from orchestrator_core.sql.domain import Domain
 from orchestrator_core.sql.domains_info import DomainInformation
 import itertools, random
@@ -19,14 +18,14 @@ DEFAULT_DOMAIN = Configuration().DEFAULT_DOMAIN
 
 
 class Splitter(object):
-    def __init__(self, flow_prefix = None):
+    def __init__(self, flow_prefix=None):
         self.flow_prefix = flow_prefix
     
     def split(self, nffg):
         """
         Given an nffg with NF and end-points labeled with a domain,
         returns a sub-graph for each domain.
-        Also characterize auto-generated endpoints with inter-domain traffic steering information
+        Also characterize auto-generated endpoints with inter-domain traffic steering information.
         :param nffg:
         :type nffg: NF_FG
         :return:
