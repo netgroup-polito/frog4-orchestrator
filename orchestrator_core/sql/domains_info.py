@@ -80,6 +80,7 @@ class FunctionSpecificationModel(Base):
     unit = Column(VARCHAR(64))
     mean = Column(VARCHAR(64))
 
+
 class DomainInformation(object):
 
     def __init__(self):
@@ -90,7 +91,7 @@ class DomainInformation(object):
 
         :param domain_name:
         :return:
-        :rtype: list of DomainInfo
+        :rtype: dict[int, DomainInfo]
         """
         session = get_session()
         domains_info_list = {}
@@ -136,7 +137,6 @@ class DomainInformation(object):
                 for func_cap_ref in func_cap_refs:
                     func_cap = FunctionalCapability(_type=func_cap_ref.type, name=func_cap_ref.name, ready=func_cap_ref.ready, family=func_cap_ref.family, template=func_cap_ref.template, resources=func_cap_ref.resource_id)
                     domain_info.capabilities.functional_capabilities.append(func_cap)
-
 
         return domains_info_list
 
