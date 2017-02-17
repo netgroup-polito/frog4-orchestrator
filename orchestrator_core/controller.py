@@ -198,11 +198,12 @@ class UpperLayerOrchestratorController(object):
                 # 0) Create virtual topology basing on current domain information
                 virtual_topology = VirtualTopology(DomainInformation().get_domain_info())
 
-                # 1) Fetch a map with a list of feasible domains for each NF of the nffg
-                feasible_domains_dictionary = self.get_feasible_domains_map(nffg)
+                # 1) Fetch a map with a list of feasible domains for each NF of the nffg and for each ep
+                feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
+                feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
 
                 # 2) Perform the scheduling algorithm (tag nffg untagged elements with domain)
-                Scheduler(virtual_topology).schedule(nffg, feasible_domains_dictionary)
+                Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict).schedule(nffg)
 
                 # 3) Generate a sub-graph for each involved domain
                 domains, nffgs = Splitter(self.counter).split(nffg)
@@ -298,9 +299,9 @@ class UpperLayerOrchestratorController(object):
             return False
     
     def getStatus(self, nffg_id):
-        '''
+        """
         Returns the status of the graph
-        '''        
+        """
         logging.debug("Getting resources information for graph id: "+str(nffg_id))
         # TODO: have I to manage a sort of cache? Reading from db the status, maybe
         session_id = Session().get_active_user_session_by_nf_fg_id(nffg_id).id
@@ -325,7 +326,7 @@ class UpperLayerOrchestratorController(object):
             nffg_status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
             logging.debug(nffg_status)
             if nffg_status['status'] == 'complete':
-                num_graphs_completed = num_graphs_completed + 1
+                num_graphs_completed += 1
 
         logging.debug("num_graphs_completed "+str(num_graphs_completed))
         logging.debug("num_graphs "+str(num_graphs))
@@ -343,20 +344,23 @@ class UpperLayerOrchestratorController(object):
 
         return status
 
-    def get_feasible_domains_map(self, nffg):
+    @staticmethod
+    def get_nf_feasible_domains_map(nffg):
         """
         Fetch a list of feasible domains for each nffg's NF
         :param nffg:
         :type nffg: NF_FG
         :return:
-        :rtype: dict of str: N
+        :rtype: dict [str, list]
         """
 
         feasible_domain_dictionary = {}  # feasible means domains that have FC
         domains_info = DomainInformation().get_domain_info()
         for vnf in nffg.vnfs:
             # look for feasible domains for this NF just if there is no pre-assigned domain
-            if vnf.domain is None:
+            if vnf.domain is not None:
+                feasible_domain_dictionary[vnf.name.lower()] = [vnf.domain]
+            else:
                 feasible_domain_dictionary[vnf.name.lower()] = []
                 # foundGRE = False
                 for domain_id, domain_info in domains_info.items():
@@ -382,11 +386,30 @@ class UpperLayerOrchestratorController(object):
                             '''
                             # check also if the FC is in ready status
                             if functional_capability.ready:
-                                feasible_domain_dictionary[vnf.name.lower()].append(domain_info.name)
+                                feasible_domain_dictionary[vnf.id].append(domain_info.name)
                                 logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")
 
         logging.debug('feasible_domain_dictionary = %s', feasible_domain_dictionary)
 
+        return feasible_domain_dictionary
+
+    @staticmethod
+    def get_ep_feasible_domains_map(nffg):
+        """
+
+        :param nffg:
+        :type nffg: nffg_library.nffg.NF_FG
+        :return:
+        """
+        feasible_domain_dictionary = {}  # feasible means domains where that EP can be placed
+        for ep in nffg.end_points:
+            if ep.domain is not None:
+                feasible_domain_dictionary[ep.id] = [ep.domain]
+            elif nffg.domain is not None:
+                feasible_domain_dictionary[ep.id] = [nffg.domain]
+            else:
+                raise GraphError("Endpoint '" + ep.id + "' is not labeled with a domain, however there is no global "
+                                                        + "graph domain specified in the nffg.")
         return feasible_domain_dictionary
 
     def checkEnpointDomainAndTagVNF(self, nffg, feasible_domain_dictionary):

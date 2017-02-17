@@ -136,3 +136,47 @@ class VirtualTopology:
                     if labeling_method is None or virtual_channel["labeling-method"] == labeling_method:
                         count += virtual_channel["virtual-channels"]
         return count
+
+    def find_shortest_path_between_domains(self, domain_a, domain_b):
+        """
+
+        :return:
+        """
+        a_tree = self._get_tree_to_domain(domain_a, domain_b, len(self._topology_graph))
+        a_paths = self._get_path_list(a_tree, [domain_a])
+        a_paths = [path for path in a_paths if path[-1] == domain_b]
+
+        if len(a_paths) == 0:
+            return None
+        shortest_path = a_paths[0]
+        for path in a_paths:
+            if len(path) < shortest_path:
+                shortest_path = path
+        return shortest_path
+
+    def find_shortest_paths_between_domains(self, domain_a, domain_b, n_virtual_channels):
+        # TODO implement by checking also 'surviving' virtual channels for each path
+        pass
+
+    def _get_tree_to_domain(self, root_domain, leaf_domain, deep):
+        tree = {}
+        for virtual_channel in self._topology_graph[root_domain]:
+            tree[root_domain][virtual_channel["peer"]] = {}
+            if virtual_channel["peer"] != leaf_domain and deep > 0:
+                tree[virtual_channel["peer"]] = self._get_tree_to_domain(virtual_channel["peer"], leaf_domain, deep-1)
+            else:
+                tree[virtual_channel["peer"]] = {}
+        return tree
+
+    def _get_path_list(self, tree, prefix):
+        paths = []
+        for domain in tree:
+            p = []
+            p.extend(prefix)
+            p.append(domain)
+            if len(tree[domain]) > 0:
+                paths.extend(self._get_path_list(tree[domain], p))
+            else:
+                prefix.append(domain)
+                paths.append(prefix)
+        return paths

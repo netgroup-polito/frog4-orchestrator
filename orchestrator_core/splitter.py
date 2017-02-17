@@ -342,7 +342,7 @@ class Splitter(object):
                 elif DEFAULT_DOMAIN is not None:
                     element.domain = DEFAULT_DOMAIN
                 else:
-                    raise GraphError ("Unable to deploy the graph: neither graph nor its elements are associated to a domain and DEFAULT_DOMAIN is not specified in the configuration file")
+                    raise GraphError("Unable to deploy the graph: neither graph nor its elements are associated to a domain and DEFAULT_DOMAIN is not specified in the configuration file")
             if element.domain not in domains_dict:
                 domains_dict[element.domain] = []
             domains_dict[element.domain].append(element)
