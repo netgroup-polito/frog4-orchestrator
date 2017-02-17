@@ -6,7 +6,8 @@ class UserNotFound(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class TenantNotFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -15,7 +16,8 @@ class TenantNotFound(Exception):
         
     def get_mess(self):
         return self.message    
-    
+
+
 class UserLocationNotFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -25,6 +27,7 @@ class UserLocationNotFound(Exception):
     def get_mess(self):
         return self.message
     
+
 class DeletionTimeout(Exception):
     def __init__(self, message):
         self.message = message
@@ -34,6 +37,7 @@ class DeletionTimeout(Exception):
     def get_mess(self):
         return self.message
     
+
 class NoUserNodeDefined(Exception):
     def __init__(self, message):
         self.message = message
@@ -43,6 +47,7 @@ class NoUserNodeDefined(Exception):
     def get_mess(self):
         return self.message
 
+
 class EndpointConnectionError(Exception):
     def __init__(self, message):
         self.message = message
@@ -51,7 +56,8 @@ class EndpointConnectionError(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class NodeNotFound(Exception):
     def __init__(self, message):
         # Call the base class constructor with the parameters it needs
@@ -61,7 +67,8 @@ class NodeNotFound(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class DomainNotFound(Exception):
     def __init__(self, message):
         # Call the base class constructor with the parameters it needs
@@ -71,7 +78,8 @@ class DomainNotFound(Exception):
         
     def get_mess(self):
         return self.message    
-    
+
+
 class ControllerNotFound(Exception):
     def __init__(self, message):
         # Call the base class constructor with the parameters it needs
@@ -81,6 +89,7 @@ class ControllerNotFound(Exception):
         
     def get_mess(self):
         return self.message
+
 
 class StackError(Exception):
     def __init__(self, message):
@@ -100,7 +109,8 @@ class ResourceAlreadyExistsOnNode(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class WrongConfigurationFile(Exception):
     def __init__(self, message):
         self.message = message
@@ -109,7 +119,8 @@ class WrongConfigurationFile(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class LoginError(Exception):
     def __init__(self, message):
         self.message = message
@@ -118,7 +129,8 @@ class LoginError(Exception):
         
     def get_mess(self):
         return self.message    
-    
+
+
 class NoHeatPortTranslationFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -128,6 +140,7 @@ class NoHeatPortTranslationFound(Exception):
     def get_mess(self):
         return self.message
 
+
 class NoMacAddress(Exception):
     def __init__(self, message):
         self.message = message
@@ -136,7 +149,8 @@ class NoMacAddress(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class NoPreviousDeviceFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -145,7 +159,8 @@ class NoPreviousDeviceFound(Exception):
         
     def get_mess(self):
         return self.message
-    
+
+
 class InfoNotFound(Exception): 
     def __init__(self, message):
         self.message = message
@@ -154,7 +169,8 @@ class InfoNotFound(Exception):
         
     def get_mess(self):
         return self.message   
-    
+
+
 class sessionNotFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -163,6 +179,7 @@ class sessionNotFound(Exception):
         
     def get_mess(self):
         return self.message
+
 
 class ingoingFlowruleMissing(Exception):
     def __init__(self, message):
@@ -173,6 +190,7 @@ class ingoingFlowruleMissing(Exception):
     def get_mess(self):
         return self.message
 
+
 class maximumNumberOfVNFInGraph(Exception):
     def __init__(self, message):
         self.message = message
@@ -182,6 +200,7 @@ class maximumNumberOfVNFInGraph(Exception):
     def get_mess(self):
         return self.message
 
+
 class wrongRequest(Exception):
     def __init__(self, message):
         self.message = message
@@ -190,7 +209,8 @@ class wrongRequest(Exception):
     
     def get_mess(self):
         return self.message
-    
+
+
 class unauthorizedRequest(Exception):
     def __init__(self, message):
         self.message = message
@@ -199,7 +219,8 @@ class unauthorizedRequest(Exception):
     
     def get_mess(self):
         return self.message
-    
+
+
 class wrongConnectionBetweenEndpoints(Exception):
     def __init__(self, message):
         self.message = message
@@ -209,6 +230,7 @@ class wrongConnectionBetweenEndpoints(Exception):
     def get_mess(self):
         return self.message
 
+
 class WrongNumberOfPorts(Exception):
     def __init__(self, message):
         self.message = message
@@ -217,7 +239,8 @@ class WrongNumberOfPorts(Exception):
     
     def get_mess(self):
         return self.message
-    
+
+
 class WrongPortID(Exception):
     def __init__(self, message):
         self.message = message
@@ -226,7 +249,8 @@ class WrongPortID(Exception):
     
     def get_mess(self):
         return self.message
-    
+
+
 class PortLabelNotFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -235,7 +259,8 @@ class PortLabelNotFound(Exception):
     
     def get_mess(self):
         return self.message
-    
+
+
 class Wrong_ISP_Graph(Exception):
     def __init__(self, message):
         self.message = message
@@ -244,7 +269,8 @@ class Wrong_ISP_Graph(Exception):
     
     def get_mess(self):
         return self.message
-    
+
+
 class GraphError(Exception):
     def __init__(self, message):
         self.message = message
@@ -253,6 +279,7 @@ class GraphError(Exception):
     
     def get_mess(self):
         return self.message
+
 
 class GraphNotFound(Exception):
     def __init__(self, message):
@@ -263,6 +290,7 @@ class GraphNotFound(Exception):
     def get_mess(self):
         return self.message
 
+
 class PortNotFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -271,6 +299,7 @@ class PortNotFound(Exception):
     
     def get_mess(self):
         return self.message
+
 
 class EndpointNotFound(Exception):
     def __init__(self, message):
@@ -281,14 +310,16 @@ class EndpointNotFound(Exception):
     def get_mess(self):
         return self.message
 
-class connectionsError(Exception):
+
+class ConnectionsError(Exception):
     def __init__(self, message):
         self.message = message
         # Call the base class constructor with the parameters it needs
-        super(connectionsError, self).__init__(message)
+        super(ConnectionsError, self).__init__(message)
     
     def get_mess(self):
         return self.message
+
 
 class VNFRepositoryError(Exception):
     def __init__(self, message):
@@ -299,6 +330,7 @@ class VNFRepositoryError(Exception):
     def get_mess(self):
         return self.message
 
+
 class NoFunctionalCapabilityFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -307,6 +339,7 @@ class NoFunctionalCapabilityFound(Exception):
 
     def get_mess(self):
         return self.message
+
 
 class FunctionalCapabilityAlreadyInUse(Exception):
     def __init__(self, message):
@@ -317,6 +350,7 @@ class FunctionalCapabilityAlreadyInUse(Exception):
     def get_mess(self):
         return self.message
 
+
 class IncoherentDomainInformation(Exception):
     def __init__(self, message):
         self.message = message
@@ -325,3 +359,24 @@ class IncoherentDomainInformation(Exception):
 
     def get_mess(self):
         return self.message
+
+
+class FeasibleDomainNotFoundForNFFGElement(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(FeasibleDomainNotFoundForNFFGElement, self).__init__(message)
+
+    def get_mess(self):
+        return self.message
+
+
+class FeasibleSolutionNotFoundForNFFG(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(FeasibleSolutionNotFoundForNFFG, self).__init__(message)
+
+    def get_mess(self):
+        return self.message
+
