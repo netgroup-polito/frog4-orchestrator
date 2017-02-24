@@ -46,7 +46,7 @@ class VirtualTopology:
                     elif neighbor.neighbor_type == "legacy-network":
                         # get domains attached to this legacy network
                         for _id, far_domain_info in domains_info.items():
-                            if far_domain_info.type == "domain" and far_domain_info.name != domain_info.name:
+                            if far_domain_info.name != domain_info.name:
                                 # check if this domain has the same legacy network
                                 for far_interface in far_domain_info.hardware_info.interfaces:
                                     for far_domain_neighbor in far_interface.neighbors:
@@ -85,14 +85,15 @@ class VirtualTopology:
         for a_labeling_method in a_labeling_methods.keys():
             # count virtual channel for this labeling method and add to graph
             if b_labeling_methods[a_labeling_method] is not None:
-                virtual_channels = self._count_common_labels(a_labeling_methods[a_labeling_method],
+                virtual_channels_no = self._count_common_labels(a_labeling_methods[a_labeling_method],
                                                              b_labeling_methods[a_labeling_method])
-                virtual_channels.append({
-                    "peer": domain_b_name,
-                    "labeling-method": a_labeling_method,
-                    "virtual-channels": virtual_channels,
-                    "interface": domain_a_interface.get_full_name()
-                })
+                if virtual_channels_no > 0:
+                    virtual_channels.append({
+                        "peer": domain_b_name,
+                        "labeling-method": a_labeling_method,
+                        "virtual-channels": virtual_channels_no,
+                        "interface": domain_a_interface.get_full_name()
+                    })
         return virtual_channels
 
     @staticmethod

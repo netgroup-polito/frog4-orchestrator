@@ -57,10 +57,10 @@ class Scheduler:
         :return: number of involved domains
         """
         involved_domains_set = set()
-        for nf, domains in self._nf_feasible_domains:
+        for nf, domains in self._nf_feasible_domains.items():
             scheduled_domain = domains[solution["nf:"+nf]]
             involved_domains_set.add(scheduled_domain)
-        for ep, domains in self._ep_feasible_domains:
+        for ep, domains in self._ep_feasible_domains.items():
             scheduled_domain = domains[solution["ep:"+ep]]
             involved_domains_set.add(scheduled_domain)
         # TODO count also intermediate domains!!
@@ -151,10 +151,10 @@ class Scheduler:
         :return:
         """
         involved_domains_set = set()
-        for nf, domains in self._nf_feasible_domains:
+        for nf, domains in self._nf_feasible_domains.items():
             scheduled_domain = domains[solution["nf:"+nf]]
             involved_domains_set.add(scheduled_domain)
-        for ep, domains in self._ep_feasible_domains:
+        for ep, domains in self._ep_feasible_domains.items():
             scheduled_domain = domains[solution["ep:"+ep]]
             involved_domains_set.add(scheduled_domain)
         base_domain = involved_domains_set.pop()

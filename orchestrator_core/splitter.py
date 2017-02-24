@@ -222,17 +222,19 @@ class Splitter(object):
                         if matches_found == number_of_links:
                             break
         # Domains connected through an IP domain
-        #GRE
+        # GRE
         if matches_found < number_of_links:
-            #Search for internet connections
+            # Search for internet connections
             for interface in domain_1.interfaces:
                 if self._is_connected_to_ip_domain(interface) is True and interface.gre is True:
-                    #if self.checkActiveTunnels(interface, node_id_2) is True:
+                    # if self.checkActiveTunnels(interface, node_id_2) is True:
                     domain_2 = domains_info[domain_id_2]
                     for remote_interface in domain_2.interfaces:
                         if self._is_connected_to_ip_domain(remote_interface) is True and remote_interface.gre is True:
-                            #Gre_tunnel endpoints found
+                            # TODO check also that is the same neighbor
+                            # Gre_tunnel endpoints found
                             # If local and/or remote interfaces are Openstack compute nodes we need to set the local/remote GRE IP addresses accordingly
+                            # TODO should we read instead OpenConfig IP address from data model?
                             if interface.node is not None:
                                 local_ip = interface.node
                             else:
@@ -243,7 +245,7 @@ class Splitter(object):
                                 remote_ip = Domain().getDomainIP(domain_id_2)
                             while matches_found < number_of_links:
                                 print("gre match found")
-                                matches_found = matches_found + 1
+                                matches_found += 1
                                 characterization.append(Gre(local_ip, remote_ip))
                             break
                 if matches_found == number_of_links:
@@ -372,7 +374,7 @@ class Splitter(object):
         Determines whether interface is connected to an IP domain
         """
         for neighbor in interface.neighbors:
-            if neighbor.neighbor_type == "IP":
+            if neighbor.neighbor_type == "legacy-network":
                 return True
         return False
 

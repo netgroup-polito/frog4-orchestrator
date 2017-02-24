@@ -182,6 +182,8 @@ class UpperLayerOrchestratorController(object):
     def put(self, nffg):
         """
         Manage the request of NF-FG instantiation
+        :param nffg:
+        :type nffg: nffg_library.nffg.NF_FG
         """
         logging.debug('Put from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
         if self.checkNFFGStatus(nffg.id) is True:
@@ -204,6 +206,7 @@ class UpperLayerOrchestratorController(object):
 
                 # 2) Perform the scheduling algorithm (tag nffg untagged elements with domain)
                 Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict).schedule(nffg)
+                logging.debug(json.dumps(nffg.getDict(domain=True)))
 
                 # 3) Generate a sub-graph for each involved domain
                 domains, nffgs = Splitter(self.counter).split(nffg)
@@ -359,9 +362,9 @@ class UpperLayerOrchestratorController(object):
         for vnf in nffg.vnfs:
             # look for feasible domains for this NF just if there is no pre-assigned domain
             if vnf.domain is not None:
-                feasible_domain_dictionary[vnf.name.lower()] = [vnf.domain]
+                feasible_domain_dictionary[vnf.id] = [vnf.domain]
             else:
-                feasible_domain_dictionary[vnf.name.lower()] = []
+                feasible_domain_dictionary[vnf.id] = []
                 # foundGRE = False
                 for domain_id, domain_info in domains_info.items():
                     logging.debug(domain_info.get_dict())

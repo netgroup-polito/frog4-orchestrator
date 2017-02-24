@@ -183,7 +183,7 @@ class DomainInformation(object):
                     gre_ref = DomainsGreModel(id=self.gre_id, name=gre_tunnel.name, domain_info_id=self.info_id, local_ip=gre_tunnel.local_ip, remote_ip=gre_tunnel.remote_ip, gre_key=gre_tunnel.gre_key)
                     session.add(gre_ref)
                     self.gre_id = self.gre_id + 1
-                for vlan in interface.vlans_free:
+                for vlan in interface.free_vlans:
                     if type(vlan) is str and ".." in vlan:
                         tmp = vlan.split("..")
                         lower_vlan = tmp[0]
