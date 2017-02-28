@@ -1,7 +1,8 @@
-'''
+"""
 @author: fabiomignini
 @author: stefanopetrangeli
-'''
+@author: gabrielecastellano
+"""
 
 import json
 import logging
@@ -11,7 +12,8 @@ from orchestrator_core.virtual_topology import VirtualTopology
 from .splitter import Splitter
 import uuid
 
-from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
+from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, \
+    FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -22,14 +24,13 @@ from orchestrator_core.ca_rest import CA_Interface
 from sqlalchemy.orm.exc import NoResultFound
 from requests.exceptions import HTTPError, ConnectionError
 from orchestrator_core.sql.domains_info import DomainInformation
-from nffg_library import nffg
 
 DEBUG_MODE = Configuration().DEBUG_MODE
 
 
 class UpperLayerOrchestratorController(object):
     """
-        Class that performs the logic of orchestrator_core
+    Class that performs the logic of orchestrator_core
     """
     def __init__(self, user_data, counter=None):
         self.user_data = user_data
@@ -74,7 +75,7 @@ class UpperLayerOrchestratorController(object):
     
     def delete(self, nffg_id):        
         session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
-        logging.debug("Deleting session: "+str(session.id))
+        logging.debug("Deleting session: " + str(session.id))
 
         graphs_ref = Graph().getGraphs(session.id)
         for graph_ref in graphs_ref:
@@ -82,7 +83,7 @@ class UpperLayerOrchestratorController(object):
             
             try:
                 if DEBUG_MODE is True:
-                    logging.debug(domain.ip + ":"+  str(domain.port) + " "+ str(graph_ref.id))
+                    logging.debug(domain.ip + ":" + str(domain.port) + " " + str(graph_ref.id))
                 else:
                     CA_Interface(self.user_data, domain).delete(graph_ref.id)
             except Exception as ex:
@@ -90,7 +91,7 @@ class UpperLayerOrchestratorController(object):
                 Session().set_error(session.id)
                 raise ex
             
-        logging.debug('Session deleted: '+str(session.id))
+        logging.debug('Session deleted: ' + str(session.id))
         # Set the field ended in the table session to the actual datetime        
         Graph().delete_session(session.id)
         Session().set_ended(session.id)
@@ -103,17 +104,29 @@ class UpperLayerOrchestratorController(object):
         graphs_ref = Graph().getGraphs(session.id)
         try:
             # Get VNFs templates
-            self.prepareNFFG(nffg)
+            self.prepare_nffg(nffg)
 
-            # TODO add here code depending of what we want:
-            # 1. relocate old NF if a better placement is available -> label here old NF and then copy first part of put
-            # 2. keep old NF placement and schedule just new one -> copy code from put
+            # TODO add here code depending on what we want:
+            # 1. relocate old NF if a better placement is available -> copy first part from put
+            # 2. keep old NF placement and schedule just new one -> label here old NF and then copy first part of put
+            # current code is for case 1.
 
+            # 0) Create virtual topology basing on current domain information
+            virtual_topology = VirtualTopology(DomainInformation().get_domain_info())
+
+            # 1) Fetch a map with a list of feasible domains for each NF of the nffg and for each ep
+            feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
+            feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
+
+            # 2) Perform the scheduling algorithm (tag nffg untagged elements with best domain)
+            Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict).schedule(nffg)
+
+            # 3) Generate a sub-graph for each involved domain
             domains, nffgs = Splitter(self.counter).split(nffg)
 
             domain_nffg_dict = OrderedDict()
             for i in range(0, len(domains)):
-                domain_nffg_dict[domains[i]]=nffgs[i]
+                domain_nffg_dict[domains[i]] = nffgs[i]
 
             # Maps each domain ID to instantiated graph IDs in it
             old_domain_graph = OrderedDict()
@@ -134,11 +147,12 @@ class UpperLayerOrchestratorController(object):
                     to_be_removed_domains.append(old_domain_id)
                     
             for domain_id in to_be_removed_domains:
-                logging.warning("The domain " + str(domain_id) + " is no longer involved after the update...deleting (sub)graph(s) instantiated in it")
+                logging.warning("The domain " + str(domain_id) + " is no longer involved after the update..." +
+                                                                 "deleting (sub)graph(s) instantiated on it.")
                 for graph in old_domain_graph[domain_id]:
                     domain = Domain().getDomain(domain_id)
                     if DEBUG_MODE is True:
-                        logging.debug(domain.ip + ":"+  str(domain.port) + " "+ str(graph))
+                        logging.debug(domain.ip + ":" + str(domain.port) + " " + str(graph))
                     else:
                         CA_Interface(self.user_data, domain).delete(graph)
                     Graph().delete_graph(graph)
@@ -146,15 +160,15 @@ class UpperLayerOrchestratorController(object):
             for new_domain, new_nffg in domain_nffg_dict.items():
                 if new_domain.id in old_domain_graph.keys():
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
-                    Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict)>1)
+                    Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
                 else:
-                    Graph().add_graph(new_nffg, session.id, partial=len(domain_nffg_dict)>1)
+                    Graph().add_graph(new_nffg, session.id, partial=len(domain_nffg_dict) > 1)
                     Graph().setDomainID(new_nffg.db_id, new_domain.id)
 
                 new_nffg.id = str(new_nffg.db_id)
 
                 if DEBUG_MODE is True:
-                    logging.debug(new_domain.ip + ":" + str(new_domain.port) + " " + new_nffg.id+"\n"+new_nffg.getJSON())
+                    logging.debug(new_domain.ip+":"+str(new_domain.port)+" "+new_nffg.id+"\n"+new_nffg.getJSON())
                 else:
                     CA_Interface(self.user_data, new_domain).put(new_nffg)
 
@@ -167,7 +181,7 @@ class UpperLayerOrchestratorController(object):
             raise ex
         except VNFRepositoryError as ex:
             logging.exception(ex)
-            #Session().set_error(session.id)
+            # Session().set_error(session.id)
             raise ex
         except Exception as ex:
             logging.exception(ex)
@@ -186,7 +200,7 @@ class UpperLayerOrchestratorController(object):
         :type nffg: nffg_library.nffg.NF_FG
         """
         logging.debug('Put from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
-        if self.checkNFFGStatus(nffg.id) is True:
+        if self.check_nffg_status(nffg.id) is True:
             logging.debug('NF-FG already instantiated, trying to update it')
             session_id = self.update(nffg)
             logging.debug('Update completed')
@@ -195,7 +209,7 @@ class UpperLayerOrchestratorController(object):
             Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name)
             try:
                 # Manage profile
-                self.prepareNFFG(nffg)
+                self.prepare_nffg(nffg)
 
                 # 0) Create virtual topology basing on current domain information
                 virtual_topology = VirtualTopology(DomainInformation().get_domain_info())
@@ -204,7 +218,7 @@ class UpperLayerOrchestratorController(object):
                 feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
                 feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
 
-                # 2) Perform the scheduling algorithm (tag nffg untagged elements with domain)
+                # 2) Perform the scheduling algorithm (tag nffg untagged elements with best domain)
                 Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict).schedule(nffg)
                 logging.debug(json.dumps(nffg.getDict(domain=True)))
 
@@ -214,14 +228,9 @@ class UpperLayerOrchestratorController(object):
                 for i in range(0, len(domains)):
                     domain_nffg_dict[domains[i]] = nffgs[i]
 
-                # Check if all vnf are available and ready to use on the selected domain as FC
-                # [Gabriele] I think this check is partially redundant, except for pre-tagged NF, so should be moved up
-                self.checkVNFAvailabilityOnTheSelectedDomain(domain_nffg_dict)
-
                 for domain, nffg in domain_nffg_dict.items():
                     # Save the graph in the database, with the state initializing
-                    Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict)>1)
-
+                    Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict) > 1)
                     Graph().setDomainID(nffg.db_id, domain.id)
 
                     # Instantiate profile
@@ -234,9 +243,7 @@ class UpperLayerOrchestratorController(object):
                     logging.debug('NF-FG instantiated')
 
                 Session().updateStatus(session_id, 'complete')
-
-                #debug   
-                #Session().set_error(session_id)
+                # Session().set_error(session_id)
             except (HTTPError, ConnectionError) as ex:
                 logging.exception(ex)
                 Graph().delete_graph(nffg.db_id)
@@ -254,6 +261,10 @@ class UpperLayerOrchestratorController(object):
                 logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex
+            except FeasibleDomainNotFoundForNFFGElement as ex:
+                logging.exception(ex)
+                Session().set_error(session_id)
+                raise ex
             except Exception as ex:
                 logging.exception(ex)
                 '''
@@ -262,11 +273,12 @@ class UpperLayerOrchestratorController(object):
                 Session().set_error(session_id)
                 raise ex
         
-        #Session().updateStatus(session_id, 'complete')
+        # Session().updateStatus(session_id, 'complete')
                                 
         return session_id
         
-    def prepareNFFG(self, nffg):
+    @staticmethod
+    def prepare_nffg(nffg):
         manager = NFFG_Manager(nffg)  
         
         # Retrieve the VNF templates, if a node is a new graph, expand it
@@ -277,14 +289,14 @@ class UpperLayerOrchestratorController(object):
         # Optimize NF-FG, currently the switch VNF when possible will be collapsed
         manager.mergeUselessVNFs()   
         
-    def checkNFFGStatus(self, service_graph_id):
+    def check_nffg_status(self, service_graph_id):
         # TODO: Check if the graph exists, if true
         try:
             session_id = Session().get_active_user_session_by_nf_fg_id(service_graph_id).id
         except sessionNotFound:
             return False
         
-        status = self.getResourcesStatus(session_id)
+        status = self.get_resources_status(session_id)
         
         if status is None:
             return False
@@ -301,7 +313,7 @@ class UpperLayerOrchestratorController(object):
         if status['status'] == 'ended' or status['status'] == 'not_found':
             return False
     
-    def getStatus(self, nffg_id):
+    def get_status(self, nffg_id):
         """
         Returns the status of the graph
         """
@@ -310,10 +322,10 @@ class UpperLayerOrchestratorController(object):
         session_id = Session().get_active_user_session_by_nf_fg_id(nffg_id).id
         
         logging.debug("Corresponding to session id: "+str(session_id))
-        status = self.getResourcesStatus(session_id)
+        status = self.get_resources_status(session_id)
         return json.dumps(status)
     
-    def getResourcesStatus(self, session_id):
+    def get_resources_status(self, session_id):
         status = {}
         if DEBUG_MODE is True:
             status['status'] = 'complete'
@@ -362,35 +374,21 @@ class UpperLayerOrchestratorController(object):
         for vnf in nffg.vnfs:
             # look for feasible domains for this NF just if there is no pre-assigned domain
             if vnf.domain is not None:
-                feasible_domain_dictionary[vnf.id] = [vnf.domain]
+                domain = Domain().getDomainFromName(vnf.domain)
+                fc = domains_info[domain.id].capabilities.get_functional_capability_by_name(vnf.name.lower())
+                if fc is not None and fc.ready:
+                    feasible_domain_dictionary[vnf.id] = [vnf.domain]
+                else:
+                    raise NoFunctionalCapabilityFound("No suitable FC found for NF '" + vnf.name + "' in domain '" +
+                                                      vnf.domain + "' specified in nffg.")
             else:
                 feasible_domain_dictionary[vnf.id] = []
-                # foundGRE = False
                 for domain_id, domain_info in domains_info.items():
                     logging.debug(domain_info.get_dict())
-                    for functional_capability in domain_info.capabilities.functional_capabilities:
-                        if vnf.name.lower() == functional_capability.type.lower():
-                            # TODO GRE check below is WRONG, because we don't know the way (and if) the domains will be connected. But it should be checked somewhere
-                            '''
-                            for interface in domain_info.hardware_info.interfaces:  # controlla tutte le interfacce ma alla prima che permette GRE esce dal ciclo
-                                domain_list.append(domain_info.name)
-                                if interface.gre is True:  # TODO: Con questo algoritmo controllo solo l'interfaccia del dominio di partenza. Da controllare che l'interfaccia remota a cui si collega permetta anche essa GRE
-                                    for neighbor in interface.neighbors:  # controlla tutti i neighbors ma appena trova uno che permette GRE esce dal ciclo
-                                        if neighbor.neighbor_type == "IP":
-                                            logging.debug(
-                                                'Ok! The interface %s supports tunnel GRE usage',
-                                                interface.name)
-                                            foundGRE = True
-                                            domain_list.append(domain_info.name)
-                                            break
-                                if foundGRE is True:
-                                    break
-                                    # logging.debug('Passato di qui2. domain name = %s', domain_info.name)
-                            '''
-                            # check also if the FC is in ready status
-                            if functional_capability.ready:
-                                feasible_domain_dictionary[vnf.id].append(domain_info.name)
-                                logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")
+                    fc = domain_info.capabilities.get_functional_capability_by_name(vnf.name.lower())
+                    if fc is not None and fc.ready:
+                        feasible_domain_dictionary[vnf.id].append(domain_info.name)
+                        logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")
 
         logging.debug('feasible_domain_dictionary = %s', feasible_domain_dictionary)
 
@@ -411,61 +409,6 @@ class UpperLayerOrchestratorController(object):
             elif nffg.domain is not None:
                 feasible_domain_dictionary[ep.id] = [nffg.domain]
             else:
-                raise GraphError("Endpoint '" + ep.id + "' is not labeled with a domain, however there is no global "
-                                                        + "graph domain specified in the nffg.")
+                raise GraphError("Endpoint '" + ep.id + "' is not labeled with a domain, however there is no global " +
+                                                        "graph domain specified in the nffg.")
         return feasible_domain_dictionary
-
-    def checkEnpointDomainAndTagVNF(self, nffg, feasible_domain_dictionary):
-        # Checks if endpoints' domain matches with a domain from the feasible_domain_dictionary
-
-        for vnf in nffg.vnfs:
-            if vnf.domain is None:  # checks if at least one vnf is without domain name
-                for dict_vnf_name, dict_domain_list in feasible_domain_dictionary.items():
-                    if vnf.name.lower() == dict_vnf_name.lower():
-                        foundSameDomainName = False
-                        firstDomainFeasibleFlag = True
-                        for domain_name_from_list in dict_domain_list:
-                            if firstDomainFeasibleFlag is True:
-                                first_domain = domain_name_from_list  # primo dominio analizzato e primo endpoint analizzato
-                                firstDomainFeasibleFlag = False
-                            for endpoint in nffg.end_points:
-                                if domain_name_from_list.lower() == endpoint.domain.lower():
-                                    vnf.domain = endpoint.domain.lower()  # Taggo il vnf domain con lo stesso domain degli endpoint
-                                    foundSameDomainName = True
-                                    logging.debug('Ok! Found a feasible domain=endpoint domain: %s', vnf.domain)
-                                    break
-
-                            if foundSameDomainName is True:  # domain coincidente trovato esco dal ciclo
-                                break
-
-                        if foundSameDomainName is False:
-                            vnf.domain = first_domain  # se non trovo nessun endpoint domain che coincide taggo la vnf col primo feasible domain analizzato
-                            logging.debug(
-                                'No matching endpoint domain found. Tagging the VNF with the first feasible domain in the list: %s',
-                                vnf.domain)
-
-    def checkVNFAvailabilityOnTheSelectedDomain(self, domain_nffg_dict):
-        # Checks if all vnf are available and ready to use on the selected domain as FC
-
-        for domain, nffg in domain_nffg_dict.items():
-            # logging.debug('Passato di qui1: domain id = %s', domain.id )
-            domain_info = DomainInformation().get_domain_info()[domain.id]
-            logging.debug(domain_info.get_dict())
-            for vnf in nffg.vnfs:
-                # logging.debug('Passato di qui2: vnf name = %s', vnf.name)
-                found = False
-                for functional_capability in domain_info.capabilities.functional_capabilities:
-                    if vnf.name.lower() == functional_capability.type.lower():  # convert both of them to lower case for case insensitive comparison
-                        logging.debug("Ok! Found the vnf searched in the domain specified in the nffg")
-                        if functional_capability.ready is True:
-                            logging.debug("Ok! The function capability is ready!")
-                            found = True
-                            break
-                        else:
-                            logging.debug("Error! The function capability is already in use!")
-                            raise FunctionalCapabilityAlreadyInUse(
-                                "Error! NFFG can't be deployed. The functional capability is already in use!")
-
-                if found is False:
-                    raise NoFunctionalCapabilityFound(
-                        "Error! NFFG can't be deployed. No functional capability found in the domain specified in the nffg.")

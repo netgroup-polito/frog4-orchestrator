@@ -18,7 +18,8 @@ from nffg_library.nffg import NF_FG
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
-    VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse
+    VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
+    FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
@@ -139,7 +140,7 @@ class NFFGStatus(MethodView):
             user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
                    
             controller = UpperLayerOrchestratorController(user_data)
-            resp = Response(response=controller.getStatus(nffg_id), status=200, mimetype="application/json")
+            resp = Response(response=controller.get_status(nffg_id), status=200, mimetype="application/json")
             return resp
 
         except NoResultFound:
@@ -413,6 +414,10 @@ class UpperLayerOrchestrator(MethodView):
             return err.message, 400
         except FunctionalCapabilityAlreadyInUse as err:
             return err.message, 400
+        except FeasibleDomainNotFoundForNFFGElement as err:
+            return err.message, 409
+        except FeasibleSolutionNotFoundForNFFG as err:
+            return err.message, 409
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500

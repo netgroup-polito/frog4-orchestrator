@@ -3,6 +3,7 @@ Created on Feb 16, 2017
 
 @author: gabrielecastellano
 """
+import sys
 
 from domain_information_library.domain_info import DomainInfo
 from orchestrator_core.exception import IncoherentDomainInformation
@@ -155,12 +156,35 @@ class VirtualTopology:
                 shortest_path = path
         return shortest_path
 
+    def find_path_between_domains_involving_fewer_additional_domains(self, domain_a, domain_b, domains):
+        """
+
+        :param domain_a:
+        :param domain_b:
+        :param domains: domains "free" to involve
+        :return:
+        """
+        a_tree = self._get_tree_to_domain(domain_a, domain_b, len(self._topology_graph))
+        a_paths = self._get_path_list(a_tree, [domain_a])
+        a_paths = [path for path in a_paths if path[-1] == domain_b]
+
+        if len(a_paths) == 0:
+            return None
+        best_path = a_paths[0]
+        fewer_additional_domains = sys.maxsize
+        for path in a_paths:
+            additional_domains = [x for x in path if x not in domains]
+            if len(additional_domains) < fewer_additional_domains:
+                best_path = path
+                fewer_additional_domains = len(additional_domains)
+        return best_path
+
     def find_shortest_paths_between_domains(self, domain_a, domain_b, n_virtual_channels):
         # TODO implement by checking also 'surviving' virtual channels for each path
         pass
 
     def _get_tree_to_domain(self, root_domain, leaf_domain, deep):
-        tree = {}
+        tree = {root_domain: {}}
         for virtual_channel in self._topology_graph[root_domain]:
             tree[root_domain][virtual_channel["peer"]] = {}
             if virtual_channel["peer"] != leaf_domain and deep > 0:

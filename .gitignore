@@ -9,8 +9,10 @@
 .settings
 orchestrator-core/.metadata/
 orchestrator-core/doubledecker/*
-FrogOrchestrator.log
 config/config.ini
 keys/broker-keys.json
 keys/public-keys.json
 templates
+
+.idea/
+__pycache__/
