@@ -199,22 +199,29 @@ class NFFG_Manager(object):
         self.nffg.vnfs.remove(switch1)
         self.nffg.vnfs.remove(switch2)
         
-    def addEndpointsCoupleAndFlowrules(self, endpoint_id, flowrule_priority=10):
-        endpoint_1 = EndPoint(_id = str(endpoint_id)+"_1")
-        endpoint_2 = EndPoint(_id = str(endpoint_id)+"_2")
+    def addEndpointsCoupleAndFlowrules(self, flow_id, ep1_id, ep2_id, bidirectional=False, flowrule_priority=10):
+        endpoint_1 = EndPoint(_id=ep1_id)
+        endpoint_2 = EndPoint(_id=ep2_id)
         flowrule_1 = FlowRule()                  
-        flowrule_1.id = endpoint_1.id
+        flowrule_1.id = flow_id
         flowrule_1.priority = flowrule_priority
         flowrule_1.match = Match(port_in="endpoint:"+endpoint_1.id)
         flowrule_1.actions.append(Action(output="endpoint:"+endpoint_2.id))
-        flowrule_2 = FlowRule()                  
-        flowrule_2.id = endpoint_2.id
-        flowrule_2.priority = flowrule_priority
-        flowrule_2.match = Match(port_in="endpoint:"+endpoint_2.id)
-        flowrule_2.actions.append(Action(output="endpoint:"+endpoint_1.id))
         self.nffg.addEndPoint(endpoint_1)
         self.nffg.addEndPoint(endpoint_2)
         self.nffg.addFlowRule(flowrule_1)
-        self.nffg.addFlowRule(flowrule_2)
-        
-    
+        if bidirectional:
+            flowrule_2 = FlowRule()
+            flowrule_2.id = endpoint_2.id
+            flowrule_2.priority = flowrule_priority
+            flowrule_2.match = Match(port_in="endpoint:"+endpoint_2.id)
+            flowrule_2.actions.append(Action(output="endpoint:"+endpoint_1.id))
+            self.nffg.addFlowRule(flowrule_2)
+
+    def addFlowRule(self, flow_id, ep1_id, ep2_id, flowrule_priority=10):
+        flowrule = FlowRule()
+        flowrule.id = flow_id
+        flowrule.priority = flowrule_priority
+        flowrule.match = Match(port_in="endpoint:"+ep1_id)
+        flowrule.actions.append(Action(output="endpoint:"+ep2_id))
+        self.nffg.addFlowRule(flowrule)

@@ -3,7 +3,8 @@ Created on Oct 30, 2015
 
 @author: fabiomignini
 '''
-import requests, logging
+import requests, logging, json, os
+os.environ.setdefault("FROG4_ORCH_CONF", "config/onos-demo-config.ini")
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserData
 from nffg_library.nffg import NF_FG
@@ -15,16 +16,17 @@ requests_log.setLevel(logging.WARNING)
 sqlalchemy_log = logging.getLogger('sqlalchemy.engine')
 sqlalchemy_log.setLevel(logging.WARNING)
 
-username = 'isp'
-password = 'stack'
-tenant = 'isp'
-nffg_dict = {"forwarding-graph":{"id":"00000001","name":"Protected access to the internet","VNFs":[{"vnf_template":"switch.json","id":"00000001","name":"switch-data","ports":[{"id":"L2Port:0","name":"data-lan"},{"id":"L2Port:1","name":"data-lan"},{"id":"L2Port:2","name":"data-lan"}],"groups":["isp-function"]},{"vnf_template":"dhcp.json","ports":[{"id":"inout:0","name":"data-port"}],"name":"dhcp","id":"00000002","groups":["isp-function"]},{"vnf_template":"cisco_firewall.json","ports":[{"id":"WAN:0"},{"id":"User:0"}],"name":"firewall","id":"00000003"},{"vnf_template":"nat.json","ports":[{"id":"WAN:0"},{"id":"User:0"}],"name":"router-nat","id":"00000004","groups":["isp-function"]}],"end-points":[{"id":"00000001","name":"ingress","type":"interface","interface":{"node":"130.192.225.193","interface":"to-br-usr"}},{"id":"00000002","name":"egress","type":"interface-out","interface-out":{"node":"130.192.225.193","interface":"eth2"}}],"big-switch":{"flow-rules":[{"id":"000000001","priority":1,"match":{"port_in":"endpoint:00000001"},"actions":[{"output":"vnf:00000001:L2Port:0"}]},{"id":"000000002","priority":1,"match":{"port_in":"vnf:00000001:L2Port:0"},"actions":[{"output":"endpoint:00000001"}]},{"id":"000000003","priority":1,"match":{"port_in":"vnf:00000002:inout:0"},"actions":[{"output":"vnf:00000001:L2Port:1"}]},{"id":"000000004","priority":1,"match":{"port_in":"vnf:00000001:L2Port:1"},"actions":[{"output":"vnf:00000002:inout:0"}]},{"id":"000000005","priority":1,"match":{"port_in":"vnf:00000003:User:0"},"actions":[{"output":"vnf:00000001:L2Port:2"}]},{"id":"000000006","priority":1,"match":{"port_in":"vnf:00000001:L2Port:2"},"actions":[{"output":"vnf:00000003:User:0"}]},{"id":"000000007","priority":1,"match":{"port_in":"vnf:00000003:WAN:0"},"actions":[{"output":"vnf:00000004:User:0"}]},{"id":"000000008","priority":1,"match":{"port_in":"vnf:00000004:User:0"},"actions":[{"output":"vnf:00000003:WAN:0"}]},{"id":"000000009","priority":1,"match":{"port_in":"endpoint:00000002"},"actions":[{"output":"vnf:00000004:WAN:0"}]},{"id":"000000010","priority":1,"match":{"port_in":"vnf:00000004:WAN:0"},"actions":[{"output":"endpoint:00000002"}]}]}}}
+username = 'admin'
+password = 'qwerty'
+tenant = 'admin_tenant'
+nffg_json = '{"forwarding-graph":{"name":"simple-nat-graph","VNFs":[{"name":"nat","ports":[{"name":"data-port","id":"USER:0"},{"name":"data-port","id":"WAN:0"}],"id":"00000001","vnf_template":"isp_nat.json"}],"id":"12","end-points":[{"type":"interface","interface":{"if-name":"s2-eth1","node-id":"of:0000000000000002"},"id":"00000001","domain":"onos_domain"},{"type":"interface","interface":{"if-name":"s3-eth1","node-id":"of:0000000000000003"},"id":"00000002","domain":"onos_domain"}],"big-switch":{"flow-rules":[{"match":{"port_in":"endpoint:00000002"},"actions":[{"output_to_port":"vnf:00000001:WAN:0"}],"priority":40001,"id":"000000001"},{"match":{"port_in":"vnf:00000001:WAN:0"},"actions":[{"output_to_port":"endpoint:00000002"}],"priority":40001,"id":"000000002"},{"match":{"port_in":"endpoint:00000001"},"actions":[{"output_to_port":"vnf:00000001:USER:0"}],"priority":40001,"id":"000000003"},{"match":{"port_in":"vnf:00000001:USER:0"},"actions":[{"output_to_port":"endpoint:00000001"}],"priority":40001,"id":"000000004"}]}}}'
+nffg_dict = json.loads(nffg_json)
 
 ValidateNF_FG().validate(nffg_dict)
 nffg = NF_FG()
 nffg.parseDict(nffg_dict)
 
-controller = UpperLayerOrchestratorController(user_data=UserData(username, password, tenant))
+controller = UpperLayerOrchestratorController(user_data=UserData(usr=username, pwd=password, tnt=tenant))
 controller.put(nffg)
 print('Job completed')
 exit()
