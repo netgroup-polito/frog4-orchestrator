@@ -4,7 +4,7 @@ Created on Oct 30, 2015
 @author: fabiomignini
 '''
 import requests, logging, json, os
-os.environ.setdefault("FROG4_ORCH_CONF", "config/onos_demo_config.ini")
+os.environ.setdefault("FROG4_ORCH_CONF", "config/onos-demo-config.ini")
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserData
 from nffg_library.nffg import NF_FG
