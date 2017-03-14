@@ -119,10 +119,11 @@ class UpperLayerOrchestratorController(object):
             feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
 
             # 2) Perform the scheduling algorithm (tag nffg untagged elements with best domain)
-            Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict).schedule(nffg)
+            scheduler = Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict)
+            split_flows = scheduler.schedule(nffg)
 
             # 3) Generate a sub-graph for each involved domain
-            domains, nffgs = Splitter(self.counter).split(nffg)
+            domains, nffgs = Splitter(self.counter).split(nffg, split_flows)
 
             domain_nffg_dict = OrderedDict()
             for i in range(0, len(domains)):
