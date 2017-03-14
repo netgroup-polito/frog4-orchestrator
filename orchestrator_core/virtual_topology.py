@@ -4,6 +4,7 @@ Created on Feb 16, 2017
 @author: gabrielecastellano
 """
 import sys
+import random
 from collections import OrderedDict
 
 from domain_information_library.domain_info import DomainInfo
@@ -53,7 +54,8 @@ class VirtualTopology:
                                 for far_interface in far_domain_info.hardware_info.interfaces:
                                     for far_domain_neighbor in far_interface.neighbors:
                                         if far_domain_neighbor.domain_name == neighbor.domain_name:
-                                            virtual_channels = self._get_virtual_channels_between_interfaces(interface, far_interface, far_domain_info.name)
+                                            virtual_channels = self._get_virtual_channels_between_interfaces(
+                                                interface, far_interface, far_domain_info.name)
                                             self._topology_graph[domain_info.name].extend(virtual_channels)
 
     def _get_virtual_channels_between_interfaces(self, domain_a_interface, domain_b_interface, domain_b_name):
@@ -135,14 +137,14 @@ class VirtualTopology:
                     and vc["interface"] == interface_b and vc["remote-interface"] == interface_a:
                 domain_b_labels = vc["labels"]
 
-        for l in domain_a_labels[:]:
+        for l in self.shuffled(domain_a_labels):
             if type(l) == range:
-                for lb in domain_b_labels[:]:
+                for lb in self.shuffled(domain_b_labels):
                     if type(lb) == range:
                         sub_start = max(l.start, lb.start)
                         sub_stop = min(l.stop, lb.stop)+1
                         if len(range(sub_start, sub_stop)) > 0:
-                            label = sub_start
+                            label = random.randint(sub_start, sub_stop-1)
                             r1 = range(l.start, label)
                             r2 = range(label+1, l.stop)
                             domain_a_labels.remove(l)
@@ -187,7 +189,7 @@ class VirtualTopology:
                     domain_b_labels.remove(l)
                     return l
                 else:
-                    for lb in domain_b_labels[:]:
+                    for lb in self.shuffled(domain_b_labels):
                         if type(lb) == range:
                             if lb.start <= l < lb.stop:
                                 r1 = range(lb.start, l)
@@ -203,6 +205,12 @@ class VirtualTopology:
                                 elif len(r2) == 1:
                                     domain_b_labels.append(list(r2)[0])
                                 return l
+
+    @staticmethod
+    def shuffled(x):
+        y = x[:]
+        random.shuffle(y)
+        return y
 
     def count_virtual_channels(self, domain_a, domain_b, labeling_method=None):
         """
@@ -263,10 +271,6 @@ class VirtualTopology:
                 best_path = path
                 fewer_additional_domains = len(additional_domains)
         return best_path
-
-    def find_shortest_paths_between_domains(self, domain_a, domain_b, n_virtual_channels):
-        # TODO implement by checking also 'surviving' virtual channels for each path
-        pass
 
     def pop_virtual_channels_for_path(self, path):
         """
