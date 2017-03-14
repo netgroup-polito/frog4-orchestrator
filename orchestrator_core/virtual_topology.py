@@ -128,12 +128,12 @@ class VirtualTopology:
         for vc in self._topology_graph[domain_a]:
             if vc["peer"] == domain_b and vc["labeling-method"] == labeling_method\
                     and vc["interface"] == interface_a and vc["remote-interface"] == interface_b:
-                domain_a_labels = self._topology_graph[domain_a]
+                domain_a_labels = vc["labels"]
         domain_b_labels = []
         for vc in self._topology_graph[domain_b]:
             if vc["peer"] == domain_a and vc["labeling-method"] == labeling_method\
                     and vc["interface"] == interface_b and vc["remote-interface"] == interface_a:
-                domain_b_labels = self._topology_graph[domain_b]
+                domain_b_labels = vc["labels"]
 
         for l in domain_a_labels[:]:
             if type(l) == range:

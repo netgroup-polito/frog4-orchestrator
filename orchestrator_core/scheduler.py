@@ -121,7 +121,7 @@ class Scheduler:
                                 return
                             # consume virtual channels for this path
                             vcs = self._virtual_topology.pop_virtual_channels_for_path(path)
-                            solution["split-flows"][input_element+'/'+output_element] = vcs
+                            solution["split-flows"][flow.id+'_'+input_element+'/'+output_element] = vcs
                             involved_domains_set.update(path)
                         break
         for ep, domains in self._ep_feasible_domains.items():
@@ -152,7 +152,7 @@ class Scheduler:
                                 return
                             # consume virtual channels for this path
                             vcs = self._virtual_topology.pop_virtual_channels_for_path(path)
-                            solution["split-flows"][input_element+'/'+output_element] = vcs
+                            solution["split-flows"][flow.id+'_'+input_element+'/'+output_element] = vcs
                             involved_domains_set.update(path)
                         break
         solution["involved-domains"] = involved_domains_set
