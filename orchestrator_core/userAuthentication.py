@@ -55,6 +55,7 @@ class UserCredentials(object):
 			if tenantName == tenant:
 				userobj = UserData(user.id, username, password, tenant)
 				return userobj
+			raise unauthorizedRequest('Invalid Tenant Provided ')
 		raise unauthorizedRequest('Invalid authentication credentials')
 
 class UserLoginAuthenticationController(object):
