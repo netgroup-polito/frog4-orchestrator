@@ -29,10 +29,9 @@ elif conf.VERBOSE is True:
 else:
     log_level = logging.WARNING
 
-#log_format = '%(asctime)s %(name)s %(funcName)s %(levelname)s %(message)s'
-log_format = '%(asctime)s %(levelname)s %(message)s - %(filename)s'
+log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%(lineno)s'
 
-logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
 logging.debug("Global Orchestrator Starting")
 print("Welcome to the Global Orchestrator")
 
