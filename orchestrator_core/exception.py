@@ -380,3 +380,22 @@ class FeasibleSolutionNotFoundForNFFG(Exception):
     def get_mess(self):
         return self.message
 
+
+class PathNotFeasible(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(PathNotFeasible, self).__init__(message)
+
+    def get_mess(self):
+        return self.message
+
+
+class UnsupportedLabelingMethod(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(UnsupportedLabelingMethod, self).__init__(message)
+
+    def get_mess(self):
+        return self.message

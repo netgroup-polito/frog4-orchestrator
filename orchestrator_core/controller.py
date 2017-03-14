@@ -107,12 +107,12 @@ class UpperLayerOrchestratorController(object):
             self.prepare_nffg(nffg)
 
             # TODO add here code depending on what we want:
-            # 1. relocate old NF if a better placement is available -> copy first part from put
-            # 2. keep old NF placement and schedule just new one -> label here old NF and then copy first part of put
+            # 1. relocate old NF if a better placement is available -> copy first part from put()
+            # 2. keep old NF placement and schedule just new one -> label here old NF and then copy first part of put()
             # current code is for case 1.
 
             # 0) Create virtual topology basing on current domain information
-            virtual_topology = VirtualTopology(DomainInformation().get_domain_info())
+            virtual_topology = VirtualTopology(DomainInformation().get_domains_info())
 
             # 1) Fetch a map with a list of feasible domains for each NF of the nffg and for each ep
             feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
@@ -199,7 +199,7 @@ class UpperLayerOrchestratorController(object):
         :param nffg:
         :type nffg: nffg_library.nffg.NF_FG
         """
-        logging.debug('Put from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
+        logging.info('Graph put request from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
         if self.check_nffg_status(nffg.id) is True:
             logging.debug('NF-FG already instantiated, trying to update it')
             session_id = self.update(nffg)
@@ -212,37 +212,46 @@ class UpperLayerOrchestratorController(object):
                 self.prepare_nffg(nffg)
 
                 # 0) Create virtual topology basing on current domain information
-                virtual_topology = VirtualTopology(DomainInformation().get_domain_info())
+                logging.info("Generating virtual topology...")
+                virtual_topology = VirtualTopology(DomainInformation().get_domains_info())
 
                 # 1) Fetch a map with a list of feasible domains for each NF of the nffg and for each ep
+                logging.info("Finding feasible domains...")
                 feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
                 feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
 
                 # 2) Perform the scheduling algorithm (tag nffg untagged elements with best domain)
-                Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict).schedule(nffg)
+                logging.info("Performing scheduling...")
+                scheduler = Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict)
+                split_flows = scheduler.schedule(nffg)
                 logging.debug(json.dumps(nffg.getDict(domain=True)))
 
                 # 3) Generate a sub-graph for each involved domain
-                domains, nffgs = Splitter(self.counter).split(nffg)
+                logging.info("Splitting graph...")
+                domains, nffgs = Splitter(self.counter).split(nffg, split_flows)
+
                 domain_nffg_dict = OrderedDict()
                 for i in range(0, len(domains)):
                     domain_nffg_dict[domains[i]] = nffgs[i]
 
                 for domain, nffg in domain_nffg_dict.items():
+
                     # Save the graph in the database, with the state initializing
                     Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict) > 1)
                     Graph().setDomainID(nffg.db_id, domain.id)
 
                     # Instantiate profile
-                    logging.info('Call CA to instantiate NF-FG')
+                    logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
                     nffg.id = str(nffg.db_id)
                     if DEBUG_MODE is True:
                         logging.debug(domain.ip + ":" + str(domain.port) + " " + nffg.id+"\n"+nffg.getJSON())
                     else:
                         CA_Interface(self.user_data, domain).put(nffg)
-                    logging.debug('NF-FG instantiated')
+
+                    logging.info("sub-graph correctly instantiated  on domain '" + domain.name + "'")
 
                 Session().updateStatus(session_id, 'complete')
+                logging.info("NF-FG correctly instantiated on session " + session_id)
                 # Session().set_error(session_id)
             except (HTTPError, ConnectionError) as ex:
                 logging.exception(ex)
@@ -370,12 +379,12 @@ class UpperLayerOrchestratorController(object):
         """
 
         feasible_domain_dictionary = {}  # feasible means domains that have FC
-        domains_info = DomainInformation().get_domain_info()
+        domains_info = DomainInformation().get_domains_info()
         for vnf in nffg.vnfs:
             # look for feasible domains for this NF just if there is no pre-assigned domain
             if vnf.domain is not None:
                 domain = Domain().getDomainFromName(vnf.domain)
-                fc = domains_info[domain.id].capabilities.get_functional_capability_by_name(vnf.name.lower())
+                fc = domains_info[domain.id].capabilities.get_functional_capability(vnf.name.lower())
                 if fc is not None and fc.ready:
                     feasible_domain_dictionary[vnf.id] = [vnf.domain]
                 else:
@@ -385,7 +394,7 @@ class UpperLayerOrchestratorController(object):
                 feasible_domain_dictionary[vnf.id] = []
                 for domain_id, domain_info in domains_info.items():
                     logging.debug(domain_info.get_dict())
-                    fc = domain_info.capabilities.get_functional_capability_by_name(vnf.name.lower())
+                    fc = domain_info.capabilities.get_functional_capability(vnf.name.lower())
                     if fc is not None and fc.ready:
                         feasible_domain_dictionary[vnf.id].append(domain_info.name)
                         logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")

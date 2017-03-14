@@ -86,57 +86,67 @@ class DomainInformation(object):
     def __init__(self):
         pass
 
-    def get_domain_info(self, domain_name=None):
+    def get_domain_info(self, domain_name):
         """
 
         :param domain_name:
+        :return:
+        :rtype: DomainInfo
+        """
+        domains_info = self.get_domains_info()
+        for domain_info in domains_info:
+            if domains_info[domain_info].name == domain_name:
+                return domains_info[domain_info]
+        return None
+
+    def get_domains_info(self):
+        """
+
         :return:
         :rtype: dict[int, DomainInfo]
         """
         session = get_session()
         domains_info_list = {}
-        if domain_name is not None:
-            pass
-        else:
-            domains_refs = session.query(DomainsInformationModel).all()
-            for domain_ref in domains_refs:
-                if domain_ref.domain_id not in domains_info_list:
-                    domain_type = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().type
-                    domain_name = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().name
-                    domain_ip_addr = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().ip
-                    domain_port_num = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().port
-                    domain_info = DomainInfo(domain_id=domain_ref.domain_id, name=domain_name, _type=domain_type, domain_ip=domain_ip_addr, domain_port=str(domain_port_num))
-                    domain_info.hardware_info = HardwareInfo()
-                    domains_info_list[domain_ref.domain_id] = domain_info
-                else:
-                    domain_info = domains_info_list[domain_ref.domain_id]
 
-                intf = Interface(node=domain_ref.node, name=domain_ref.interface, side=domain_ref.side, gre=domain_ref.gre, vlan=domain_ref.vlan)
-                if intf.gre is True:
-                    gre_refs = session.query(DomainsGreModel).filter_by(domain_info_id=domain_ref.id).all()
-                    for gre_ref in gre_refs:
-                        gre_tunnel = GreTunnel(name=gre_ref.name, local_ip=gre_ref.local_ip, remote_ip=gre_ref.remote_ip, gre_key=gre_ref.gre_key)
-                        intf.add_gre_tunnel(gre_tunnel)
-                if intf.vlan is True:
-                    vlan_refs = session.query(DomainsVlanModel).filter_by(domain_info_id=domain_ref.id).all()
-                    for vlan_ref in vlan_refs:
-                        for vlan_id in range(vlan_ref.vlan_start, vlan_ref.vlan_end+1):
-                            intf.add_vlan(vlan_id)
+        domains_refs = session.query(DomainsInformationModel).all()
+        for domain_ref in domains_refs:
+            if domain_ref.domain_id not in domains_info_list:
+                domain_type = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().type
+                domain_name = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().name
+                domain_ip_addr = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().ip
+                domain_port_num = session.query(DomainModel).filter_by(id = domain_ref.domain_id).one().port
+                domain_info = DomainInfo(domain_id=domain_ref.domain_id, name=domain_name, _type=domain_type, domain_ip=domain_ip_addr, domain_port=str(domain_port_num))
+                domain_info.hardware_info = HardwareInfo()
+                domains_info_list[domain_ref.domain_id] = domain_info
+            else:
+                domain_info = domains_info_list[domain_ref.domain_id]
 
-                neighbor_refs = session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).all()
-                for neighbor_ref in neighbor_refs:
-                    neighbor = Neighbor(domain_name=neighbor_ref.neighbor_domain_name, node=neighbor_ref.neighbor_node, remote_interface=neighbor_ref.neighbor_interface, neighbor_type=neighbor_ref.neighbor_domain_type)
-                    intf.add_neighbor(neighbor)
+            intf = Interface(node=domain_ref.node, name=domain_ref.interface, side=domain_ref.side, gre=domain_ref.gre, vlan=domain_ref.vlan)
+            if intf.gre is True:
+                gre_refs = session.query(DomainsGreModel).filter_by(domain_info_id=domain_ref.id).all()
+                for gre_ref in gre_refs:
+                    gre_tunnel = GreTunnel(name=gre_ref.name, local_ip=gre_ref.local_ip, remote_ip=gre_ref.remote_ip, gre_key=gre_ref.gre_key)
+                    intf.add_gre_tunnel(gre_tunnel)
+            if intf.vlan is True:
+                vlan_refs = session.query(DomainsVlanModel).filter_by(domain_info_id=domain_ref.id).all()
+                for vlan_ref in vlan_refs:
+                    for vlan_id in range(vlan_ref.vlan_start, vlan_ref.vlan_end+1):
+                        intf.add_vlan(vlan_id)
 
-                domain_info.hardware_info.add_interface(intf)
-                domain_info.interfaces = domain_info.hardware_info.interfaces #added because the old code references to di.interfaces and not di.hw_info.interfaces
+            neighbor_refs = session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).all()
+            for neighbor_ref in neighbor_refs:
+                neighbor = Neighbor(domain_name=neighbor_ref.neighbor_domain_name, node=neighbor_ref.neighbor_node, remote_interface=neighbor_ref.neighbor_interface, neighbor_type=neighbor_ref.neighbor_domain_type)
+                intf.add_neighbor(neighbor)
 
-                domain_info.capabilities = Capabilities()
+            domain_info.hardware_info.add_interface(intf)
+            domain_info.interfaces = domain_info.hardware_info.interfaces #added because the old code references to di.interfaces and not di.hw_info.interfaces
 
-                func_cap_refs = session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_ref.domain_id).all()
-                for func_cap_ref in func_cap_refs:
-                    func_cap = FunctionalCapability(_type=func_cap_ref.type, name=func_cap_ref.name, ready=func_cap_ref.ready, family=func_cap_ref.family, template=func_cap_ref.template, resources=func_cap_ref.resource_id)
-                    domain_info.capabilities.functional_capabilities.append(func_cap)
+            domain_info.capabilities = Capabilities()
+
+            func_cap_refs = session.query(FunctionalCapabilityModel).filter_by(domain_id=domain_ref.domain_id).all()
+            for func_cap_ref in func_cap_refs:
+                func_cap = FunctionalCapability(_type=func_cap_ref.type, name=func_cap_ref.name, ready=func_cap_ref.ready, family=func_cap_ref.family, template=func_cap_ref.template, resources=func_cap_ref.resource_id)
+                domain_info.capabilities.functional_capabilities.append(func_cap)
 
         return domains_info_list
 
