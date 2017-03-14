@@ -38,7 +38,6 @@ class Scheduler:
         :type nffg: NF_FG
         :return: virtual channels to use for flows split across domains
         """
-        # TODO should also provide information about virtual channel to use for each flow that is going to be split
         # check if each element of the nffg has at least a feasible domain
         self._check_nf_and_ep_feasibility()
 
@@ -83,7 +82,6 @@ class Scheduler:
         :type nffg: NF_FG
         :return:
         """
-        # TODO if there are multiple (same direction) flows between 2 elements they will have the same name in this dict
         solution["split-flows"] = {}
         involved_domains_set = set()
         for nf, domains in self._nf_feasible_domains.items():
@@ -175,27 +173,6 @@ class Scheduler:
         :type solution: dict
         :return: number of involved domains
         """
-
-        '''
-        involved_domains_set = set()
-        for nf, domains in self._nf_feasible_domains.items():
-            scheduled_domain = domains[solution["placement"]["nf:"+nf]]
-            involved_domains_set.add(scheduled_domain)
-        for ep, domains in self._ep_feasible_domains.items():
-            scheduled_domain = domains[solution["placement"]["ep:"+ep]]
-            involved_domains_set.add(scheduled_domain)
-
-        # TODO check this just for directly connected domains, considering also required number of virtual channel
-        involved_base_domains_set = copy.deepcopy(involved_domains_set)
-        base_domain = involved_base_domains_set.pop()
-        for domain in involved_base_domains_set:
-            path = self._virtual_topology.\
-                find_path_between_domains_involving_fewer_additional_domains(base_domain, domain, involved_domains_set)
-            if path is None:
-                return sys.maxsize
-            involved_domains_set.update(path)
-            return len(involved_domains_set)
-        '''
         if not solution["topologically-feasible"]:
             return sys.maxsize
         else:
