@@ -12,6 +12,7 @@ from threading import Thread
 from orchestrator_core.config import Configuration
 from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus, ActiveGraphs, User_login
 from orchestrator_core.dd_server import DD_Server
+from scripts.clean_user_token import users_tokens_clean
 
 conf = Configuration()
 
@@ -108,5 +109,8 @@ base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(ins
 dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
 thread = Thread(target=dd_server.start)
 thread.start()
+
+token_message = users_tokens_clean().token_clean()
+logging.info(token_message)
 
 logging.info("Flask Successfully started")
