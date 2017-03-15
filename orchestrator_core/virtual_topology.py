@@ -81,14 +81,14 @@ class VirtualTopology:
             a_labeling_methods["vlan"] = domain_a_interface.free_vlans
 
         b_labeling_methods = {}
-        if domain_a_interface.gre:
+        if domain_b_interface.gre:
             b_labeling_methods["gre"] = [range(0, 2**32)]
-        if domain_a_interface.vlan:
+        if domain_b_interface.vlan:
             b_labeling_methods["vlan"] = domain_b_interface.free_vlans
 
         for a_labeling_method in a_labeling_methods.keys():
             # count virtual channel for this labeling method and add to graph
-            if b_labeling_methods[a_labeling_method] is not None:
+            if b_labeling_methods.get(a_labeling_method) is not None:
                 virtual_channels_no = self._count_common_labels(a_labeling_methods[a_labeling_method],
                                                                 b_labeling_methods[a_labeling_method])
                 if virtual_channels_no > 0:
@@ -237,7 +237,8 @@ class VirtualTopology:
 
         :return:
         """
-        a_tree = self._get_tree_to_domain(domain_a, domain_b, len(self._topology_graph))
+        a_tree = dict()
+        a_tree[domain_a] = self._get_tree_to_domain(domain_a, domain_b, len(self._topology_graph))
         a_paths = self._get_path_list(a_tree, [])
         a_paths = [path for path in a_paths if path[-1] == domain_b]
 
@@ -257,9 +258,11 @@ class VirtualTopology:
         :param domains: domains "free" to involve
         :return:
         """
-        a_tree = self._get_tree_to_domain(domain_a, domain_b, len(self._topology_graph))
+        a_tree = dict()
+        a_tree[domain_a] = self._get_tree_to_domain(domain_a, domain_b, len(self._topology_graph))
         a_paths = self._get_path_list(a_tree, [])
         a_paths = [path for path in a_paths if path[-1] == domain_b]
+        a_paths = [path for path in a_paths if len(path) == len(set(path))]
 
         if len(a_paths) == 0:
             return None
@@ -307,12 +310,12 @@ class VirtualTopology:
                     vc["count"] += 1
 
     def _get_tree_to_domain(self, root_domain, leaf_domain, deep):
-        tree = {root_domain: {}}
+        tree = {}
         for virtual_channel in self._topology_graph[root_domain]:
-            tree[root_domain][virtual_channel["peer"]] = {}
             if virtual_channel["peer"] != leaf_domain and deep > 0 and virtual_channel["count"] > 0:
-                tree[root_domain][virtual_channel["peer"]] = self._get_tree_to_domain(virtual_channel["peer"],
-                                                                                      leaf_domain, deep-1)
+                tree[virtual_channel["peer"]] = self._get_tree_to_domain(virtual_channel["peer"], leaf_domain, deep-1)
+            else:
+                tree[virtual_channel["peer"]] = {}
         return tree
 
     def _get_path_list(self, tree, prefix):

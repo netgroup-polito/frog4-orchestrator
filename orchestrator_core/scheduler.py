@@ -11,7 +11,8 @@ from collections import OrderedDict
 import sys
 
 from nffg_library.nffg import NF_FG
-from orchestrator_core.exception import FeasibleSolutionNotFoundForNFFG, FeasibleDomainNotFoundForNFFGElement
+from orchestrator_core.exception import FeasibleSolutionNotFoundForNFFG, FeasibleDomainNotFoundForNFFGElement, \
+    PathNotFeasible
 from orchestrator_core.virtual_topology import VirtualTopology
 
 
@@ -118,7 +119,11 @@ class Scheduler:
                                 solution["topologically-feasible"] = False
                                 return
                             # consume virtual channels for this path
-                            vcs = self._virtual_topology.pop_virtual_channels_for_path(path)
+                            try:
+                                vcs = self._virtual_topology.pop_virtual_channels_for_path(path)
+                            except PathNotFeasible:
+                                solution["topologically-feasible"] = False
+                                return
                             solution["split-flows"][flow.id+'_'+input_element+'/'+output_element] = vcs
                             involved_domains_set.update(path)
                         break
@@ -149,7 +154,11 @@ class Scheduler:
                                 solution["topologically-feasible"] = False
                                 return
                             # consume virtual channels for this path
-                            vcs = self._virtual_topology.pop_virtual_channels_for_path(path)
+                            try:
+                                vcs = self._virtual_topology.pop_virtual_channels_for_path(path)
+                            except PathNotFeasible:
+                                solution["topologically-feasible"] = False
+                                return
                             solution["split-flows"][flow.id+'_'+input_element+'/'+output_element] = vcs
                             involved_domains_set.update(path)
                         break

@@ -68,32 +68,26 @@ class Splitter(object):
                 original_flow_id = split_flow.split('_', 1)[0]
                 flow_elements = split_flow.split('_', 1)[1]
                 reverse_flow_elements = flow_elements.split('/')[1] + '/' + flow_elements.split('/')[0]
-                reverse_flow_id = original_flow_id + reverse_flow_elements
+                reverse_flow_id = original_flow_id + "_" + reverse_flow_elements
 
                 # characterize endpoints and generate additional sub-graphs if needed
                 for i, (domain_connection, vc) in enumerate(split_flows[split_flow].items()):
                     domain1 = domain_connection.split('/')[0]
                     domain2 = domain_connection.split('/')[1]
-                    if i == 0:
-                        # skip the first so we work on i and i-1 domains
-                        if len(split_flows[split_flow]) != 1:
-                            continue
-                    else:
-                        # the first domain of this connection is an intermediate domain
-                        middle_nffg = domain_to_nffg.get(domain1)
+
+                    # generate additional sub-graphs if needed
+                    if len(split_flows[split_flow]) != 1 and i != len(split_flows[split_flow]) - 1:
+                        # the second domain of this connection is an intermediate domain
+                        middle_nffg = domain_to_nffg.get(domain2)
                         if middle_nffg is None:
                             middle_nffg = NF_FG()
-                            middle_nffg.name = nffg.name + "_pass_through_" + i-1
-                            middle_nffg.domain = domain1
-                            domain_to_nffg[domain1] = middle_nffg
-                        if middle_nffg.getFlowRule(reverse_flow_id) is None:
-                            NFFG_Manager(middle_nffg).addEndpointsCoupleAndFlowrules(
-                                split_flow, "auto-generated-split_"+flow_elements,
-                                "auto-generated-split_"+reverse_flow_elements)
-                        else:
-                            NFFG_Manager(middle_nffg).addFlowRule(reverse_flow_id,
-                                                                  "auto-generated-split_"+reverse_flow_elements,
-                                                                  "auto-generated-split_"+flow_elements)
+                            middle_nffg.name = nffg.name + "_pass_through_" + str(i-1)
+                            middle_nffg.domain = domain2
+                            domain_to_nffg[domain2] = middle_nffg
+
+                        NFFG_Manager(middle_nffg).addEndpointsCoupleAndFlowrules(
+                            split_flow, "auto-generated-split_"+reverse_flow_elements,
+                            "auto-generated-split_"+flow_elements)
 
                     # characterize end-points
                     domain1_nffg = domain_to_nffg[domain1]

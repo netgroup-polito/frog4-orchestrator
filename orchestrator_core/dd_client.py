@@ -14,7 +14,7 @@ from .sql.domain import Domain
 from .sql.domains_info import DomainInformation
 
 
-class DD_Server(ClientSafe):
+class DDClient(ClientSafe):
     def __init__(self, name, dealerurl, customer, keyfile):
         super().__init__(name, dealerurl, customer, keyfile)
 

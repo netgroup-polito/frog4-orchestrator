@@ -130,8 +130,14 @@ class DomainInformation(object):
             if intf.vlan is True:
                 vlan_refs = session.query(DomainsVlanModel).filter_by(domain_info_id=domain_ref.id).all()
                 for vlan_ref in vlan_refs:
+                    '''
                     for vlan_id in range(vlan_ref.vlan_start, vlan_ref.vlan_end+1):
                         intf.add_vlan(vlan_id)
+                    '''
+                    if vlan_ref.vlan_start == vlan_ref.vlan_end:
+                        intf.add_vlan(vlan_ref.vlan_start)
+                    elif vlan_ref.vlan_start < vlan_ref.vlan_end:
+                        intf.add_vlan(range(vlan_ref.vlan_start, vlan_ref.vlan_end+1))
 
             neighbor_refs = session.query(DomainsNeighborModel).filter_by(domain_info_id=domain_ref.id).all()
             for neighbor_ref in neighbor_refs:
@@ -199,6 +205,8 @@ class DomainInformation(object):
                         lower_vlan = tmp[0]
                         upper_vlan = tmp[1]
                         vlan_ref = DomainsVlanModel(id=self.vlan_id, domain_info_id=self.info_id, vlan_start=lower_vlan, vlan_end=upper_vlan)
+                    elif type(vlan) is range:
+                        vlan_ref = DomainsVlanModel(id=self.vlan_id, domain_info_id=self.info_id, vlan_start=vlan[0], vlan_end=vlan[-1])
                     else:
                         vlan_ref = DomainsVlanModel(id=self.vlan_id, domain_info_id=self.info_id, vlan_start=vlan, vlan_end=vlan)
                     session.add(vlan_ref)
