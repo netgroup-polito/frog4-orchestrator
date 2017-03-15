@@ -24,7 +24,7 @@ class UserData(object):
     def getUserData(self, user_id):
         user = User().getUserFromID(user_id)
         self.username = user.name
-        self.password =user.password
+        self.password = user.password
         tenant = User().getTenantName(user.tenant_id)
         self.tenant = tenant
 
@@ -70,9 +70,21 @@ class UserLoginAuthenticationController(object):
 			else:
 				return have_a_token
 
-		except (HTTPError, ConnectionError) as ex:
-			logging.exception(ex)
-			raise ex
 		except Exception as ex:
 			logging.exception(ex)
 			raise ex
+
+class UserTokenAuthentication(object):
+	def UserTokenAuthenticateFromRESTRequest(self, request):
+		user_token = request.headers.get("X-Auth-Token")
+		if user_token is None:
+			raise unauthorizedRequest('Token is required')
+		token_val = User().getToken(user_token)
+		if token_val.token == user_token:
+			user = User().getUserFromID(token_val.user_id)
+			username = user.name
+			password = user.password
+			tenant = User().getTenantName(user.tenant_id)
+			userobj = UserData(user.id, username, password, tenant)
+			return userobj
+		raise unauthorizedRequest('Invalid Token Provided')

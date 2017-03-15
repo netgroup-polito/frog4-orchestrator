@@ -24,7 +24,7 @@ class UserLocationNotFound(Exception):
         
     def get_mess(self):
         return self.message
-    
+    TenantNotFound
 class DeletionTimeout(Exception):
     def __init__(self, message):
         self.message = message
@@ -304,6 +304,15 @@ class UserValidationError(Exception):
         self.message = message
         # Call the base class constructor with the parameters it needs
         super(UserValidationError, self).__init__(message)
+
+    def get_mess(self):
+        return self.message
+
+class TokenNotFound(Exception):
+    def __init__(self, message):
+        self.message = message
+        # Call the base class constructor with the parameters it needs
+        super(TokenNotFound, self).__init__(message)
 
     def get_mess(self):
         return self.message

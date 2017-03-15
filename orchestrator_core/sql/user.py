@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import logging
 
 from orchestrator_core.sql.sql_server import get_session
-from orchestrator_core.exception import UserNotFound, TenantNotFound
+from orchestrator_core.exception import UserNotFound, TenantNotFound, TokenNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from requests.exceptions import HTTPError, ConnectionError
 import time
@@ -59,7 +59,6 @@ class User(object):
 		try:
 		    return session.query(UserModel).filter_by(name = username).one()
 		except Exception as ex:
-		    #logging.error(ex)
 		    raise UserNotFound("User not found: "+str(username)) from None
     
 	def getUserFromID(self, user_id):
@@ -76,7 +75,7 @@ class User(object):
 		    return session.query(TenantModel).filter_by(id = tenant_id).one().name
 		except Exception as ex:
 		    #logging.error(ex)
-		    raise TenantNotFound("User not found: "+str(tenant_id)) from None
+		    raise TenantNotFound("Tenant not found: "+str(tenant_id)) from None
 
 	def inizializeUserAuthentication(self, user_id, token):
 		session = get_session()
@@ -84,9 +83,17 @@ class User(object):
 			user_ref = UserTokenModel(user_id=user_id, token = token, timestamp = time.time())
 			session.add(user_ref)
 		pass
+
 	def checkUserToken(self, user_id):
 		session = get_session()
 		try:
 			return session.query(UserTokenModel).filter_by(user_id=user_id).one().token
 		except NoResultFound:
 			return False
+
+	def getToken(self, user_token):
+		session = get_session()
+		try:
+		    return session.query(UserTokenModel).filter_by(token = user_token).one()
+		except Exception as ex:
+		    raise TokenNotFound("Token is not valid: "+str(user_token)) from None
