@@ -14,7 +14,7 @@ class TenantNotFound(Exception):
         super(TenantNotFound, self).__init__(message)
         
     def get_mess(self):
-        return self.message    
+        return self.message
     
 class UserLocationNotFound(Exception):
     def __init__(self, message):
@@ -24,7 +24,7 @@ class UserLocationNotFound(Exception):
         
     def get_mess(self):
         return self.message
-    TenantNotFound
+
 class DeletionTimeout(Exception):
     def __init__(self, message):
         self.message = message
@@ -70,7 +70,7 @@ class DomainNotFound(Exception):
         self.message = message
         
     def get_mess(self):
-        return self.message    
+        return self.message
     
 class ControllerNotFound(Exception):
     def __init__(self, message):
