@@ -20,4 +20,4 @@ ip = conf.ORCH_IP
 port = conf.ORCH_PORT
 address = str(ip) +":"+str(port)
 
-call("gunicorn3 -b " + address + " -t 500 main:app", shell=True)
+call("gunicorn -b " + address + " -t 500 main:app", shell=True)
