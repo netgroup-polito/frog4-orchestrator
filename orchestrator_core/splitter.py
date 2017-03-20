@@ -113,11 +113,13 @@ class Splitter(object):
             if interface1.node is not None:
                 ip1 = interface1.node
             else:
-                raise IncoherentDomainInformation("Ip address not specified in Gre interface information")
+                raise IncoherentDomainInformation("Ip address not specified in Gre interface for domain '" + domain1 +
+                                                  "', interface '" + interface1.name + "'")
             if interface2.node is not None:
                 ip2 = interface2.node
             else:
-                raise IncoherentDomainInformation("Ip address not specified in Gre interface information")
+                raise IncoherentDomainInformation("Ip address not specified in Gre interface for domain '" + domain2 +
+                                                  "', interface '" + interface2.name + "'")
             gre_key = vc["label"]
             cls._characterize_endpoint(endpoint1, Gre(ip1, ip2, gre_key))
             cls._characterize_endpoint(endpoint2, Gre(ip2, ip1, gre_key))

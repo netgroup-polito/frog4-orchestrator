@@ -420,5 +420,5 @@ class UpperLayerOrchestratorController(object):
                 feasible_domain_dictionary[ep.id] = [nffg.domain]
             else:
                 raise GraphError("Endpoint '" + ep.id + "' is not labeled with a domain, however there is no global " +
-                                                        "graph domain specified in the nffg.")
+                                 "graph domain specified in the nffg.")
         return feasible_domain_dictionary
