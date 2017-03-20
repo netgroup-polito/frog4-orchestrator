@@ -60,7 +60,7 @@ CREATE TABLE `domain_information` (
   `domain_id` int(11) NOT NULL,
   `node` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `interface` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `interface_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `side` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `gre` tinyint(1) NOT NULL,
   `vlan` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -104,6 +104,40 @@ CREATE TABLE `domain_vlan` (
   `vlan_start` int(11) NOT NULL,
   `vlan_end` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+
+-- --------------------------------------------------------
+    
+--
+-- Struttura della tabella `functional_capability`
+--
+
+CREATE TABLE `functional_capability` (
+  `id` int(11) NOT NULL,
+  `domain_id` int(11) NOT NULL,
+  `type` varchar(64) NOT NULL,
+  `name` varchar(64) NOT NULL,
+  `ready` tinyint(1) NOT NULL,
+  `family` varchar(64) NOT NULL,
+  `template` varchar(64) NOT NULL,
+  `resource_id` varchar(64)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Struttura della tabella `function_specification`
+--
+
+CREATE TABLE `function_specification` (
+  `id` int(11) NOT NULL,
+  `functional_capability_id` int(11) NOT NULL,
+  `name` varchar(64) NOT NULL,
+  `value` varchar(64) NOT NULL,
+  `unit` varchar(64) NOT NULL,
+  `mean` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -244,6 +278,19 @@ ALTER TABLE `domain_token`
 --
 ALTER TABLE `domain_vlan`
   ADD PRIMARY KEY (`id`);
+  
+--
+-- Indici per le tabelle `functional_capability`
+--
+ALTER TABLE `functional_capability`
+  ADD PRIMARY KEY (`id`);
+  
+--
+-- Indici per le tabelle `function_specification`
+--
+ALTER TABLE `function_specification`
+  ADD PRIMARY KEY (`id`);
+
 
 --
 -- Indici per le tabelle `graph`

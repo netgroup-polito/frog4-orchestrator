@@ -32,10 +32,9 @@ elif conf.VERBOSE is True:
 else:
     log_level = logging.WARNING
 
-#log_format = '%(asctime)s %(name)s %(funcName)s %(levelname)s %(message)s'
-log_format = '%(asctime)s %(levelname)s %(message)s - %(filename)s'
+log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%(lineno)s'
 
-logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
 logging.debug("Global Orchestrator Starting")
 print("Welcome to the Global Orchestrator")
 
@@ -54,7 +53,7 @@ swagger_config = {
     "swagger_version": "2.0",
     "title": "FROG4 - Global Orchestrator API",
     "headers": [
-         ('Access-Control-Allow-Origin', '*')
+        ('Access-Control-Allow-Origin', '*')
     ],
     "specs": [
         {
@@ -64,9 +63,9 @@ swagger_config = {
             "route": '/v1/spec',
         }
     ],
-        "static_url_path": "/apidocs",
-        "static_folder": "swaggerui",
-        "specs_route": "/specs"
+    "static_url_path": "/apidocs",
+    "static_folder": "swaggerui",
+    "specs_route": "/specs"
 }
 
 Swagger(app, config=swagger_config)
@@ -109,6 +108,7 @@ app.add_url_rule( '/login/', view_func=User_login.as_view('login'), methods=['PO
 # start the dd client to receive information about domains
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
 dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
+#bug in dd? third parameter should be conf.DD_CUSTOMER insted of conf.DD_KEYFILE
 thread = Thread(target=dd_server.start)
 thread.start()
 

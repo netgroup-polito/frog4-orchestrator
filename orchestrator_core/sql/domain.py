@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jan 14, 2016
 
 @author: stefanopetrangeli
-'''
+"""
 
 from sqlalchemy import Column, VARCHAR, Boolean, Integer
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,10 +13,11 @@ from sqlalchemy.orm.exc import NoResultFound
 
 Base = declarative_base()
 
+
 class DomainModel(Base):
-    '''
+    """
     Maps the database table Domain
-    '''
+    """
     __tablename__ = 'domain'
     attributes = ['id', 'name', 'type', 'ip', 'port']
     id = Column(Integer, primary_key=True)
@@ -25,15 +26,17 @@ class DomainModel(Base):
     ip = Column(VARCHAR(64))
     port = Column(Integer)
 
+
 class DomainTokenModel(Base):
-    '''
+    """
     Maps the database table Domain
-    '''
+    """
     __tablename__ = 'domain_token'
     attributes = ['user_id', 'domain_id', 'token']
     user_id = Column(Integer, primary_key=True)
     domain_id = Column(Integer, primary_key=True)
     token = Column(VARCHAR(64))
+
 
 class Domain(object):
     def __init__(self):
@@ -79,7 +82,6 @@ class Domain(object):
             else:
                 domain_token = DomainTokenModel(user_id=user_id, domain_id=domain_id, token=token)
                 session.add(domain_token)
-            
     
     def addDomain(self, domain_name, domain_type, domain_ip, domain_port, update=False):
         session = get_session()
@@ -94,4 +96,3 @@ class Domain(object):
             domain = DomainModel(id=max_id+1, name=domain_name, type=domain_type, ip=domain_ip, port=domain_port)
             session.add(domain)
             return domain.id
-        

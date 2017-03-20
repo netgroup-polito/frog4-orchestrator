@@ -24,7 +24,7 @@ class Configuration(object, metaclass=Singleton):
         self.inizialize()
 
     def inizialize(self): 
-        #TODO: clean obsolete parameters
+        # TODO: clean obsolete parameters
         config = configparser.RawConfigParser()
         base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])).rpartition('/')[0]
         try:
