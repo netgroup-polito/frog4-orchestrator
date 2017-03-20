@@ -4,53 +4,26 @@ import json
 from flask import request, Response
 from flask_restplus import Resource
 from sqlalchemy.orm.exc import NoResultFound
-from nffg_library.nffg import NF_FG
-from nffg_library.validator import ValidateNF_FG
+from orchestrator_core.user_validator import UserValidate
 from orchestrator_core.api.api import api
-from orchestrator_core.controller import UpperLayerOrchestratorController
-from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
-    VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
-    FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
-    UnsupportedLabelingMethod
-from nffg_library.exception import NF_FGValidationError
-
-nffg_ns = api.namespace('login', 'login Resource')
+from orchestrator_core.userAuthentication import UserAuthentication, UserAuthentication, UserLoginAuthentication, UserLoginAuthenticationController, UserTokenAuthentication
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, UserNotFound,UserValidationError, TenantNotFound, TokenNotFound
 
 
-@nffg_ns.route('/', methods=['POST'])
-@api.doc(responses={404: 'Graph not found'})
+login_user = api.namespace('login', 'Login Resource')
+
+
+@login_user.route('/', methods=['POST'])
+@api.doc(responses={404: 'User not found'})
 class User_login(Resource):
-    '''
-    User login class that intercept the REST call through the WSGI server
-    '''
+
+    @login_user.param("Login", "User Authentication details", "body", type="string", required=True)
+    @login_user.response(200, 'Login successfully.')
+    @login_user.response(400, 'BAD REQUEST.')
+    @login_user.response(401, 'UNAUTHORIZED.')
+    @login_user.response(500, 'INTERNAL SERVER ERROR.')
     def post(self):
-        """
-        User login
-        ---
-        tags:
-          - login
-        parameters:
-          - name: Login info
-            in: body
-            description: User authentication details like ...
-            {
-                "username":"username",
-                "password":"password"
-            }
-            required: true
-            schema:
-                type: string
-        responses:
-            200:
-                description: login successfully
-            401:
-                description: UNAUTHORIZED
-            400:
-                description: BAD REQUEST
-            500:
-                description: INTERNAL SERVER ERROR
-        """
+        """Login info."""
         try:
 
             login_data = json.loads(request.data.decode())

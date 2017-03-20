@@ -50,7 +50,7 @@ token_message = users_tokens_clean().token_clean()
 logging.info(token_message)
 
 # Rest application
-if nffg_api is not None and template_api is not None and user_api is not None:
+if nffg_api is not None and template_api is not None :
     app = Flask(__name__)
     app.register_blueprint(root_blueprint)
     logging.info("Flask Successfully started")
