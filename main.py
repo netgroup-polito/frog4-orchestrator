@@ -1,20 +1,27 @@
-'''
+"""
 @author: fabiomignini
 @author: stefanopetrangeli
 
-'''
+@author: gabrielecastellano
+"""
 
-from flask import Flask
-from flasgger import Swagger
 import logging
 import os
 import inspect
 
 from threading import Thread
+
+from flask import Flask
+from orchestrator_core.api.api import root_blueprint
+from orchestrator_core.api.nffg import api as nffg_api
+from orchestrator_core.api.template import api as template_api
+from orchestrator_core.api.user import api as user_api
+
 from orchestrator_core.config import Configuration
-from orchestrator_core.orchestrator import UpperLayerOrchestrator, TemplateAPI, YANGAPI, TemplateAPILocation, NFFGStatus, ActiveGraphs, User_login
-from orchestrator_core.dd_server import DD_Server
+
 from scripts.clean_user_token import users_tokens_clean
+
+from orchestrator_core.dd_client import DDClient
 
 conf = Configuration()
 
@@ -33,86 +40,29 @@ else:
     log_level = logging.WARNING
 
 log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%(lineno)s'
-
 logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
+
 logging.debug("Global Orchestrator Starting")
 print("Welcome to the Global Orchestrator")
 
-"""
-Old routes, not supported
-template = TemplateAPI()
-yang = YANGAPI()
-
-app.add_route('/template/{image_id}', template)
-app.add_route('/yang/{image_id}', yang)
-"""
-
-app = Flask(__name__)
-
-swagger_config = {
-    "swagger_version": "2.0",
-    "title": "FROG4 - Global Orchestrator API",
-    "headers": [
-        ('Access-Control-Allow-Origin', '*')
-    ],
-    "specs": [
-        {
-            "version": "1.0.0",
-            "title": "Global Orchestrator API",
-            "endpoint": 'v1_spec',
-            "route": '/v1/spec',
-        }
-    ],
-    "static_url_path": "/apidocs",
-    "static_folder": "swaggerui",
-    "specs_route": "/specs"
-}
-
-Swagger(app, config=swagger_config)
-
-orch = UpperLayerOrchestrator.as_view('NF-FG')
-app.add_url_rule(
-    '/NF-FG/',
-    view_func=orch,
-    methods=["PUT"]
-)
-app.add_url_rule(
-    '/NF-FG/<nffg_id>',
-    view_func=orch,
-    methods=["GET", "DELETE"]
-)
-
-active_graphs = ActiveGraphs.as_view("active_graphs")
-app.add_url_rule(
-    '/NF-FG/',
-    view_func=active_graphs,
-    methods=["GET"]
-)
-
-nffg_status = NFFGStatus.as_view('NFFGStatus')
-app.add_url_rule(
-    '/NF-FG/status/<nffg_id>',
-    view_func=nffg_status,
-    methods=["GET"]
-)
-
-template_location = TemplateAPILocation.as_view('template_location')
-app.add_url_rule(
-    '/template/location/<template_name>',
-    view_func=template_location,
-    methods=["GET"]
-)
-
-app.add_url_rule( '/login/', view_func=User_login.as_view('login'), methods=['POST'] )
-
-# start the dd client to receive information about domains
-base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
-dd_server = DD_Server(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
-#bug in dd? third parameter should be conf.DD_CUSTOMER insted of conf.DD_KEYFILE
-thread = Thread(target=dd_server.start)
-thread.start()
-
+# Clean user tokens
 token_message = users_tokens_clean().token_clean()
 logging.info(token_message)
 
-logging.info("Flask Successfully started")
+# Rest application
+if nffg_api is not None and template_api is not None and user_api is not None:
+    app = Flask(__name__)
+    app.register_blueprint(root_blueprint)
+    logging.info("Flask Successfully started")
+
+
+
+# start the dd client to receive information about domains
+base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+dd_server = DDClient(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
+# bug in dd? third parameter should be conf.DD_CUSTOMER instead of conf.DD_KEYFILE
+thread = Thread(target=dd_server.start)
+thread.start()
+
+logging.info("DoubleDecker Successfully started")
+
