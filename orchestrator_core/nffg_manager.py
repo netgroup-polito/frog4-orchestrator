@@ -19,9 +19,10 @@ SWITCH_NAME = Configuration().SWITCH_NAME
 CONTROL_SWITCH_NAME = Configuration().CONTROL_SWITCH_NAME
 SWITCH_TEMPLATE = Configuration().SWITCH_TEMPLATE
 
+
 class NFFG_Manager(object):
     
-    def __init__(self, nffg):
+    def __init__(self, nffg=None):
         """
 
         :param nffg:
