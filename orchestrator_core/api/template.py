@@ -1,3 +1,9 @@
+"""
+Created on Mar 20, 2017
+
+@author: gabrielecastellano
+"""
+
 import logging
 
 from flask import request, jsonify
@@ -18,11 +24,11 @@ class TemplateAPI(object):
         pass
 
 
-@template_ns.route('/location/<template_name>', methods=['GET'])
+@template_ns.route('/location/<template_name>', methods=['GET'],
+                   doc={'params': {'template_name': {'description': 'Template to be retrieved'}}})
 @api.doc(responses={404: 'Template not found'})
 class TemplateLocationResource(Resource):
 
-    @template_ns.param("template_name", "Template to be retrieved", "path", type="string", required=True)
     @template_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
     @template_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
     @template_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
@@ -41,9 +47,9 @@ class TemplateLocationResource(Resource):
                 logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
             logging.debug(err.message)
             return "Unauthorized", 401
-        except FileNotFoundError as err:
+        except FileNotFoundError:
             return "Template not found", 404
-        except VNFRepositoryError as err:
+        except VNFRepositoryError:
             return "VNFRepositoryError: Template not found or incorrect VNF-Repository configuration", 404
         except Exception as err:
             logging.exception(err)
