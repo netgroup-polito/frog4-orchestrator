@@ -8,8 +8,8 @@ import os
 import inspect
 
 from threading import Thread
-
 from flask import Flask
+
 from orchestrator_core.api.api import root_blueprint
 from orchestrator_core.api.nffg import api as nffg_api
 from orchestrator_core.api.template import api as template_api
@@ -36,8 +36,7 @@ else:
 log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%(lineno)s'
 logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
 
-logging.debug("Global Orchestrator Starting")
-print("Welcome to the Global Orchestrator")
+logging.debug("Global Orchestrator Starting...")
 
 # Rest application
 if nffg_api is not None and template_api is not None:
@@ -53,3 +52,5 @@ dd_server = DDClient(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.D
 thread = Thread(target=dd_server.start)
 thread.start()
 logging.info("DoubleDecker Successfully started")
+
+print("Welcome to the Global Orchestrator")
