@@ -1,3 +1,8 @@
+"""
+Created on Mar 20, 2017
+
+@author: gabrielecastellano
+"""
 import logging
 import requests
 import json
@@ -20,14 +25,14 @@ from nffg_library.exception import NF_FGValidationError
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 
 
-@nffg_ns.route('/<nffg_id>', methods=['GET', 'DELETE'])
+@nffg_ns.route('/<nffg_id>', methods=['GET', 'DELETE'],
+               doc={'params': {'nffg_id': {'description': 'The graph ID', 'in': 'path'}}})
 @nffg_ns.route('/', defaults={'nffg_id': None}, methods=['GET', 'PUT'])
 @api.doc(responses={404: 'Graph not found'})
 class NFFGResource(Resource):
 
     counter = 1
 
-    @nffg_ns.param("nffg_id", "Graph ID to be deleted", "path", type="string", required=True)
     @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
     @nffg_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
     @nffg_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
@@ -64,7 +69,6 @@ class NFFGResource(Resource):
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
 
-    @nffg_ns.param("nffg_id", "Graph ID to be retrieved", "path", type="string", required=False)
     @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
     @nffg_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
     @nffg_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
@@ -168,11 +172,10 @@ class NFFGResource(Resource):
             return "Contact the admin: " + str(err), 500
 
 
-@nffg_ns.route('/status/<nffg_id>', methods=['GET'])
+@nffg_ns.route('/status/<nffg_id>', methods=['GET'], doc={'params': {'nffg_id': {'description': 'The graph ID'}}})
 @api.doc(responses={404: 'Graph not found'})
 class NFFGStatusResource(Resource):
 
-    @nffg_ns.param("nffg_id", "Graph ID to be retrieved", "path", type="string", required=True)
     @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
     @nffg_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
     @nffg_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
