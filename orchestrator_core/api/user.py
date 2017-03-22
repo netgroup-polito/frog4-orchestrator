@@ -19,7 +19,7 @@ class User_login(Resource):
     @login_user.expect(login_user_model)
     @login_user.response(200, 'LOGIN SUCCESSFULLY')
     @login_user.response(400, 'BAD REQUEST.')
-    @login_user.response(402, 'VALIDATION ERROR')
+    @login_user.response(409, 'VALIDATION ERROR')
     @login_user.response(401, 'UNAUTHORIZED.')
     @login_user.response(500, 'INTERNAL SERVER ERROR.')
     def post(self):
@@ -44,7 +44,7 @@ class User_login(Resource):
 
         except UserValidationError as err:
             logging.exception(err)
-            return ("Login Validation Error: "+ err.message, 402)
+            return ("Login Validation Error: "+ err.message, 409)
 
         except requests.HTTPError as err:
             logging.exception(err)
