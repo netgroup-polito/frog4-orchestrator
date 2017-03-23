@@ -7,7 +7,7 @@ import logging
 import requests
 import json
 
-from flask import request, Response
+from flask import request, Response, jsonify
 from flask_restplus import Resource
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -21,6 +21,7 @@ from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessi
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
     UnsupportedLabelingMethod,TokenNotFound
 from nffg_library.exception import NF_FGValidationError
+from pprint import pprint
 
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 
@@ -165,14 +166,17 @@ class UpperLayerOrchestrator(Resource):
         Deploy a graph
         """
         try:
+
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             nffg_dict = json.loads(request.data.decode())
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
             controller = UpperLayerOrchestratorController(user_data, self.counter)
-            response = controller.put(nffg)
+            response = controller.put(nffg,nffg_dict)
             self.counter +=1
+            #pprint(vars(nffg))
+            #return jsonify(nffg_dict)
             return response, 202
 
         except wrongRequest as err:

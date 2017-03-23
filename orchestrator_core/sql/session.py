@@ -9,7 +9,7 @@ from orchestrator_core.sql.sql_server import get_session
 from sqlalchemy.ext.declarative import declarative_base
 from orchestrator_core.exception import sessionNotFound
 
-
+import base64
 import datetime
 import logging
 
@@ -26,6 +26,7 @@ class SessionModel(Base):
     user_id = Column(VARCHAR(64))
     service_graph_id = Column(VARCHAR(64))
     service_graph_name = Column(VARCHAR(64))
+    nf_fgraph = Column(VARCHAR(60000))
     status = Column(VARCHAR(64))
     started_at = Column(DateTime)
     last_update = Column(DateTime, default=func.now())
@@ -36,15 +37,15 @@ class Session(object):
     def __init__(self):
         pass
     
-    def inizializeSession(self, session_id, user_id, service_graph_id, service_graph_name):
+    def inizializeSession(self, session_id, user_id, service_graph_id, service_graph_name, nffg_json):
         '''
         inizialize the session in db
         '''
         session = get_session()  
         with session.begin():
-            session_ref = SessionModel(id=session_id, user_id = user_id, service_graph_id = service_graph_id, 
-                                started_at = datetime.datetime.now(), service_graph_name=service_graph_name,
-                                last_update = datetime.datetime.now(), status='inizialization')
+            session_ref = SessionModel(id=session_id, user_id = user_id, service_graph_id = service_graph_id,
+                                started_at = datetime.datetime.now(), service_graph_name = service_graph_name,
+                                last_update = datetime.datetime.now(), status = 'inizialization', nf_fgraph = base64.b64encode(nffg_json))
             session.add(session_ref)
         pass
 
@@ -157,3 +158,8 @@ class Session(object):
     def get_service_graph_info(self,session_id):
         session = get_session()
         return session.query(SessionModel.service_graph_id, SessionModel.service_graph_name).filter_by(id = session_id).one()
+
+    def updateSession(self, session_id, status, graph_name, nffg_json):
+        session = get_session()
+        with session.begin():
+            session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"last_update":datetime.datetime.now(), 'status':status, 'service_graph_name':graph_name ,'nf_fgraph':base64.b64encode(nffg_json)})

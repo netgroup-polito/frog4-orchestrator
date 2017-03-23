@@ -96,10 +96,9 @@ class UpperLayerOrchestratorController(object):
         Graph().delete_session(session.id)
         Session().set_ended(session.id)
     
-    def update(self, nffg):
+    def update(self, nffg, nffg_json):
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
-        Session().updateStatus(session.id, 'updating')
-        
+        Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
         # Get profile from session
         graphs_ref = Graph().getGraphs(session.id)
         try:
@@ -194,20 +193,22 @@ class UpperLayerOrchestratorController(object):
         
         return session.id
         
-    def put(self, nffg):
+    def put(self, nffg,nffg_json):
         """
         Manage the request of NF-FG instantiation
         :param nffg:
         :type nffg: nffg_library.nffg.NF_FG
         """
+        #return self.check_nffg_status(nffg.id)
         logging.info('Graph put request from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
+        nffg_json = json.dumps(nffg_json).encode('utf-8')
         if self.check_nffg_status(nffg.id) is True:
             logging.debug('NF-FG already instantiated, trying to update it')
-            session_id = self.update(nffg)
+            session_id = self.update(nffg, nffg_json)
             logging.debug('Update completed')
         else:
             session_id = uuid.uuid4().hex
-            Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name)
+            Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
             try:
                 # Manage profile
                 self.prepare_nffg(nffg)

@@ -163,6 +163,7 @@ CREATE TABLE `session` (
   `user_id` varchar(64) DEFAULT NULL,
   `service_graph_id` varchar(64) NOT NULL,
   `service_graph_name` varchar(64) DEFAULT NULL,
+  `nf_fgraph` varchar(60000) DEFAULT NULL,
   `status` varchar(64) NOT NULL,
   `started_at` datetime DEFAULT NULL,
   `last_update` datetime DEFAULT NULL,
