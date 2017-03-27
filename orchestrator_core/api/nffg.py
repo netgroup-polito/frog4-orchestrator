@@ -27,7 +27,7 @@ nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 
 @nffg_ns.route('/<nffg_id>', methods=['GET', 'DELETE'],
                doc={'params': {'nffg_id': {'description': 'The graph ID', 'in': 'path'}}})
-@nffg_ns.route('/', defaults={'nffg_id': None}, methods=['GET', 'PUT'])
+@nffg_ns.route('/', methods=['GET', 'PUT'])
 @api.doc(responses={404: 'Graph not found'})
 class NFFGResource(Resource):
 
