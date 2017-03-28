@@ -193,7 +193,7 @@ class UpperLayerOrchestratorController(object):
         
         return session.id
         
-    def put(self, nffg,nffg_json):
+    def put(self, nffg, nffg_json):
         """
         Manage the request of NF-FG instantiation
         :param nffg:
@@ -283,10 +283,8 @@ class UpperLayerOrchestratorController(object):
                 '''
                 Session().set_error(session_id)
                 raise ex
-        
-        # Session().updateStatus(session_id, 'complete')
-                                
-        return session_id
+        nffg_id = Session().get_nffg_id(session_id).service_graph_id
+        return nffg_id
         
     @staticmethod
     def prepare_nffg(nffg):

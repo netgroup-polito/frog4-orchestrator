@@ -154,8 +154,8 @@ class Session(object):
         if session_ref is None:
             raise sessionNotFound("Session Not Found")
         return session_ref.service_graph_id
-    
-    def get_service_graph_info(self,session_id):
+
+    def get_service_graph_info(self, session_id):
         session = get_session()
         return session.query(SessionModel.service_graph_id, SessionModel.service_graph_name).filter_by(id = session_id).one()
 
@@ -163,3 +163,7 @@ class Session(object):
         session = get_session()
         with session.begin():
             session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).update({"last_update":datetime.datetime.now(), 'status':status, 'service_graph_name':graph_name ,'nf_fgraph':base64.b64encode(nffg_json)})
+
+    def get_nffg_id(self, session_id):
+        session = get_session()
+        return session.query(SessionModel).filter_by(id = session_id).one()

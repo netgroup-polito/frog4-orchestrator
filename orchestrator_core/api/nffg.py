@@ -175,8 +175,6 @@ class UpperLayerOrchestrator(Resource):
             controller = UpperLayerOrchestratorController(user_data, self.counter)
             response = controller.put(nffg,nffg_dict)
             self.counter +=1
-            #pprint(vars(nffg))
-            #return jsonify(nffg_dict)
             return response, 202
 
         except wrongRequest as err:

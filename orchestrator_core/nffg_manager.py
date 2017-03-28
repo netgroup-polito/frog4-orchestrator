@@ -69,6 +69,7 @@ class NFFG_Manager(object):
     
     def getTemplate(self, uri):
         template_dict = self.getTemplateDict(uri)
+        logging.debug('Templates : '+json.dumps(template_dict))
         ValidateTemplate().validate(template_dict)
         template = Template()
         template.parseDict(template_dict)
