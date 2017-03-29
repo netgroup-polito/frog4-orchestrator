@@ -243,7 +243,7 @@ class UpperLayerOrchestratorController(object):
                     logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
                     nffg.id = str(sub_nffg.db_id)
                     if DEBUG_MODE is True:
-                        logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+nffg.getJSON())
+                        logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
                     else:
                         CA_Interface(self.user_data, domain).put(sub_nffg)
 
