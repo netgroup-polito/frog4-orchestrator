@@ -58,7 +58,7 @@ class User(object):
         try:
             return session.query(UserModel).filter_by(name = username).one()
         except Exception as ex:
-            raise UserNotFound("User not found: "+str(username)) from None
+            raise UserNotFound("User not found") from None
     
     def getUserFromID(self, user_id):
         session = get_session()
@@ -66,7 +66,7 @@ class User(object):
             return session.query(UserModel).filter_by(id = user_id).one()
         except Exception as ex:
             #logging.error(ex)
-            raise UserNotFound("User not found id: "+str(user_id)) from None
+            raise UserNotFound("User not found") from None
     
     def getTenantName(self, tenant_id):
         session = get_session()
@@ -74,7 +74,7 @@ class User(object):
             return session.query(TenantModel).filter_by(id = tenant_id).one().name
         except Exception as ex:
             #logging.error(ex)
-            raise TenantNotFound("Tenant not found: "+str(tenant_id)) from None
+            raise TenantNotFound("Tenant not found") from None
 
     def inizializeUserAuthentication(self, user_id, token):
         session = get_session()

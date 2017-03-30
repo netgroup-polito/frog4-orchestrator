@@ -4,7 +4,7 @@
 '''
 
 from .sql.user import User
-from orchestrator_core.exception import unauthorizedRequest
+from orchestrator_core.exception import unauthorizedRequest, TenantNotFound, TokenNotFound
 from orchestrator_core.config import Configuration
 import json
 import uuid
@@ -54,10 +54,11 @@ class UserCredentials(object):
             if tenantName == tenant:
                 userobj = UserData(user.id, username, password, tenant)
                 return userobj
-            raise unauthorizedRequest('Invalid Tenant Provided ')
+            raise TenantNotFound('Invalid Tenant Provided ')
         raise unauthorizedRequest('Invalid authentication credentials')
 
 class UserLoginAuthenticationController(object):
+
     def put(self, user_data):
         logging.debug('New POST request for /login/  From user '+user_data.username+" of tenant "+user_data.tenant)
         try:
@@ -68,16 +69,16 @@ class UserLoginAuthenticationController(object):
                 return token
             else:
                 return have_a_token
-
         except Exception as ex:
             logging.exception(ex)
             raise ex
 
 class UserTokenAuthentication(object):
+
     def UserTokenAuthenticateFromRESTRequest(self, request):
         user_token = request.headers.get("X-Auth-Token")
         if user_token is None:
-            raise unauthorizedRequest('Token is required')
+            raise TokenNotFound('Token is required')
         token_val = User().getToken(user_token)
         if token_val.token == user_token:
             user = User().getUserFromID(token_val.user_id)
@@ -86,5 +87,5 @@ class UserTokenAuthentication(object):
             tenant = User().getTenantName(user.tenant_id)
             userobj = UserData(user.id, username, password, tenant)
             return userobj
-        raise unauthorizedRequest('Invalid Token Provided')
+        raise TokenNotFound('Invalid Token Provided')
 

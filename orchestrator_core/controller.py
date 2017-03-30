@@ -6,6 +6,7 @@
 
 import json
 import logging
+import base64
 
 from orchestrator_core.scheduler import Scheduler
 from orchestrator_core.virtual_topology import VirtualTopology
@@ -53,8 +54,12 @@ class UpperLayerOrchestratorController(object):
             response_dict['active_graphs'] = graphs
             return json.dumps(response_dict)
         else:
-            session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
-            logging.debug("Getting session: "+str(session.id))
+            session_id = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False).id
+            logging.debug("Getting session: "+str(session_id))
+            nffg_json = base64.b64decode(Session().get_nffg_json(session_id).nf_fgraph)
+            return json.loads(nffg_json.decode('utf-8'))
+
+            """
             graphs_ref = Graph().getGraphs(session.id)
             instantiated_nffgs = []
             for graph_ref in graphs_ref:
@@ -72,6 +77,7 @@ class UpperLayerOrchestratorController(object):
            
             instantiated_nffgs[0].id = str(nffg_id)
             return instantiated_nffgs[0].getJSON()
+            """
     
     def delete(self, nffg_id):        
         session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)

@@ -167,3 +167,8 @@ class Session(object):
     def get_nffg_id(self, session_id):
         session = get_session()
         return session.query(SessionModel).filter_by(id = session_id).one()
+
+    def get_nffg_json(self, session_id):
+        session = get_session()
+        return session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).first()
+

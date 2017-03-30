@@ -19,7 +19,7 @@ from orchestrator_core.userAuthentication import UserAuthentication, UserTokenAu
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
     VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
-    UnsupportedLabelingMethod,TokenNotFound
+    UnsupportedLabelingMethod,TokenNotFound, TenantNotFound
 from nffg_library.exception import NF_FGValidationError
 from pprint import pprint
 
@@ -67,22 +67,21 @@ class NFFGResource(Resource):
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
 
-    @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
-    @nffg_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
-    @nffg_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
+    @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.response(200, 'Graph retrieved.')
     @nffg_ns.response(401, 'Unauthorized.')
     @nffg_ns.response(500, 'Internal Error.')
     def get(self, nffg_id=None):
         """
+        Get a graph
         Returns an already deployed graph
         """
         try:
-            user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
 
+            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
-            resp = Response(response=controller.get(nffg_id), status=200, mimetype="application/json")
-            return resp
+            response = controller.get(nffg_id)
+            return (response, 200, {'Content-Type': 'application/token'})
 
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
@@ -96,17 +95,20 @@ class NFFGResource(Resource):
         except sessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound) as err:
-            if request.headers.get("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+        except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
+            if request.headers.get("X-Auth-Token") is not None:
+                logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
             return "Unauthorized", 401
+        except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
 
+
 @nffg_ns.route('/status/<nffg_id>', methods=['GET'], doc={'params': {'nffg_id': {'description': 'The graph ID'}}})
-@api.doc(responses={404: 'Graph not found'})
 class NFFGStatusResource(Resource):
 
     @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
@@ -153,7 +155,7 @@ class UpperLayerOrchestrator(Resource):
 
     counter = 1
 
-    @nffg_ns.param("X-Auth-Token", "Authentication token", "header", type="string", required=True)
+    @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.param("NFFG", "Graph to be deployed", "body", type="string", required=True)
     @nffg_ns.response(202, 'Graph correctly deployed.')
     @nffg_ns.response(400, 'Bad request.')
@@ -162,7 +164,7 @@ class UpperLayerOrchestrator(Resource):
     @nffg_ns.response(500, 'Internal Error.')
     def put(self):
         """
-        Update or Create a New Network Functions Forwarding Graph
+        Create or Update a New Network Functions Forwarding Graph
         Deploy a graph
         """
         try:
@@ -180,7 +182,7 @@ class UpperLayerOrchestrator(Resource):
         except wrongRequest as err:
             logging.exception(err)
             return "Bad Request", 400
-        except (unauthorizedRequest, UserNotFound) as err:
+        except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
@@ -211,17 +213,16 @@ class UpperLayerOrchestrator(Resource):
         except UnsupportedLabelingMethod as err:
             return err.message, 500
         except TokenNotFound as err:
+            logging.exception(err)
             return err.message, 401
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
 
-
-    @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
-    @nffg_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
-    @nffg_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
+    @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.response(200, 'List retrieved.')
     @nffg_ns.response(401, 'Unauthorized.')
+    @nffg_ns.response(404, 'Graph not found.')
     @nffg_ns.response(500, 'Internal Error.')
     def get(self):
         """
