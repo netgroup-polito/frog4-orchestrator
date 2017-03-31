@@ -8,6 +8,7 @@ from sqlalchemy import Column, DateTime, func, VARCHAR, desc
 from orchestrator_core.sql.sql_server import get_session
 from sqlalchemy.ext.declarative import declarative_base
 from orchestrator_core.exception import sessionNotFound
+from sqlalchemy.orm.exc import NoResultFound
 
 import base64
 import datetime
@@ -144,7 +145,7 @@ class Session(object):
         else:
             session_ref = session.query(SessionModel).filter_by(service_graph_id = service_graph_id).filter_by(ended = None).order_by(desc(SessionModel.started_at)).first()
         if session_ref is None:
-            raise sessionNotFound("Session Not Found for service graph id: "+str(service_graph_id))
+            raise sessionNotFound("No Result Found for graph id: "+str(service_graph_id))
         return session_ref
     
     def get_profile_id_from_active_user_session(self, user_id):
@@ -170,5 +171,19 @@ class Session(object):
 
     def get_nffg_json(self, session_id):
         session = get_session()
-        return session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).first()
+        graphs_ref = session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).first()
+        if graphs_ref is None:
+            raise NoResultFound()
+        return graphs_ref
+
+    def get_current_user_session_by_nffg_id(self, service_graph_id, user_id):
+        session = get_session()
+        session_ref = session.query(SessionModel).filter_by(service_graph_id = service_graph_id).filter_by(user_id = user_id).filter_by(ended = None).order_by(desc(SessionModel.started_at)).first()
+        if session_ref is None:
+            raise NoResultFound()
+        return session_ref
+
+    def delete_session(self, session_id):
+        session = get_session()
+        session.query(SessionModel).filter_by(id = session_id).delete()
 

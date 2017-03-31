@@ -44,20 +44,23 @@ class UpperLayerOrchestratorController(object):
             sessions = Session().get_active_user_sessions(self.user_data.id)
             graphs = []
             for session in sessions:
+                """
                 graph = {}
                 graph['graph_id'] = session.service_graph_id
                 graph['graph_name'] = session.service_graph_name
                 graph['deploy time'] = str(session.started_at)
-                graph['last_update_time'] = str(session.last_update)         
-                graphs.append(graph)
+                graph['last_update_time'] = str(session.last_update)
+                """
+                response_json = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))
+                graphs.append(response_json)
             response_dict = {}
-            response_dict['active_graphs'] = graphs
+            response_dict["NF-FG"] = graphs
             return json.dumps(response_dict)
         else:
-            session_id = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False).id
+            session_id = Session().get_current_user_session_by_nffg_id(nffg_id, self.user_data.id).id
             logging.debug("Getting session: "+str(session_id))
-            nffg_json = base64.b64decode(Session().get_nffg_json(session_id).nf_fgraph)
-            return json.loads(nffg_json.decode('utf-8'))
+            response_json = json.loads(base64.b64decode(Session().get_nffg_json(session_id).nf_fgraph).decode('utf-8'))
+            return json.dumps(response_json)
 
             """
             graphs_ref = Graph().getGraphs(session.id)
@@ -80,9 +83,8 @@ class UpperLayerOrchestratorController(object):
             """
     
     def delete(self, nffg_id):        
-        session = Session().get_active_user_session_by_nf_fg_id(nffg_id, error_aware=False)
+        session = Session().get_current_user_session_by_nffg_id(nffg_id, self.user_data.id)
         logging.debug("Deleting session: " + str(session.id))
-
         graphs_ref = Graph().getGraphs(session.id)
         for graph_ref in graphs_ref:
             domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
@@ -100,7 +102,8 @@ class UpperLayerOrchestratorController(object):
         logging.debug('Session deleted: ' + str(session.id))
         # Set the field ended in the table session to the actual datetime        
         Graph().delete_session(session.id)
-        Session().set_ended(session.id)
+        Session().delete_session(session.id)
+        #Session().set_ended(session.id)
     
     def update(self, nffg, nffg_json):
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)

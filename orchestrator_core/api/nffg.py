@@ -31,9 +31,7 @@ nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 @api.doc(responses={404: 'Graph not found'})
 class NFFGResource(Resource):
 
-    @nffg_ns.param("X-Auth-User", "Username", "header", type="string", required=True)
-    @nffg_ns.param("X-Auth-Pass", "Password", "header", type="string", required=True)
-    @nffg_ns.param("X-Auth-Tenant", "Tenant", "header", type="string", required=True)
+    @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.response(200, 'Graph deleted.')
     @nffg_ns.response(401, 'Unauthorized.')
     @nffg_ns.response(500, 'Internal Error.')
@@ -42,27 +40,32 @@ class NFFGResource(Resource):
         Delete a graph
         """
         try:
-            user_data = UserAuthentication().authenticateUserFromRESTRequest(request)
 
+            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
-
-            return "Session deleted"
+            return "Graph deleted"
 
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            return "EXCEPTION - NoResultFound", 404
+            return "No Result Found", 404
         except requests.HTTPError as err:
+            logging.exception(err)
+            return str(err), 500
+        except requests.ConnectionError as err:
             logging.exception(err)
             return str(err), 500
         except sessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound) as err:
-            if request.headers.get("X-Auth-User") is not None:
-                logging.debug("Unauthorized access attempt from user "+request.headers.get("X-Auth-User"))
+        except (unauthorizedRequest, UserNotFound,TenantNotFound) as err:
+            if request.headers.get("X-Auth-Token") is None:
+                logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
             return "Unauthorized", 401
+        except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
@@ -80,12 +83,12 @@ class NFFGResource(Resource):
 
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
-            response = controller.get(nffg_id)
-            return (response, 200, {'Content-Type': 'application/token'})
+            resp = Response(response=controller.get(nffg_id), status=200, mimetype="application/json")
+            return resp
 
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            return "EXCEPTION - NoResultFound", 404
+            return "No Result Found", 404
         except requests.HTTPError as err:
             logging.exception(err)
             return str(err), 500
@@ -96,7 +99,7 @@ class NFFGResource(Resource):
             logging.exception(err.message)
             return err.message, 404
         except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
-            if request.headers.get("X-Auth-Token") is not None:
+            if request.headers.get("X-Auth-Token") is  None:
                 logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
             return "Unauthorized", 401
@@ -177,7 +180,7 @@ class UpperLayerOrchestrator(Resource):
             controller = UpperLayerOrchestratorController(user_data, self.counter)
             response = controller.put(nffg,nffg_dict)
             self.counter +=1
-            return response, 202
+            return response, 201
 
         except wrongRequest as err:
             logging.exception(err)
