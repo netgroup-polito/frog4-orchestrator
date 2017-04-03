@@ -337,8 +337,7 @@ class UpperLayerOrchestratorController(object):
         """
         logging.debug("Getting resources information for graph id: "+str(nffg_id))
         # TODO: have I to manage a sort of cache? Reading from db the status, maybe
-        session_id = Session().get_active_user_session_by_nf_fg_id(nffg_id).id
-        
+        session_id = Session().get_current_user_session_by_nffg_id(nffg_id, self.user_data.id).id
         logging.debug("Corresponding to session id: "+str(session_id))
         status = self.get_resources_status(session_id)
         return json.dumps(status)

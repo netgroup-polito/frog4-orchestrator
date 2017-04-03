@@ -27,14 +27,6 @@ class UserData(object):
         tenant = User().getTenantName(user.tenant_id)
         self.tenant = tenant
 
-class UserAuthentication(object):
-
-    def authenticateUserFromRESTRequest(self, request):
-        username = request.headers.get("X-Auth-User")
-        password = request.headers.get("X-Auth-Pass")
-        tenant = request.headers.get("X-Auth-Tenant")
-        return UserCredentials().authenticateUserFromCredentials(username,password,tenant)
-
 class UserLoginAuthentication(object):
 
     def UserLoginAuthenticateFromRESTRequest(self, login_data):
@@ -54,7 +46,7 @@ class UserCredentials(object):
             if tenantName == tenant:
                 userobj = UserData(user.id, username, password, tenant)
                 return userobj
-            raise TenantNotFound('Invalid Tenant Provided ')
+            raise TenantNotFound('Invalid Tenant Provided, Please check the frog configuration file [tenant] section')
         raise unauthorizedRequest('Invalid authentication credentials')
 
 class UserLoginAuthenticationController(object):

@@ -83,8 +83,8 @@ class Session(object):
         '''
         session = get_session()
         session_ref = session.query(SessionModel).filter_by(user_id = user_id).filter_by(ended = None).filter_by(error = None).all()
-        if session_ref is None:
-            raise sessionNotFound("No active sessions")
+        if len(session_ref) == 0 :
+            raise sessionNotFound("No active Graph")
         return session_ref    
     
     def set_ended(self, session_id):
@@ -171,7 +171,7 @@ class Session(object):
 
     def get_nffg_json(self, session_id):
         session = get_session()
-        graphs_ref = session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).filter_by(error = None).first()
+        graphs_ref = session.query(SessionModel).filter_by(id = session_id).filter_by(ended = None).first()
         if graphs_ref is None:
             raise NoResultFound()
         return graphs_ref
