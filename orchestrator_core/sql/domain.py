@@ -76,7 +76,7 @@ class Domain(object):
     def updateUserToken(self, domain_id, user_id, token):
         session = get_session()
         with session.begin():
-            domain_token = session.query(DomainTokenModel).filter_by(user_id=user_id).filter_by(domain_id=domain_id).one_or_none()
+            domain_token = session.query(DomainTokenModel).filter_by(user_id=user_id).filter_by(domain_id=domain_id).first()
             if domain_token is not None:
                 session.query(DomainTokenModel).filter_by(user_id=user_id).filter_by(domain_id=domain_id).update({"token":token})
             else:

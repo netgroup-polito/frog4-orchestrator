@@ -102,7 +102,7 @@ class UpperLayerOrchestratorController(object):
         logging.debug('Session deleted: ' + str(session.id))
         # Set the field ended in the table session to the actual datetime        
         Graph().delete_session(session.id)
-        Session().delete_session(session.id)
+        Session().delete_sessions(nffg_id)
         #Session().set_ended(session.id)
     
     def update(self, nffg, nffg_json):

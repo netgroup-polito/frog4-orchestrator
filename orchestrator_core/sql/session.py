@@ -183,7 +183,14 @@ class Session(object):
             raise NoResultFound()
         return session_ref
 
+    def delete_sessions(self, service_graph_id):
+        session = get_session()
+        Sessions_ref = session.query(SessionModel).filter_by(service_graph_id = service_graph_id).all()
+        for Session_ref in Sessions_ref:
+            self.delete_session(Session_ref.id)
+
     def delete_session(self, session_id):
         session = get_session()
-        session.query(SessionModel).filter_by(id = session_id).delete()
+        with session.begin():
+            session.query(SessionModel).filter_by(id = session_id).delete()
 
