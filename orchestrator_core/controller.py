@@ -24,7 +24,6 @@ from orchestrator_core.sql.domain import Domain
 from orchestrator_core.config import Configuration
 from collections import OrderedDict
 from orchestrator_core.ca_rest import CA_Interface
-from sqlalchemy.orm.exc import NoResultFound
 from requests.exceptions import HTTPError, ConnectionError
 from orchestrator_core.sql.domains_info import DomainInformation
 
@@ -40,7 +39,6 @@ class UpperLayerOrchestratorController(object):
         self.counter = counter
 
     def get(self, nffg_id):
-        #TODO: update this function taking into account the new split algorithm
         if nffg_id is None:
             # Get the list of active graphs
             sessions = Session().get_active_user_sessions(self.user_data.id)
@@ -68,7 +66,7 @@ class UpperLayerOrchestratorController(object):
             graphs_ref = Graph().getGraphs(session.id)
             instantiated_nffgs = []
             for graph_ref in graphs_ref:
-                domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
+                domain = Domain().getDomain(Graph().get_domain_id(graph_ref.id))
                 instantiated_nffgs.append(CA_Interface(self.user_data, domain).getNFFG(graph_ref.id))
             
             if not instantiated_nffgs:
@@ -84,12 +82,13 @@ class UpperLayerOrchestratorController(object):
             return instantiated_nffgs[0].getJSON()
             """
     
-    def delete(self, nffg_id):        
+    def delete(self, nffg_id):
         session = Session().get_current_user_session_by_nffg_id(nffg_id, self.user_data.id)
         logging.debug("Deleting session: " + str(session.id))
-        graphs_ref = Graph().getGraphs(session.id)
+        graphs_ref = Graph().get_graphs(session.id)
+
         for graph_ref in graphs_ref:
-            domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
+            domain = Domain().getDomain(Graph().get_domain_id(graph_ref.id))
             
             try:
                 if DEBUG_MODE is True:
@@ -111,7 +110,7 @@ class UpperLayerOrchestratorController(object):
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
         # Get profile from session
-        graphs_ref = Graph().getGraphs(session.id)
+        graphs_ref = Graph().get_graphs(session.id)
         try:
             # Get VNFs templates
             self.prepare_nffg(nffg)
@@ -171,10 +170,10 @@ class UpperLayerOrchestratorController(object):
             for new_domain, new_nffg in domain_nffg_dict.items():
                 if new_domain.id in old_domain_graph.keys():
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
-                    Graph().setGraphPartial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
+                    Graph().set_graph_partial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
                 else:
                     Graph().add_graph(new_nffg, session.id, partial=len(domain_nffg_dict) > 1)
-                    Graph().setDomainID(new_nffg.db_id, new_domain.id)
+                    Graph().set_domain_id(new_nffg.db_id, new_domain.id)
 
                 new_nffg.id = str(new_nffg.db_id)
 
@@ -187,7 +186,7 @@ class UpperLayerOrchestratorController(object):
 
         except (HTTPError, ConnectionError) as ex:
             logging.exception(ex)
-            Graph().delete_graph(nffg.db_id)
+            Graph().delete_session(session.id)
             Session().set_error(session.id)
             raise ex
         except VNFRepositoryError as ex:
@@ -256,19 +255,19 @@ class UpperLayerOrchestratorController(object):
                 for i in range(0, len(domains)):
                     domain_nffg_dict[domains[i]] = nffgs[i]
 
-                for domain, nffg in domain_nffg_dict.items():
+                for domain, sub_nffg in domain_nffg_dict.items():
 
                     # Save the graph in the database, with the state initializing
-                    Graph().add_graph(nffg, session_id, partial=len(domain_nffg_dict) > 1)
-                    Graph().setDomainID(nffg.db_id, domain.id)
+                    Graph().add_graph(sub_nffg, session_id, partial=len(domain_nffg_dict) > 1)
+                    Graph().set_domain_id(sub_nffg.db_id, domain.id)
 
                     # Instantiate profile
                     logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
-                    nffg.id = str(nffg.db_id)
+                    nffg.id = str(sub_nffg.db_id)
                     if DEBUG_MODE is True:
-                        logging.debug(domain.ip + ":" + str(domain.port) + " " + nffg.id+"\n"+nffg.getJSON())
+                        logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
                     else:
-                        CA_Interface(self.user_data, domain).put(nffg)
+                        CA_Interface(self.user_data, domain).put(sub_nffg)
 
                     logging.info("sub-graph correctly instantiated  on domain '" + domain.name + "'")
 
@@ -277,7 +276,7 @@ class UpperLayerOrchestratorController(object):
                 # Session().set_error(session_id)
             except (HTTPError, ConnectionError) as ex:
                 logging.exception(ex)
-                Graph().delete_graph(nffg.db_id)
+                Graph().delete_session(session_id)
                 Session().set_error(session_id)
                 raise ex
             except VNFRepositoryError as ex:
@@ -360,12 +359,12 @@ class UpperLayerOrchestratorController(object):
             status['percentage_completed'] = 100
             return status
 
-        graphs_ref = Graph().getGraphs(session_id)
+        graphs_ref = Graph().get_graphs(session_id)
         num_graphs = len(graphs_ref)
         num_graphs_completed = 0
         for graph_ref in graphs_ref:
             # Check where the nffg is instantiated and get the concerned domain orchestrator
-            domain = Domain().getDomain(Graph().getDomainID(graph_ref.id))
+            domain = Domain().getDomain(Graph().get_domain_id(graph_ref.id))
             nffg_status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
             logging.debug(nffg_status)
             if nffg_status['status'] == 'complete':

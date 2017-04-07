@@ -81,6 +81,7 @@ class Splitter(object):
                         middle_nffg = domain_to_nffg.get(domain2)
                         if middle_nffg is None:
                             middle_nffg = NF_FG()
+                            middle_nffg.id = nffg.id
                             middle_nffg.name = nffg.name + "_pass_through_" + str(i-1)
                             middle_nffg.domain = domain2
                             domain_to_nffg[domain2] = middle_nffg

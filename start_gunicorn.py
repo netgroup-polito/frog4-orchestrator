@@ -10,7 +10,7 @@ for param in sys.argv:
             conf_file = sys.argv[i]
             break
         else:
-            print ("Wrong params usage --d [conf-file]")
+            print("Wrong params usage --d [conf-file]")
             exit(1)
     i += 1
 if conf_file is not None:

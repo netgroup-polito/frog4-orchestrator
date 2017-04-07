@@ -66,4 +66,3 @@ thread.start()
 logging.info("DoubleDecker Successfully started")
 
 print("Welcome to the Global Orchestrator")
-
