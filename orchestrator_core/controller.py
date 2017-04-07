@@ -12,6 +12,8 @@ from orchestrator_core.scheduler import Scheduler
 from orchestrator_core.virtual_topology import VirtualTopology
 from .splitter import Splitter
 import uuid
+import random
+import string
 
 from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, \
     FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement
@@ -202,15 +204,24 @@ class UpperLayerOrchestratorController(object):
         
         return session.id
         
-    def put(self, nffg, nffg_json):
+    def put(self, nffg):
         """
         Manage the request of NF-FG instantiation
         :param nffg:
         :type nffg: nffg_library.nffg.NF_FG
         """
-        #return self.check_nffg_status(nffg.id)
+
         logging.info('Graph put request from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
-        nffg_json = json.dumps(nffg_json).encode('utf-8')
+
+        if nffg.id is None:
+            while True:
+                new_nffg_id = ''.join(random.SystemRandom().choice(string.digits) for _ in range(8))
+                old_nffg_id = Session().check_nffg_id(new_nffg_id)
+                if len(old_nffg_id) == 0:
+                    nffg.id = str(new_nffg_id)
+                    break
+
+        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
         if self.check_nffg_status(nffg.id) is True:
             logging.debug('NF-FG already instantiated, trying to update it')
             session_id = self.update(nffg, nffg_json)

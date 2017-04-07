@@ -180,7 +180,7 @@ class UpperLayerOrchestrator(Resource):
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
             controller = UpperLayerOrchestratorController(user_data, self.counter)
-            response = controller.put(nffg,nffg_dict)
+            response = controller.put(nffg)
             self.counter +=1
             return response, 201
 

@@ -194,3 +194,8 @@ class Session(object):
         with session.begin():
             session.query(SessionModel).filter_by(id = session_id).delete()
 
+    def check_nffg_id(self, nffg_id):
+        session = get_session()
+        with session.begin():
+            return session.query(SessionModel).filter_by(service_graph_id = nffg_id).all()
+
