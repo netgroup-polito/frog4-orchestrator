@@ -12,7 +12,7 @@ login_user = api.namespace('login', description = 'Login Resource')
 login_user_model = api.model('Login', {
     'username': fields.String(required = True, description = 'Username',  type = 'string'),
     'password': fields.String(required = True, description = 'Password',  type = 'string') })
-@login_user.route('/', methods=['POST'])
+@login_user.route('', methods=['POST'])
 @api.doc(responses={404: 'UserNotFound'})
 class User_login(Resource):
 
@@ -29,8 +29,8 @@ class User_login(Resource):
             login_data = json.loads(request.data.decode())
             UserValidate().validate(login_data)
             user_data = UserLoginAuthentication().UserLoginAuthenticateFromRESTRequest(login_data)
-            response = UserLoginAuthenticationController().put(user_data)
-            return (response, 200, {'Content-Type': 'application/token'})
+            resp_token = Response(response = UserLoginAuthenticationController().put(user_data), status=200, mimetype="application/token")
+            return resp_token
 
         except wrongRequest as err:
             logging.exception(err)

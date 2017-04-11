@@ -149,7 +149,7 @@ CREATE TABLE `graph` (
   `id` int(64) NOT NULL,
   `session_id` varchar(64) NOT NULL,
   `domain_id` int(11) DEFAULT NULL,
-  `partial` tinyint(4) DEFAULT NULL,
+  `partial` tinyint(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
