@@ -38,7 +38,7 @@ class VirtualTopology:
                                                               "domain " + domain_info.name)
                         # search the interface of the neighbor
                         for neighbor_interface in neighbor_domain_info.hardware_info.interfaces:
-                            if neighbor_interface.get_full_name() == neighbor.remote_interface:
+                            if neighbor_interface.get_full_name() == neighbor.get_full_interface_name():
                                 virtual_channels = self._get_virtual_channels_between_interfaces(interface,
                                                                                                  neighbor_interface,
                                                                                                  neighbor.domain_name)
