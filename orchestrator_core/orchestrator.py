@@ -19,7 +19,7 @@ from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserAuthentication, UserLoginAuthentication, UserLoginAuthenticationController, UserTokenAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
     VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
-    FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, UserValidationError, TenantNotFound, TokenNotFound
+    FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, UserValidationError, TokenNotFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from nffg_library.exception import NF_FGValidationError
 
@@ -449,7 +449,7 @@ class User_login(MethodView):
             logging.exception(err)
             return ("BAD REQUEST", 400)
 
-        except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
+        except (unauthorizedRequest, UserNotFound) as err:
             logging.debug(err.message)
             # return ("Unauthorized for more details see log file \n", 401)
             return ("Unauthorized", 401)

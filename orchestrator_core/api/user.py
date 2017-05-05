@@ -6,7 +6,7 @@ from flask_restplus import Resource, fields
 from orchestrator_core.user_validator import UserValidate
 from orchestrator_core.api.api import api
 from orchestrator_core.userAuthentication import UserLoginAuthentication, UserLoginAuthenticationController
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, UserNotFound, UserValidationError, TenantNotFound
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, UserNotFound, UserValidationError
 
 login_user = api.namespace('login', description = 'Login Resource')
 login_user_model = api.model('Login', {
@@ -43,10 +43,6 @@ class User_login(Resource):
         except UserNotFound as err:
             logging.exception(err)
             return ("UserNotFound", 404)
-
-        except TenantNotFound as err:
-            logging.exception(err)
-            return (err.message, 404)
 
         except UserValidationError as err:
             logging.exception(err)

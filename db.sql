@@ -174,27 +174,6 @@ CREATE TABLE `session` (
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `tenant`
---
-
-CREATE TABLE `tenant` (
-  `id` varchar(64) CHARACTER SET utf8 NOT NULL,
-  `name` varchar(64) CHARACTER SET utf8 NOT NULL,
-  `description` varchar(128) CHARACTER SET utf8 NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dump dei dati per la tabella `tenant`
---
-
-INSERT INTO `tenant` (`id`, `name`, `description`) VALUES
-('0', 'admin_tenant', ''),
-('1', 'PoliTO_chain1', ''),
-('2', 'demo', '');
-
--- --------------------------------------------------------
-
---
 -- Struttura della tabella `user`
 --
 
@@ -202,7 +181,6 @@ CREATE TABLE `user` (
   `id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `name` varchar(64) CHARACTER SET utf8 NOT NULL,
   `password` varchar(64) CHARACTER SET utf8 NOT NULL,
-  `tenant_id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `mail` varchar(64) CHARACTER SET utf8 DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -210,10 +188,10 @@ CREATE TABLE `user` (
 -- Dump dei dati per la tabella `user`
 --
 
-INSERT INTO `user` (`id`, `name`, `password`, `tenant_id`, `mail`) VALUES
-('0', 'admin', 'admin', '0', NULL),
-('1', 'AdminPoliTO', 'AdminPoliTO', '1', NULL),
-('2', 'demo', 'demo', '2', NULL);
+INSERT INTO `user` (`id`, `name`, `password`, `mail`) VALUES
+('0', 'admin', 'admin', NULL),
+('1', 'AdminPoliTO', 'AdminPoliTO', NULL),
+('2', 'demo', 'demo', NULL);
 
 -- --------------------------------------------------------
 
@@ -303,12 +281,6 @@ ALTER TABLE `graph`
 -- Indici per le tabelle `session`
 --
 ALTER TABLE `session`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `tenant`
---
-ALTER TABLE `tenant`
   ADD PRIMARY KEY (`id`);
 
 --

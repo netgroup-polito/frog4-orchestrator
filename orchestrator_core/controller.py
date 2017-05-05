@@ -210,7 +210,7 @@ class UpperLayerOrchestratorController(object):
         :type nffg: nffg_library.nffg.NF_FG
         """
 
-        logging.info('Graph put request from user '+self.user_data.username+" of tenant "+self.user_data.tenant)
+        logging.info('Graph put request from user '+self.user_data.username)
 
         if nffg.id is None:
             while True:

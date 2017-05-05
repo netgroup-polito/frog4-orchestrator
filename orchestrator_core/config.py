@@ -68,7 +68,6 @@ class Configuration(object, metaclass=Singleton):
                 self._TEMPLATE_REPOSITORY_URL = config.get('templates', 'repository_url')
             else:
                 self._TEMPLATE_REPOSITORY_URL = None
-            self._TENANT_NAME = config.get('tenant','tenant_name')
 
         except Exception as ex:
             raise WrongConfigurationFile(str(ex))
@@ -152,7 +151,3 @@ class Configuration(object, metaclass=Singleton):
     @property
     def SWITCH_TEMPLATE(self):
         return self._SWITCH_TEMPLATE
-
-    @property
-    def TENANT_NAME(self):
-        return self._TENANT_NAME

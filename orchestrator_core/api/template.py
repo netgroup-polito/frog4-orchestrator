@@ -12,7 +12,7 @@ from flask_restplus import Resource
 from orchestrator_core.api.api import api
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.userAuthentication import UserTokenAuthentication
-from orchestrator_core.exception import unauthorizedRequest, UserNotFound, VNFRepositoryError, TenantNotFound, TokenNotFound
+from orchestrator_core.exception import unauthorizedRequest, UserNotFound, VNFRepositoryError, TokenNotFound
 
 
 template_ns = api.namespace('template', 'Template Resource')
@@ -40,7 +40,7 @@ class TemplateLocationResource(Resource):
         try:
             UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             return jsonify((NFFG_Manager().getTemplate(template_name).getDict()))
-        except (unauthorizedRequest, UserNotFound,TenantNotFound) as err:
+        except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)

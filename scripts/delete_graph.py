@@ -17,16 +17,15 @@ sqlalchemy_log.setLevel(logging.WARNING)
 
 username = 'isp'
 password = 'stack'
-tenant = 'isp'
 
 
-controller = UpperLayerOrchestratorController(user_data=UserData(username, password, tenant))
+controller = UpperLayerOrchestratorController(user_data=UserData(username, password))
 controller.delete(nffg_id)
 print('Job completed')
 exit()
 orchestrator_endpoint = "http://127.0.0.1:9000/NF-FG/12"
 
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 
-           'X-Auth-User': username, 'X-Auth-Pass': password, 'X-Auth-Tenant': tenant}
+           'X-Auth-User': username, 'X-Auth-Pass': password}
 requests.delete(orchestrator_endpoint, headers=headers)
 print('Job completed')

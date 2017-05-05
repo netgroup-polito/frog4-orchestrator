@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import logging
 
 from orchestrator_core.sql.sql_server import get_session
-from orchestrator_core.exception import UserNotFound, TenantNotFound, TokenNotFound
+from orchestrator_core.exception import UserNotFound, TokenNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from requests.exceptions import HTTPError, ConnectionError
 import time
@@ -20,22 +20,11 @@ class UserModel(Base):
     Maps the database table user
     '''
     __tablename__ = 'user'
-    attributes = ['id', 'name', 'password', 'tenant_id', 'mail']
+    attributes = ['id', 'name', 'password', 'mail']
     id = Column(VARCHAR(64), primary_key=True)
     name = Column(VARCHAR(64))
     password = Column(VARCHAR(64))
-    tenant_id = Column(VARCHAR(64))
     mail = Column(VARCHAR(64))
-    
-class TenantModel(Base):
-    '''
-    Maps the database table tenant
-    '''
-    __tablename__ = 'tenant'
-    attributes = ['id', 'name', 'description']
-    id = Column(VARCHAR(64), primary_key=True)
-    name = Column(VARCHAR(64))
-    description = Column(VARCHAR(128))
 
 class UserTokenModel(Base):
     '''
@@ -66,13 +55,6 @@ class User(object):
             return session.query(UserModel).filter_by(id = user_id).one()
         except Exception as ex:
             raise UserNotFound("User not found") from None
-    
-    def getTenantName(self, tenant_id):
-        session = get_session()
-        try:
-            return session.query(TenantModel).filter_by(id = tenant_id).one().name
-        except Exception as ex:
-            raise TenantNotFound("Tenant not found") from None
 
     def inizializeUserAuthentication(self, user_id, token):
         session = get_session()

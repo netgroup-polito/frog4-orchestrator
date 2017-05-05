@@ -19,7 +19,7 @@ from orchestrator_core.userAuthentication import UserTokenAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
     VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
-    UnsupportedLabelingMethod,TokenNotFound, TenantNotFound
+    UnsupportedLabelingMethod,TokenNotFound
 from nffg_library.exception import NF_FGValidationError
 from pprint import pprint
 
@@ -58,7 +58,7 @@ class NFFGResource(Resource):
         except sessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound,TenantNotFound) as err:
+        except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
@@ -98,7 +98,7 @@ class NFFGResource(Resource):
         except sessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
+        except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is  None:
                 logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
@@ -140,7 +140,7 @@ class NFFGStatusResource(Resource):
         except sessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
+        except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
@@ -187,7 +187,7 @@ class UpperLayerOrchestrator(Resource):
         except wrongRequest as err:
             logging.exception(err)
             return "Bad Request", 400
-        except (unauthorizedRequest, UserNotFound, TenantNotFound) as err:
+        except (unauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
