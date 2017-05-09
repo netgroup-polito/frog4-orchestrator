@@ -45,8 +45,6 @@ class TemplateLocationResource(Resource):
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
             return "Unauthorized", 401
-        #except FileNotFoundError:
-            #return "Template not found", 404
         except VNFRepositoryError:
             return "VNFRepositoryError: Template not found or incorrect VNF-Repository configuration", 404
         except TokenNotFound as err:

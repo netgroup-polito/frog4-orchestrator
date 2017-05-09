@@ -16,7 +16,7 @@ import random
 import string
 
 from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, \
-    FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement
+    FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -44,13 +44,6 @@ class UpperLayerOrchestratorController(object):
             sessions = Session().get_active_user_sessions(self.user_data.id)
             graphs = []
             for session in sessions:
-                """
-                graph = {}
-                graph['graph_id'] = session.service_graph_id
-                graph['graph_name'] = session.service_graph_name
-                graph['deploy time'] = str(session.started_at)
-                graph['last_update_time'] = str(session.last_update)
-                """
                 response_json = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))
                 graphs.append(response_json)
             response_dict = {}
@@ -61,26 +54,6 @@ class UpperLayerOrchestratorController(object):
             logging.debug("Getting session: "+str(session_id))
             response_json = json.loads(base64.b64decode(Session().get_nffg_json(session_id).nf_fgraph).decode('utf-8'))
             return json.dumps(response_json)
-
-            """
-            graphs_ref = Graph().getGraphs(session.id)
-            instantiated_nffgs = []
-            for graph_ref in graphs_ref:
-                domain = Domain().getDomain(Graph().get_domain_id(graph_ref.id))
-                instantiated_nffgs.append(CA_Interface(self.user_data, domain).getNFFG(graph_ref.id))
-            
-            if not instantiated_nffgs:
-                raise NoResultFound()
-            # If the graph has been split, we need to rebuild the original nffg
-            if len(instantiated_nffgs) == 2:
-                instantiated_nffgs[0].join(instantiated_nffgs[1])
-            if len(instantiated_nffgs) == 3:
-                # Second domain is discarded because not present in the original nffg
-                instantiated_nffgs[0].join(instantiated_nffgs[2])
-           
-            instantiated_nffgs[0].id = str(nffg_id)
-            return instantiated_nffgs[0].getJSON()
-            """
     
     def delete(self, nffg_id):
         session = Session().get_current_user_session_by_nffg_id(nffg_id, self.user_data.id)
@@ -203,16 +176,30 @@ class UpperLayerOrchestratorController(object):
         
         return session.id
         
-    def put(self, nffg):
+    def put(self, nffg, nffg_id):
         """
         Manage the request of NF-FG instantiation
         :param nffg:
+        :param nffg_id:
         :type nffg: nffg_library.nffg.NF_FG
+        :type nffg_id: int
         """
 
         logging.info('Graph put request from user '+self.user_data.username)
 
-        if nffg.id is None:
+        if nffg_id is not None:
+            nffg.id = str(nffg_id)
+            if self.check_nffg_status(nffg.id) is True:
+                logging.debug('NF-FG already instantiated, trying to update it')
+                nffg_json = nffg.getJSON(domain=True).encode('utf-8')
+                session_id = self.update(nffg, nffg_json)
+                logging.debug('Update completed')
+
+            else:
+                raise NoGraphFound("EXCEPTION - Please first insert this graph then try to update")
+
+        else:
+
             while True:
                 new_nffg_id = ''.join(random.SystemRandom().choice(string.digits) for _ in range(8))
                 old_nffg_id = Session().check_nffg_id(new_nffg_id)
@@ -220,12 +207,7 @@ class UpperLayerOrchestratorController(object):
                     nffg.id = str(new_nffg_id)
                     break
 
-        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
-        if self.check_nffg_status(nffg.id) is True:
-            logging.debug('NF-FG already instantiated, trying to update it')
-            session_id = self.update(nffg, nffg_json)
-            logging.debug('Update completed')
-        else:
+            nffg_json = nffg.getJSON(domain=True).encode('utf-8')
             session_id = uuid.uuid4().hex
             Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
             try:
