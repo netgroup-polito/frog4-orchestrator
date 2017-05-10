@@ -140,14 +140,3 @@ class CA_Interface(object):
         except HTTPError as err:
             logging.error(err)
             raise LoginError("login failed: " + str(err))
-        
-    """
-    def checkToken(self, token):
-        headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Auth-Token': token}
-        resp = requests.head(self.authentication_url, headers=headers)
-        logging.debug(resp.status_code)
-        if resp.status_code == 204 or resp.status_code == 200:
-            return True
-        return False
-    """
-        

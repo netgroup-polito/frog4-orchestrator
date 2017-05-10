@@ -28,7 +28,7 @@ Now you can follow the instruction provided in that folder. You can choose to in
 In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
 
 #### Modify the configuration parameters
-For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences. It is very important to correctly set the templates section, in order to retrieve templates in a local directory or by means of a [VNF-Repository] (https://github.com/netgroup-polito/VNF-repository).
+For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences. It is very important to correctly set the templates section, in order to retrieve templates in a local directory or by means of a [Frog4-datastore](https://github.com/netgroup-polito/frog4-datastore).
 
 #### Create database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.

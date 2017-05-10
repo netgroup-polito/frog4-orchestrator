@@ -6,9 +6,6 @@ class UserNotFound(Exception):
         
     def get_mess(self):
         return self.message
-        
-    def get_mess(self):
-        return self.message    
 
 
 class UserLocationNotFound(Exception):
@@ -314,11 +311,11 @@ class ConnectionsError(Exception):
         return self.message
 
 
-class VNFRepositoryError(Exception):
+class FrogDataStoreError(Exception):
     def __init__(self, message):
         self.message = message
         # Call the base class constructor with the parameters it needs
-        super(VNFRepositoryError, self).__init__(message)
+        super(FrogDataStoreError, self).__init__(message)
 
     def get_mess(self):
         return self.message
@@ -392,9 +389,7 @@ class UnsupportedLabelingMethod(Exception):
 
     def get_mess(self):
         return self.message
-        
-    def get_mess(self):
-        return self.message
+
 
 class UserValidationError(Exception):
     def __init__(self, message):
@@ -405,6 +400,7 @@ class UserValidationError(Exception):
     def get_mess(self):
         return self.message
 
+
 class TokenNotFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -414,6 +410,7 @@ class TokenNotFound(Exception):
     def get_mess(self):
         return self.message
 
+
 class NoGraphFound(Exception):
     def __init__(self, message):
         self.message = message
@@ -422,3 +419,4 @@ class NoGraphFound(Exception):
 
     def get_mess(self):
         return self.message
+

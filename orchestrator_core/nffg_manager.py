@@ -9,7 +9,7 @@ from vnf_template_library.validator import ValidateTemplate
 from orchestrator_core.config import Configuration
 from nffg_library.validator import ValidateNF_FG
 from nffg_library.nffg import NF_FG, Match, Action
-from orchestrator_core.exception import VNFRepositoryError, WrongConfigurationFile
+from orchestrator_core.exception import FrogDataStoreError, WrongConfigurationFile
 from requests.exceptions import HTTPError
 
 TEMPLATE_SOURCE = Configuration().TEMPLATE_SOURCE
@@ -80,10 +80,10 @@ class NFFG_Manager(object):
         return self.getDictFromFile(base_folder+"/graphs/", filename)
     
     def getTemplateDict(self, uri):  
-        if TEMPLATE_SOURCE == "vnf-repository":
+        if TEMPLATE_SOURCE == "frog4-datastore":
             if uri in self.stored_templates:
                 return self.stored_templates[uri]
-            return self.getDictFromVNFRepository(uri)
+            return self.getDictFromFrogDataStore(uri)
         elif TEMPLATE_SOURCE == "file":
             base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])).rpartition('/')[0]
             return self.getDictFromFile(base_folder+'/'+TEMPLATE_PATH, uri)
@@ -94,7 +94,7 @@ class NFFG_Manager(object):
         json_data=open(path+filename).read()
         return json.loads(json_data)
     
-    def getDictFromVNFRepository(self, uri):
+    def getDictFromFrogDataStore(self, uri):
         try:
             actual_uri = uri
             if uri.endswith(".json"):
@@ -107,11 +107,11 @@ class NFFG_Manager(object):
             return template_dict
         except HTTPError as err:
             if err.response.status_code == 404:
-                raise VNFRepositoryError("VNF Template "+ uri+ " not found!")
+                raise FrogDataStoreError("NF Template "+ uri+ " not found!")
             else:
-                raise VNFRepositoryError("An error occurred while contacting the VNF Repository")
+                raise FrogDataStoreError("An error occurred while contacting to the frog4 datastore")
         except Exception:
-            raise VNFRepositoryError("An error occurred while contacting the VNF Repository")
+            raise FrogDataStoreError("An error occurred while contacting to the frog4 datastore")
     
     # Graph optimization
     def mergeUselessVNFs(self):

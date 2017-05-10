@@ -21,6 +21,3 @@ class UserValidate(object):
         base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
         fd = open(base_folder+'/'+self.schema_name, 'r')
         return json.loads(fd.read())
-
-
-

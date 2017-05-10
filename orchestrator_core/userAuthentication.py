@@ -5,8 +5,6 @@
 
 from .sql.user import User
 from orchestrator_core.exception import unauthorizedRequest, TokenNotFound
-from orchestrator_core.config import Configuration
-import json
 import uuid
 import logging
 
@@ -70,4 +68,3 @@ class UserTokenAuthentication(object):
             userobj = UserData(user.id, username, password)
             return userobj
         raise TokenNotFound('Invalid Token Provided')
-

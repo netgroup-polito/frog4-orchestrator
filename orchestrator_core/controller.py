@@ -15,7 +15,7 @@ import uuid
 import random
 import string
 
-from orchestrator_core.exception import sessionNotFound, GraphError, VNFRepositoryError, NoFunctionalCapabilityFound, \
+from orchestrator_core.exception import sessionNotFound, GraphError, FrogDataStoreError, NoFunctionalCapabilityFound, \
     FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
@@ -162,7 +162,7 @@ class UpperLayerOrchestratorController(object):
             Graph().delete_session(session.id)
             Session().set_error(session.id)
             raise ex
-        except VNFRepositoryError as ex:
+        except FrogDataStoreError as ex:
             logging.exception(ex)
             # Session().set_error(session.id)
             raise ex
@@ -261,7 +261,7 @@ class UpperLayerOrchestratorController(object):
                 Graph().delete_session(session_id)
                 Session().set_error(session_id)
                 raise ex
-            except VNFRepositoryError as ex:
+            except FrogDataStoreError as ex:
                 logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex

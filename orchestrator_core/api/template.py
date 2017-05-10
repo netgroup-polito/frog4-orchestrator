@@ -12,7 +12,7 @@ from flask_restplus import Resource
 from orchestrator_core.api.api import api
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.userAuthentication import UserTokenAuthentication
-from orchestrator_core.exception import unauthorizedRequest, UserNotFound, VNFRepositoryError, TokenNotFound
+from orchestrator_core.exception import unauthorizedRequest, UserNotFound, FrogDataStoreError, TokenNotFound
 
 
 template_ns = api.namespace('template', 'Template Resource')
@@ -45,8 +45,8 @@ class TemplateLocationResource(Resource):
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
             return "Unauthorized", 401
-        except VNFRepositoryError:
-            return "VNFRepositoryError: Template not found or incorrect VNF-Repository configuration", 404
+        except FrogDataStoreError:
+            return "FrogDataStoreError: Template not found or incorrect Frog4-datastore configuration", 404
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401

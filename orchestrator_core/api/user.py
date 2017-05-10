@@ -29,7 +29,8 @@ class User_login(Resource):
             login_data = json.loads(request.data.decode())
             UserValidate().validate(login_data)
             user_data = UserLoginAuthentication().UserLoginAuthenticateFromRESTRequest(login_data)
-            resp_token = Response(response = UserLoginAuthenticationController().put(user_data), status=200, mimetype="application/token")
+            resp_token = Response(response = UserLoginAuthenticationController().put(user_data), status=200,
+                                  mimetype="application/token")
             return resp_token
 
         except wrongRequest as err:

@@ -10,7 +10,6 @@ import logging
 from orchestrator_core.sql.sql_server import get_session
 from orchestrator_core.exception import UserNotFound, TokenNotFound
 from sqlalchemy.orm.exc import NoResultFound
-from requests.exceptions import HTTPError, ConnectionError
 import time
 
 Base = declarative_base()

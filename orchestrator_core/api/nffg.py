@@ -17,7 +17,7 @@ from orchestrator_core.api.api import api
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserTokenAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
-    VNFRepositoryError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
+    FrogDataStoreError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
     UnsupportedLabelingMethod,TokenNotFound, NoGraphFound
 from nffg_library.exception import NF_FGValidationError
@@ -72,7 +72,7 @@ class NFFGResource(Resource):
         except requests.ConnectionError as err:
             logging.exception(err)
             return str(err), 500
-        except VNFRepositoryError as err:
+        except FrogDataStoreError as err:
             return err.message, 500
         except GraphError as err:
             return err.message, 400
@@ -177,7 +177,8 @@ class NFFGResource(Resource):
             return "Contact the admin: " + str(err), 500
 
 
-@nffg_ns.route('/status/<nffg_id>', methods=['GET'], doc={'params': {'nffg_id': {'description': 'The Graph ID to be retrieved'}}})
+@nffg_ns.route('/status/<nffg_id>', methods=['GET'], doc={'params': {'nffg_id': {'description':
+                                                                                     'The Graph ID to be retrieved'}}})
 @api.doc(responses={404: 'Graph not found'})
 class NFFGStatusResource(Resource):
 

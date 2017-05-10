@@ -1,10 +1,10 @@
 {
     "public": {
-        "privkey": "85EWoWY1ViIEni40n5b3WT0LeCMgceSFFi5QYbs44C0=",
-        "ddpubkey": "F+zA5XqBesA9JGpE37YcyAz+WvKEL9nl9CQulHXitx0=",
-        "publicpubkey": "nRiTJ1QQVUxqYQfB+KUwkQFyM9gUjzQySmzZeNIA/2g=",
-        "hash": "9d1893275410554c6a6107c1f8a53091017233d8148f34324a6cd978d200ff68",
-        "pubkey": "nRiTJ1QQVUxqYQfB+KUwkQFyM9gUjzQySmzZeNIA/2g=",
-        "name": "public"
+        "hash": "0e72d9b4084de0932e71a49eb87baf561de03122a2b84718c1ea38c2bddd4469",
+        "publicpubkey": "DnLZtAhN4JMucaSeuHuvVh3gMSKiuEcYweo4wr3dRGk=",
+        "ddpubkey": "fgR9xeKZT5HZAbwtvLR8858gRuITL06BA4yv1+YKKR4=",
+        "privkey": "yTAovza/ODi+NgfVXv/DgezZqntLzncI4QRpjV6qA44=",
+        "name": "public",
+        "pubkey": "DnLZtAhN4JMucaSeuHuvVh3gMSKiuEcYweo4wr3dRGk="
     }
 }
