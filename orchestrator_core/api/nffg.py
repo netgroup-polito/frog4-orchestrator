@@ -230,7 +230,7 @@ class UpperLayerOrchestrator(Resource):
 
     @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.param("NFFG", "Graph to be deployed", "body", type="string", required=True)
-    @nffg_ns.response(202, 'Graph correctly deployed.')
+    @nffg_ns.response(202, 'Graph correctly deployed and return the graph id.')
     @nffg_ns.response(400, 'Bad request.')
     @nffg_ns.response(401, 'Unauthorized.')
     @nffg_ns.response(409, 'The graph is valid but does not have a feasible deployment in the current network.')
