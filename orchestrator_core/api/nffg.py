@@ -112,7 +112,8 @@ class NFFGResource(Resource):
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
-            return "Graph deleted"
+            resp = Response(response = None , status=200, mimetype="application/json")
+            return resp
 
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
