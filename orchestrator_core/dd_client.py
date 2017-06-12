@@ -15,8 +15,10 @@ from .sql.domains_info import DomainInformation
 
 
 class DDClient(ClientSafe):
-    def __init__(self, name, dealerurl, customer, keyfile):
-        super().__init__(name, dealerurl, customer, keyfile)
+    def __init__(self, name, dealerurl, keyfile):
+        super().__init__(name=name.encode('utf8'),
+                         dealerurl=dealerurl,
+                         keyfile=keyfile)
 
     def on_data(self, dest, msg):
         print(dest, " sent", msg)

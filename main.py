@@ -58,8 +58,7 @@ if nffg_api is not None and template_api is not None :
 
 # start the dd client to receive information about domains
 base_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
-dd_server = DDClient(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_CUSTOMER, conf.DD_KEYFILE)
-# bug in dd? third parameter should be conf.DD_CUSTOMER instead of conf.DD_KEYFILE
+dd_server = DDClient(conf.DD_NAME, conf.BROKER_ADDRESS, conf.DD_KEYFILE)
 thread = Thread(target=dd_server.start)
 thread.start()
 
