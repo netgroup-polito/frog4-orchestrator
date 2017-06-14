@@ -19,7 +19,7 @@ from orchestrator_core.userAuthentication import UserTokenAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
     FrogDataStoreError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
-    UnsupportedLabelingMethod,TokenNotFound, NoGraphFound
+    UnsupportedLabelingMethod, TokenNotFound, NoGraphFound, DomainNotFound
 from nffg_library.exception import NF_FGValidationError
 
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
@@ -80,6 +80,8 @@ class NFFGResource(Resource):
         except NoFunctionalCapabilityFound as err:
             return err.message, 400
         except FunctionalCapabilityAlreadyInUse as err:
+            return err.message, 400
+        except DomainNotFound as err:
             return err.message, 400
         except FeasibleDomainNotFoundForNFFGElement as err:
             return err.message, 409

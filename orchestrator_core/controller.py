@@ -16,7 +16,7 @@ import random
 import string
 
 from orchestrator_core.exception import sessionNotFound, GraphError, FrogDataStoreError, NoFunctionalCapabilityFound, \
-    FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound
+    FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound, DomainNotFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
 from orchestrator_core.sql.graph import Graph
@@ -274,6 +274,10 @@ class UpperLayerOrchestratorController(object):
                 Session().set_error(session_id)
                 raise ex
             except FeasibleDomainNotFoundForNFFGElement as ex:
+                logging.exception(ex)
+                Session().set_error(session_id)
+                raise ex
+            except DomainNotFound as ex:
                 logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex
