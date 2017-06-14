@@ -15,13 +15,20 @@ from .sql.domains_info import DomainInformation
 
 
 class DDClient(ClientSafe):
-    def __init__(self, name, dealerurl, keyfile):
+    def __init__(self, name, dealerurl, customer, keyfile):
         super().__init__(name=name.encode('utf8'),
                          dealerurl=dealerurl,
+                         customer=customer.encode('utf8'),
                          keyfile=keyfile)
 
-    def on_data(self, dest, msg):
-        print(dest, " sent", msg)
+    def start(self):
+        super().start()
+
+    def on_data(self, src, msg):
+        """ callback for point to point messages """
+        src = src.decode()
+        msg = msg.decode()
+        logging.debug("[on_data]: From: " + src + " Msg: " + msg)
 
     def on_pub(self, src, topic, msg):
         # when a new domain information is published, it is parsed and stored on db
@@ -58,7 +65,7 @@ class DDClient(ClientSafe):
             logging.exception(ex)
 
     def on_reg(self):
-        self.subscribe("frog:domain-description", "/0/0/0/")
+        self.subscribe('frog:domain-description', 'node')
 
     def on_discon(self):
         pass
@@ -66,8 +73,8 @@ class DDClient(ClientSafe):
     def unsubscribe(self, topic, scope):
         pass
 
-    def on_error(self, topic, scope):
-        pass
+    def on_error(self, code, msg):
+        logging.debug(str(code) + ": " + str(msg))
 
     def on_cli(self, dummy, other_dummy):
         pass
