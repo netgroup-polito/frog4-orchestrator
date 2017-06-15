@@ -4,9 +4,9 @@ The installation instructions below have been tested on ubuntu 14.04.3.
 
 #### Required packages
 First, you need to install all the required ubuntu packages. For this, please follow the steps below:
-    
-        sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev
-		sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
+
+	sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server
+	sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
 
 #### Clone the code
 Now you have to clone this repository _and_ all the submodules. Submodules include components that are part of the orchestrator but that are being developed in different repositories. This lead to the necessity to clone them as well in the right folders, under the FROG4 orchestrator root. For this, please follow the steps below:
