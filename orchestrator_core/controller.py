@@ -235,6 +235,7 @@ class UpperLayerOrchestratorController(object):
 
                 domain_nffg_dict = OrderedDict()
                 for i in range(0, len(domains)):
+                    nffgs[i].sanitizeEpIDs()
                     domain_nffg_dict[domains[i]] = nffgs[i]
 
                 for domain, sub_nffg in domain_nffg_dict.items():
