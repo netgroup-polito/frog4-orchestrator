@@ -50,13 +50,7 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
         $ cd [frog4-orchestrator]
         mysql -u orchestrator -p -Dorchestrator < db.sql
 
-  When it asks the password, enter that used above (i.e., `orchestrator-pwd`).
-
-- Change the the parameters used to connect to the database in the configuration file:
-
-        [db]
-        # Mysql DB
-        connection = mysql+pymysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
+  When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
 
 ## FROG-orchestrator Configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
@@ -64,8 +58,8 @@ Important parameters to be properly set are the following:
 * [broker address](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed;
 * [dd_keyfile](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L28): this line must point to a local file containing the key to be used on the message bus;
 * [templates repository_url](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
+* [db connection](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L40): this line must be changed so that `orchestrator-user` and `orchestrator-pwd` are set to the value chose above when creating the SQL database.
 
-        
 # Run the orchestrator
 You can launch the FROG4-orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
