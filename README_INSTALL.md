@@ -70,7 +70,7 @@ You can launch the FROG4-orchestrator by executing the following script in the o
 	
 # How to interact with the FROG4-orchestrator
 
-A description of the API exposed by the datastore is available at the URL: `ip_address:port/docs` (e.g., `127.0.0.1:9000/docs`).
+A description of the API exposed by the FROG4-orchestrator is available at the URL: `ip_address:port/docs` (e.g., `127.0.0.1:9000/docs`).
 
 # Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
