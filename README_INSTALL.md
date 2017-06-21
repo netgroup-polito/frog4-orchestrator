@@ -15,7 +15,7 @@ Now you have to clone this repository _and_ all the submodules. Submodules inclu
         cd frog4-orchestrator
         git submodule init && git submodule update
 
-## DoubleDecker client
+## Install the DoubleDecker client
 The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker-py) messaging system to communicate with the domain orchestrators. Then, you need to install the DoubleDecker client.
 
 		$ git clone https://github.com/Acreo/DoubleDecker-py.git		
@@ -32,14 +32,7 @@ Now you can install the DubleDeker as follows:
 		# install the doubledecker module and scripts
 		$ cd DoubleDecker-py
 		$ sudo python3 setup.py install
-
-## FROG-orchestrator Configuration file
-For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
-Important parameters to be properly set are the following:
-* [broker](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed
-* [templates repository](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
-
-#### Create database
+## Create the SQL database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
 
 - Create database and user for orchestrator database:
@@ -59,6 +52,13 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
         [db]
         # Mysql DB
         connection = mysql+pymysql://orchestrator:ORCH_DBPASS@127.0.0.1/orchestrator
+
+## FROG-orchestrator Configuration file
+For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
+Important parameters to be properly set are the following:
+* [broker](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed
+* [templates repository](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
+
         
 #### Run the orchestrator
 You can launch the orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
