@@ -65,8 +65,12 @@ Important parameters to be properly set are the following:
 # Run the orchestrator
 You can launch the FROG4-orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
-	$ cd [frog4-orchestrator]
-        ./start_orchestrator.sh [--d conf-file]
+        $ cd [frog4-orchestrator]
+        $ ./start_orchestrator.sh [--d conf-file]
+	
+# How to interact with the FROG4-orchestrator
+
+A description of the API exposed by the datastore is available at the URL: `ip_address:port/docs` (e.g., `127.0.0.1:9000/docs`).
 
 # Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
