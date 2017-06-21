@@ -149,6 +149,7 @@ class UpperLayerOrchestratorController(object):
                     Graph().set_domain_id(new_nffg.db_id, new_domain.id)
 
                 new_nffg.id = str(new_nffg.db_id)
+                new_nffg.sanitizeEpIDs()
 
                 if DEBUG_MODE is True:
                     logging.debug(new_domain.ip+":"+str(new_domain.port)+" "+new_nffg.id+"\n"+new_nffg.getJSON())
