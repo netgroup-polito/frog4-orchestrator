@@ -1,6 +1,6 @@
 # FROG4 Orchestrator Installation Guide
 
-The installation instructions below have been tested on ubuntu 14.04.3.
+The following instructions have been tested on Ubuntu 15.10 and 16.04.
 
 ## Required packages
 First, you need to install all the required ubuntu packages. For this, please follow the steps below:
