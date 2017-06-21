@@ -30,7 +30,6 @@ Now you can install the DubleDeker as follows:
 		$ sudo apt-get update
 		$ sudo apt-get install python3-setuptools python3-nacl python3-zmq python3-urwid python3-tornado
 		# install the doubledecker module and scripts
-		$ cd DoubleDecker-py
 		$ sudo python3 setup.py install
 ## Create the SQL database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
