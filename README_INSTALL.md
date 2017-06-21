@@ -2,20 +2,20 @@
 
 The installation instructions below have been tested on ubuntu 14.04.3.
 
-#### Required packages
+## Required packages
 First, you need to install all the required ubuntu packages. For this, please follow the steps below:
 
 	sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server
 	sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
 
-#### Clone the code
+## Clone the code
 Now you have to clone this repository _and_ all the submodules. Submodules include components that are part of the orchestrator but that are being developed in different repositories. This lead to the necessity to clone them as well in the right folders, under the FROG4 orchestrator root. For this, please follow the steps below:
 
         git clone https://github.com/netgroup-polito/frog4-orchestrator.git
         cd frog4-orchestrator
         git submodule init && git submodule update
 
-#### DoubleDecker
+## DoubleDecker client
 The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker-py) messaging system to communicate with the domain orchestrators. In order to launch the frog4-orchestrator you need to install DoubleDecker, if it is not already installed.
 
 		$ git clone https://github.com/Acreo/DoubleDecker-py.git
@@ -25,7 +25,7 @@ Now you can follow the instruction provided in that folder. You can choose to in
 		cp -R DoubleDecker-py/ {orchestrator_root}/orchestrator_core/
 In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
 
-#### Modify the configuration parameters
+#### FROG-orchestrator Configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences. It is very important to correctly set the templates section, in order to retrieve templates in a local directory or by means of a [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore).
 
 #### Create database
