@@ -24,10 +24,16 @@ The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDe
 		$ cp -r [frog4-orchestrator]/patches .
 		$ git am patches/doubledecker_client_python/0001-version-protocol-rollbacked-to-v3.patch
 		
-Now you can follow the instruction provided in that folder. You can choose to install it in your system (recommended if you are installing also other frog4 components) or simply copy the doubledecker folder in the [orchestrator_core](orchestrator_core) folder with the following command:
+Now you can install the DubleDeker as follows:
 
-		cp -R DoubleDecker-py/ {orchestrator_root}/orchestrator_core/
-In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
+		#install dependencies 
+		apt-get update
+		apt-get install python3-setuptools python3-nacl python3-zmq python3-urwid python3-tornado git
+		# clone the code
+		git clone https://github.com/Acreo/DoubleDecker-py.git
+		# install the doubledecker module and scripts
+		cd DoubleDecker-py
+		sudo python3 setup.py install
 
 ## FROG-orchestrator Configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
