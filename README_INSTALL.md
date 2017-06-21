@@ -62,12 +62,13 @@ Important parameters to be properly set are the following:
 * [templates repository_url](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
 
         
-#### Run the orchestrator
-You can launch the orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
+# Run the orchestrator
+You can launch the FROG4-orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
+	$ cd [frog4-orchestrator]
         ./start_orchestrator.sh [--d conf-file]
 
-#### Useful scripts
+# Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
         
         python3 -m scripts.clean_db_sessions
