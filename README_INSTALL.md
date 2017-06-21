@@ -16,13 +16,14 @@ Now you have to clone this repository _and_ all the submodules. Submodules inclu
         git submodule init && git submodule update
 
 ## DoubleDecker client
-The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker-py) messaging system to communicate with the domain orchestrators. In order to launch the frog4-orchestrator you need to install DoubleDecker, if it is not already installed.
+The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker-py) messaging system to communicate with the domain orchestrators. Then, you need to install the DoubleDecker client.
 
 		$ git clone https://github.com/Acreo/DoubleDecker-py.git		
 		$ cd DoubleDecker-py
 		$ git reset --hard dc556c7eb30e4c90a66e2e00a70dfb8833b2a652
 		$ cp [frog4-orchestrator]/patches .
 		$ git am patches/doubledecker_client_python/0001-version-protocol-rollbacked-to-v3.patch
+		
 Now you can follow the instruction provided in that folder. You can choose to install it in your system (recommended if you are installing also other frog4 components) or simply copy the doubledecker folder in the [orchestrator_core](orchestrator_core) folder with the following command:
 
 		cp -R DoubleDecker-py/ {orchestrator_root}/orchestrator_core/
