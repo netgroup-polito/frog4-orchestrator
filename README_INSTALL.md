@@ -56,8 +56,9 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 ## FROG-orchestrator Configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
 Important parameters to be properly set are the following:
-* [broker](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed
-* [templates repository](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
+* [broker address](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed;
+* [dd_keyfile](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L28): this line must be point to a local file containing the key to be used on the message bus;
+* [templates repository_url](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
 
         
 #### Run the orchestrator
