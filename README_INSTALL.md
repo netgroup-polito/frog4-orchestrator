@@ -28,7 +28,7 @@ Now you can install the DubleDeker as follows:
 
 		#install dependencies 
 		$ sudo apt-get update
-		$ sudo apt-get install python3-setuptools python3-nacl python3-zmq python3-urwid python3-tornado git
+		$ sudo apt-get install python3-setuptools python3-nacl python3-zmq python3-urwid python3-tornado
 		# install the doubledecker module and scripts
 		$ cd DoubleDecker-py
 		$ sudo python3 setup.py install
