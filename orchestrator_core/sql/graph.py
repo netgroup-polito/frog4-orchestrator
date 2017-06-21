@@ -22,22 +22,25 @@ class GraphModel(Base):
     Maps the database table graph
     """
     __tablename__ = 'graph'
-    attributes = ['id', 'session_id', 'domain_id', 'partial']
+    attributes = ['id', 'session_id', 'domain_id', 'partial', 'sub_graph_id']
     id = Column(Integer, primary_key=True)
     session_id = Column(VARCHAR(64))
     domain_id = Column(Integer)
     partial = Column(Boolean())
+    sub_graph_id = Column(VARCHAR(64))
 
 
 class Graph(object):
     def __init__(self):
         self.user_session = Session()
+        self.graph_id = 0
 
-    def add_graph(self, nffg, session_id, partial=False):
+    def add_graph(self, nffg, session_id, domain_id, partial=False):
         """
         
         :param nffg: 
         :param session_id: 
+        :param domain_id: 
         :param partial: 
         :type nffg: nffg_library.nffg.NF_FG
         :type session_id: int
@@ -47,7 +50,11 @@ class Graph(object):
         session = get_session()  
         with session.begin():
             self.id_generator(nffg, session_id)
-            graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, partial=partial)
+            if not partial:
+                graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial)
+            else:
+                graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial,
+                                       sub_graph_id=nffg.id)
             session.add(graph_ref)
 
     def delete_session(self, session_id):
@@ -82,6 +89,11 @@ class Graph(object):
     def get_domain_id(graph_id):
         session = get_session()
         return session.query(GraphModel.domain_id).filter_by(id=graph_id).one().domain_id
+
+    @staticmethod
+    def get_sub_graph_id(graph_id):
+        session = get_session()
+        return session.query(GraphModel).filter_by(id=graph_id).one().sub_graph_id
 
     @staticmethod
     def set_domain_id(graph_id, domain_id):

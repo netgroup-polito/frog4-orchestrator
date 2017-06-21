@@ -24,9 +24,9 @@ from nffg_library.exception import NF_FGValidationError
 
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 
+
 @nffg_ns.route('/<nffg_id>', methods=['PUT','DELETE','GET'],
                doc={'params': {'nffg_id': {'description': 'The graph ID', 'in': 'path'}}})
-
 @api.doc(responses={404: 'Graph not found'})
 class NFFGResource(Resource):
 
@@ -101,7 +101,6 @@ class NFFGResource(Resource):
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
 
-
     @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.response(200, 'Graph deleted.')
     @nffg_ns.response(401, 'Unauthorized.')
@@ -114,7 +113,7 @@ class NFFGResource(Resource):
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
-            resp = Response(response = None , status=200, mimetype="application/json")
+            resp = Response(response=None, status=200, mimetype="application/json")
             return resp
 
         except NoResultFound:

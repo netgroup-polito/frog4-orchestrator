@@ -46,7 +46,7 @@ class UpperLayerOrchestratorController(object):
             for session in sessions:
                 response_json = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))
                 graphs.append(response_json)
-            response_dict = {}
+            response_dict = dict()
             response_dict["NF-FG"] = graphs
             return json.dumps(response_dict)
         else:
@@ -62,12 +62,12 @@ class UpperLayerOrchestratorController(object):
 
         for graph_ref in graphs_ref:
             domain = Domain().getDomain(Graph().get_domain_id(graph_ref.id))
-            
+            sub_graph_id = Graph().get_sub_graph_id(graph_ref.id)
             try:
                 if DEBUG_MODE is True:
-                    logging.debug(domain.ip + ":" + str(domain.port) + " " + str(graph_ref.id))
+                    logging.debug(domain.ip + ":" + str(domain.port) + " " + str(sub_graph_id))
                 else:
-                    CA_Interface(self.user_data, domain).delete(graph_ref.id)
+                    CA_Interface(self.user_data, domain).delete(sub_graph_id)
             except Exception as ex:
                 logging.exception(ex)
                 Session().set_error(session.id)
@@ -77,10 +77,12 @@ class UpperLayerOrchestratorController(object):
         # Set the field ended in the table session to the actual datetime        
         Graph().delete_session(session.id)
         Session().delete_sessions(nffg_id)
-        #Session().set_ended(session.id)
+        # Session().set_ended(session.id)
     
-    def update(self, nffg, nffg_json):
+    def update(self, nffg):
+
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
+        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
         # Get profile from session
         graphs_ref = Graph().get_graphs(session.id)
@@ -132,23 +134,26 @@ class UpperLayerOrchestratorController(object):
             for domain_id in to_be_removed_domains:
                 logging.warning("The domain " + str(domain_id) + " is no longer involved after the update..." +
                                                                  "deleting (sub)graph(s) instantiated on it.")
-                for graph in old_domain_graph[domain_id]:
+                for graph_db_id in old_domain_graph[domain_id]:
                     domain = Domain().getDomain(domain_id)
+                    sub_graph_id = Graph().get_sub_graph_id(graph_db_id)
                     if DEBUG_MODE is True:
-                        logging.debug(domain.ip + ":" + str(domain.port) + " " + str(graph))
+                        logging.debug("DELETE " + domain.ip + ":" + str(domain.port) + " " + str(sub_graph_id))
                     else:
-                        CA_Interface(self.user_data, domain).delete(graph)
-                    Graph().delete_graph(graph)
+                        CA_Interface(self.user_data, domain).delete(sub_graph_id)
+                    Graph().delete_graph(graph_db_id)
 
             for new_domain, new_nffg in domain_nffg_dict.items():
                 if new_domain.id in old_domain_graph.keys():
+                    # domain yet involved
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
+                    new_nffg.id = Graph().get_sub_graph_id(new_nffg.db_id)
                     Graph().set_graph_partial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
                 else:
-                    Graph().add_graph(new_nffg, session.id, partial=len(domain_nffg_dict) > 1)
-                    Graph().set_domain_id(new_nffg.db_id, new_domain.id)
-
-                new_nffg.id = str(new_nffg.db_id)
+                    # domain not yet involved
+                    # chose an id for the new sub-graph
+                    new_nffg.id = str(nffg.id)
+                    Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
 
                 if DEBUG_MODE is True:
                     logging.debug(new_domain.ip+":"+str(new_domain.port)+" "+new_nffg.id+"\n"+new_nffg.getJSON())
@@ -191,8 +196,7 @@ class UpperLayerOrchestratorController(object):
             nffg.id = str(nffg_id)
             if self.check_nffg_status(nffg.id) is True:
                 logging.debug('NF-FG already instantiated, trying to update it')
-                nffg_json = nffg.getJSON(domain=True).encode('utf-8')
-                session_id = self.update(nffg, nffg_json)
+                session_id = self.update(nffg)
                 logging.debug('Update completed')
 
             else:
@@ -240,13 +244,15 @@ class UpperLayerOrchestratorController(object):
 
                 for domain, sub_nffg in domain_nffg_dict.items():
 
-                    # Save the graph in the database, with the state initializing
-                    Graph().add_graph(sub_nffg, session_id, partial=len(domain_nffg_dict) > 1)
-                    Graph().set_domain_id(sub_nffg.db_id, domain.id)
+                    # Chose an id for the sub-graph
+                    sub_nffg.id = str(nffg.id)
+
+                    # Save the graph in the database
+                    Graph().add_graph(sub_nffg, session_id, domain_id=domain.id, partial=len(domain_nffg_dict) > 1)
 
                     # Instantiate profile
                     logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
-                    nffg.id = str(sub_nffg.db_id)
+
                     if DEBUG_MODE is True:
                         logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
                     else:

@@ -41,7 +41,7 @@ class CA_Interface(object):
         if self.token is None:
             self.getToken(self.user_data)
         try:
-            resp = requests.get(self.get_status_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
+            resp = requests.get(self.get_status_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
             resp.raise_for_status()
             logging.debug("Check completed")
             return json.loads(resp.text)
@@ -49,7 +49,7 @@ class CA_Interface(object):
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
                 self.getToken(self.user_data)    
-                resp = requests.get(self.get_status_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
+                resp = requests.get(self.get_status_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug("Check completed")
                 return json.loads(resp.text)
@@ -60,7 +60,7 @@ class CA_Interface(object):
         if self.token is None:
             self.getToken(self.user_data)
         try:
-            resp = requests.get(self.get_nffg_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
+            resp = requests.get(self.get_nffg_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
             resp.raise_for_status()
             logging.debug(resp.text)
             nffg_dict = json.loads(resp.text)
@@ -73,7 +73,7 @@ class CA_Interface(object):
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
                 self.getToken(self.user_data)                
-                resp = requests.get(self.get_nffg_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
+                resp = requests.get(self.get_nffg_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug(resp.text)
                 nffg_dict = json.loads(resp.text)
@@ -89,8 +89,8 @@ class CA_Interface(object):
         if self.token is None:
             self.getToken(self.user_data)
         try:
-            logging.debug(self.put_url % (nffg.id)+"\n"+nffg.getJSON())
-            resp = requests.put(self.put_url % (nffg.id), data = nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
+            logging.debug(self.put_url % nffg.id + "\n" + nffg.getJSON())
+            resp = requests.put(self.put_url % nffg.id, data=nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
             resp.raise_for_status()
             logging.debug("Put completed")
             return resp.text
@@ -98,7 +98,7 @@ class CA_Interface(object):
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
                 self.getToken(self.user_data)
-                resp = requests.put(self.put_url % (nffg.id), data = nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
+                resp = requests.put(self.put_url % nffg.id, data = nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug("Put completed")  
                 return resp.text
@@ -109,8 +109,8 @@ class CA_Interface(object):
         if self.token is None:
             self.getToken(self.user_data)
         try:  
-            logging.debug(self.delete_url % (nffg_id))
-            resp = requests.delete(self.delete_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
+            logging.debug(self.delete_url % nffg_id)
+            resp = requests.delete(self.delete_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
             resp.raise_for_status()
             logging.debug("Delete completed")
             return resp.text
@@ -118,7 +118,7 @@ class CA_Interface(object):
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
                 self.getToken(self.user_data)
-                resp = requests.delete(self.delete_url % (nffg_id), headers=self.headers, timeout=int(self.timeout))
+                resp = requests.delete(self.delete_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug("Delete completed") 
                 return resp.text
@@ -127,15 +127,16 @@ class CA_Interface(object):
                                     
     def getToken(self, user_data):
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
-        authenticationData = {'username': user_data.username, 'password': user_data.password}
-        resp = requests.post(self.authentication_url, data=json.dumps(authenticationData), headers=headers, timeout=int(self.timeout))
+        authentication_data = {'username': user_data.username, 'password': user_data.password}
+        resp = requests.post(self.authentication_url, data=json.dumps(authentication_data), headers=headers,
+                             timeout=int(self.timeout))
         try:
             resp.raise_for_status()
             logging.debug("Authentication successfully performed")
             self.token = resp.text
             self.headers = {'Content-Type': 'application/json',
-                'cache-control': 'no-cache',
-                'X-Auth-Token': self.token}
+                            'cache-control': 'no-cache',
+                            'X-Auth-Token': self.token}
             Domain().updateUserToken(self.domain_id, user_data.id, self.token)
         except HTTPError as err:
             logging.error(err)

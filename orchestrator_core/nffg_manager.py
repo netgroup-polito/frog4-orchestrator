@@ -100,6 +100,7 @@ class NFFG_Manager(object):
             if uri.endswith(".json"):
                 actual_uri = uri[:-len(".json")]
             headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
+            logging.debug("GET " + TEMPLATE_REPOSITORY_URL + actual_uri)
             resp = requests.get(TEMPLATE_REPOSITORY_URL + actual_uri, headers=headers)
             resp.raise_for_status()
             template_dict = resp.json()
