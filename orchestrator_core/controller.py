@@ -154,6 +154,7 @@ class UpperLayerOrchestratorController(object):
                     # chose an id for the new sub-graph
                     new_nffg.id = str(nffg.id)
                     Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
+                new_nffg.sanitizeEpIDs()
 
                 if DEBUG_MODE is True:
                     logging.debug(new_domain.ip+":"+str(new_domain.port)+" "+new_nffg.id+"\n"+new_nffg.getJSON())

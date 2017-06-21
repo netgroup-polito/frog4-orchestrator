@@ -48,11 +48,6 @@ class Configuration(object, metaclass=Singleton):
             self._ORCH_PORT = config.get('orchestrator','port')
             self._ORCH_IP = config.get('orchestrator','ip')
             self._ORCH_TIMEOUT = config.get('orchestrator','timeout')
-            if config.has_option('orchestrator', 'default_domain'):
-                self._DEFAULT_DOMAIN = config.get('orchestrator','default_domain')
-            else:
-                self._DEFAULT_DOMAIN = None
-            
             
             self._DD_NAME = config.get('doubledecker','dd_name')
             self._DD_CUSTOMER = config.get('doubledecker','dd_customer')
@@ -75,10 +70,6 @@ class Configuration(object, metaclass=Singleton):
     @property
     def ORCH_TIMEOUT(self):
         return self._ORCH_TIMEOUT
-
-    @property
-    def DEFAULT_DOMAIN(self):
-        return self._DEFAULT_DOMAIN
 
     @property
     def DD_NAME(self):

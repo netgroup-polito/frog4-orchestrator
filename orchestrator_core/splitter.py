@@ -14,9 +14,6 @@ from orchestrator_core.exception import GraphError, UnsupportedLabelingMethod, I
 from orchestrator_core.sql.domain import Domain
 from orchestrator_core.sql.domains_info import DomainInformation
 
-DEFAULT_DOMAIN = Configuration().DEFAULT_DOMAIN
-
-
 class Splitter(object):
     def __init__(self, flow_prefix=None):
         self.flow_prefix = flow_prefix
@@ -179,8 +176,6 @@ class Splitter(object):
             if element.domain is None:
                 if nffg.domain is not None:
                     element.domain = nffg.domain
-                elif DEFAULT_DOMAIN is not None:
-                    element.domain = DEFAULT_DOMAIN
                 else:
                     raise GraphError("Unable to deploy the graph: neither graph nor its elements are associated to a " +
                                      "domain and DEFAULT_DOMAIN is not specified in the configuration file")

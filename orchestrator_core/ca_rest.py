@@ -91,6 +91,7 @@ class CA_Interface(object):
         try:
             logging.debug(self.put_url % nffg.id + "\n" + nffg.getJSON())
             resp = requests.put(self.put_url % nffg.id, data=nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
+
             resp.raise_for_status()
             logging.debug("Put completed")
             return resp.text
