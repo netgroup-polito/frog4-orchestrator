@@ -25,8 +25,11 @@ Now you can follow the instruction provided in that folder. You can choose to in
 		cp -R DoubleDecker-py/ {orchestrator_root}/orchestrator_core/
 In this way the frog4-orchestrator will use the DoubleDecker sources in his folder, otherwise it will use the installed version, if present.
 
-#### FROG-orchestrator Configuration file
-For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences. It is very important to correctly set the templates section, in order to retrieve templates in a local directory or by means of a [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore).
+## FROG-orchestrator Configuration file
+For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
+Important parameters to be properly set are the following:
+* (broker)[https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26]: this line must point to the broker previously installed
+* (templates repository)[https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53]: this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
 
 #### Create database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
