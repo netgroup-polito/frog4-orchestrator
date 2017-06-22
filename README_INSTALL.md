@@ -59,6 +59,8 @@ Important parameters to be properly set are the following:
 * [templates repository_url](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
 * [db connection](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L40): this line must be changed so that `orchestrator-user` and `orchestrator-pwd` are set to the value chose above when creating the SQL database.
 
+Moreover, in this file you can set the TCP port to be used to interact with the FROG4-orchestrator through its REST API.
+
 # Run the orchestrator
 You can launch the FROG4-orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
         
