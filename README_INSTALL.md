@@ -53,7 +53,7 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
   
   The script above also adds in the database the `admin` user (`username:admin`, `password:admin`, `tenant:admin_tenant`).
 
-# Create a new user
+### Create a new user
 To create a new user from the main directory runs:
 
         python3 -m scripts.create_user
