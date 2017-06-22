@@ -15,6 +15,7 @@ from nffg_library.validator import ValidateNF_FG
 from requests.exceptions import HTTPError
 from orchestrator_core.exception import LoginError
 
+
 class CA_Interface(object):
     timeout = Configuration().ORCH_TIMEOUT
         

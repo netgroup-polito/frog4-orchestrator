@@ -8,6 +8,7 @@ import json
 import logging
 import base64
 
+from nffg_library.nffg import NF_FG
 from orchestrator_core.scheduler import Scheduler
 from orchestrator_core.virtual_topology import VirtualTopology
 from .splitter import Splitter
@@ -89,6 +90,17 @@ class UpperLayerOrchestratorController(object):
         try:
             # Get VNFs templates
             self.prepare_nffg(nffg)
+
+            # Fetch nffg yet deployed
+            old_nffg_dict = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))
+            old_nffg = NF_FG()
+            old_nffg.parseDict(old_nffg_dict)
+
+            # Get the diff nffg
+            diff_nffg = old_nffg.diff(nffg)
+
+            # label nffg to deploy elements with the status respect the old graph
+            self.label_nffg_elements_with_status(nffg, diff_nffg)
 
             # TODO add here code depending on what we want:
             # 1. relocate old NF if a better placement is available -> copy first part from put()
@@ -393,6 +405,9 @@ class UpperLayerOrchestratorController(object):
         feasible_domain_dictionary = {}  # feasible means domains that have FC
         domains_info = DomainInformation().get_domains_info()
         for vnf in nffg.vnfs:
+            # skip capability check if the nf is yet deployed for this graph (on updates)
+            if vnf.status != 'new':
+                continue
             # look for feasible domains for this NF just if there is no pre-assigned domain
             if vnf.domain is not None:
                 domain = Domain().getDomainFromName(vnf.domain)
@@ -433,3 +448,18 @@ class UpperLayerOrchestratorController(object):
                 raise GraphError("Endpoint '" + ep.id + "' is not labeled with a domain, however there is no global " +
                                  "graph domain specified in the nffg.")
         return feasible_domain_dictionary
+
+    @staticmethod
+    def label_nffg_elements_with_status(nffg, diff_nffg):
+        """
+        
+        :param nffg: 
+        :param diff_nffg:
+        :type nffg: NF_FG
+        :type diff_nffg: NF_FG
+        :return: 
+        """
+
+        for diff_vnf in diff_nffg.vnfs:
+            if diff_vnf.status == 'new':
+                nffg.getVNF(diff_nffg.id).status = 'new'

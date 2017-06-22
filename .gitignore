@@ -9,10 +9,12 @@
 .settings
 orchestrator-core/.metadata/
 orchestrator-core/doubledecker/*
-config/config.ini
+config/*.ini
+!config/default-config.ini
 keys/broker-keys.json
 keys/public-keys.json
 templates
+
 
 .idea/
 __pycache__/
