@@ -405,24 +405,25 @@ class UpperLayerOrchestratorController(object):
         feasible_domain_dictionary = {}  # feasible means domains that have FC
         domains_info = DomainInformation().get_domains_info()
         for vnf in nffg.vnfs:
-            # skip capability check if the nf is yet deployed for this graph (on updates)
-            if vnf.status != 'new':
-                continue
             # look for feasible domains for this NF just if there is no pre-assigned domain
-            if vnf.domain is not None:
+            if vnf.status == 'already_deployed':
+                feasible_domain_dictionary[vnf.id] = [vnf.domain]
+            elif (vnf.domain is not None and vnf.status is None) or vnf.status == 'to_deploy_fixed':
                 domain = Domain().getDomainFromName(vnf.domain)
                 fc = domains_info[domain.id].capabilities.get_functional_capability(vnf.name.lower())
-                if fc is not None and fc.ready:
+                if fc is not None and (fc.ready or vnf.status == 'already_deployed'):
                     feasible_domain_dictionary[vnf.id] = [vnf.domain]
                 else:
                     raise NoFunctionalCapabilityFound("No suitable FC found for NF '" + vnf.name + "' in domain '" +
                                                       vnf.domain + "' specified in nffg.")
             else:
+                old_domain = vnf.domain
+                vnf.domain = None
                 feasible_domain_dictionary[vnf.id] = []
                 for domain_id, domain_info in domains_info.items():
                     logging.debug(domain_info.get_dict())
                     fc = domain_info.capabilities.get_functional_capability(vnf.name.lower())
-                    if fc is not None and fc.ready:
+                    if fc is not None and (fc.ready or old_domain == domain_info.name):
                         feasible_domain_dictionary[vnf.id].append(domain_info.name)
                         logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")
 
@@ -461,5 +462,20 @@ class UpperLayerOrchestratorController(object):
         """
 
         for diff_vnf in diff_nffg.vnfs:
-            if diff_vnf.status == 'new':
-                nffg.getVNF(diff_nffg.id).status = 'new'
+            if diff_vnf.status == 'already_deployed':
+                vnf = nffg.getVNF(diff_nffg.id)
+                if vnf is None:
+                    continue
+                if vnf.domain == diff_vnf.domain:
+                    vnf.status = 'already_deployed'
+                elif vnf.domain is None:
+                    vnf.status = 'to_reschedule'
+                    vnf.domain = diff_vnf.domain
+                else:
+                    vnf.status = 'to_deploy_fixed'
+        for vnf in nffg.vnfs:
+            if vnf.status is None:
+                if vnf.domain is None:
+                    vnf.status = 'to_reschedule'
+                else:
+                    vnf.status = 'to_deploy_fixed'
