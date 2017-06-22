@@ -371,7 +371,7 @@ class UpperLayerOrchestratorController(object):
         for graph_ref in graphs_ref:
             # Check where the nffg is instantiated and get the concerned domain orchestrator
             domain = Domain().getDomain(Graph().get_domain_id(graph_ref.id))
-            nffg_status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.id)
+            nffg_status = CA_Interface(self.user_data, domain).getNFFGStatus(graph_ref.sub_graph_id)
             logging.debug(nffg_status)
             if nffg_status['status'] == 'complete':
                 num_graphs_completed += 1
