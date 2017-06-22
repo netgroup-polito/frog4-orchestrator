@@ -38,7 +38,7 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 	    
        	mysql -u root -p
        	mysql> CREATE DATABASE orchestrator;
-       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'localhost' IDENTIFIED BY 'orchestrator-pwd;
+       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'localhost' IDENTIFIED BY 'orchestrator-pwd';
        	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'%' IDENTIFIED BY 'orchestrator-pwd';
        	mysql> exit;
 
@@ -47,11 +47,18 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
 - Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
 
         $ cd [frog4-orchestrator]
-        mysql -u orchestrator -p -Dorchestrator < db.sql
+        mysql -u orchestrator-user -p -Dorchestrator < db.sql
 
   When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
   
   The script above also adds in the database the `admin` user (`username:admin`, `password:admin`, `tenant:admin_tenant`).
+
+# Create a new user
+To create a new user from the main directory runs:
+
+        python3 -m scripts.create_user
+
+To add a new user on the database
 
 ## FROG-orchestrator configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
