@@ -38,7 +38,7 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 	    
        	mysql -u root -p
        	mysql> CREATE DATABASE orchestrator;
-       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'localhost' IDENTIFIED BY 'orchestrator-pwd;
+       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'localhost' IDENTIFIED BY 'orchestrator-pwd';
        	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'%' IDENTIFIED BY 'orchestrator-pwd';
        	mysql> exit;
 
@@ -47,17 +47,28 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
 - Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
 
         $ cd [frog4-orchestrator]
-        mysql -u orchestrator -p -Dorchestrator < db.sql
+        mysql -u orchestrator-user -p -Dorchestrator < db.sql
 
   When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
+  
+  The script above also adds in the database the `admin` user (`username:admin`, `password:admin`, `tenant:admin_tenant`).
 
-## FROG-orchestrator Configuration file
+### Create a new user
+To create a new user from the main directory runs:
+
+        python3 -m scripts.create_user
+
+To add a new user on the database
+
+## FROG-orchestrator configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
 Important parameters to be properly set are the following:
 * [broker address](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed;
 * [dd_keyfile](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L28): this line must point to a local file containing the key to be used on the message bus;
 * [templates repository_url](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L53): this line typically points to the [frog4-datastore](https://github.com/netgroup-polito/frog4-datastore) containing the NF templates. 
 * [db connection](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L40): this line must be changed so that `orchestrator-user` and `orchestrator-pwd` are set to the value chose above when creating the SQL database.
+
+Moreover, in this file you can set the TCP port to be used to interact with the FROG4-orchestrator through its REST API.
 
 # Run the orchestrator
 You can launch the FROG4-orchestrator by executing the following script in the orchestrator root folder, optionally specifying the configuration file (example: conf/config.ini):
@@ -68,6 +79,11 @@ You can launch the FROG4-orchestrator by executing the following script in the o
 # How to interact with the FROG4-orchestrator
 
 A description of the API exposed by the FROG4-orchestrator is available at the URL: `ip_address:port/docs` (e.g., `127.0.0.1:9000/docs`).
+
+## Adding the WEB GUI on top of the SDN domain orchestrator
+
+It is possible to configure the [FROG4 GUI](https://github.com/netgroup-polito/fg-gui), so that it can be used to interact with the FROG4-orchestrator (e.g., to deploye new service graphs, or to read the service graphs currently deployed).
+To install the GUI, follows the [instructions](https://github.com/netgroup-polito/fg-gui/blob/master/README_INSTALL.md) provided with the repository.
 
 # Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
