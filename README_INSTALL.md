@@ -50,6 +50,8 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
         mysql -u orchestrator -p -Dorchestrator < db.sql
 
   When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
+  
+  The script above also adds in the database the `admin` user (`username:admin`, `password:admin`, `tenant:admin_tenant`).
 
 ## FROG-orchestrator configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
