@@ -51,7 +51,7 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
 
   When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
 
-## FROG-orchestrator Configuration file
+## FROG-orchestrator configuration file
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
 Important parameters to be properly set are the following:
 * [broker address](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to the broker previously installed;
