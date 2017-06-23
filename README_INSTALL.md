@@ -51,7 +51,7 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
 
   When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
   
-  The script above also adds in the database the `admin` user (`username:admin`, `password:admin`, `tenant:admin_tenant`).
+  The script above also adds in the database the `admin` user (`username:admin`, `password:admin`).
 
 ### Create a new user
 To create a new user from the main directory runs:
