@@ -316,8 +316,8 @@ class UpperLayerOrchestratorController(object):
         manager = NFFG_Manager(nffg)  
         
         # Retrieve the VNF templates, if a node is a new graph, expand it
-        logging.debug('Add templates to nffg')
-        manager.addTemplates()
+        # logging.debug('Add templates to nffg')
+        # manager.addTemplates()
         logging.debug('Post expansion: '+nffg.getJSON())
         
         # Optimize NF-FG, currently the switch VNF when possible will be collapsed
