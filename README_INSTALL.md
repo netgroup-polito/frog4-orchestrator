@@ -38,18 +38,18 @@ The FROG4 orchestrator uses a local mySQL database that has to be created and in
 	    
        	mysql -u root -p
        	mysql> CREATE DATABASE orchestrator;
-       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'localhost' IDENTIFIED BY 'orchestrator-pwd';
-       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator-user'@'%' IDENTIFIED BY 'orchestrator-pwd';
+       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orch-user'@'localhost' IDENTIFIED BY 'orch-pwd';
+       	mysql> GRANT ALL PRIVILEGES ON orchestrator.* TO 'orch-user'@'%' IDENTIFIED BY 'orch-pwd';
        	mysql> exit;
 
-where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by the username and the password that the FROG4-orchestator will use to access to the SQL database.
+where `orch-user` and `orch-pwd` can be replaced respectively by the username and the password that the FROG4-orchestator will use to access to the SQL database.
     
 - Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
 
         $ cd [frog4-orchestrator]
-        $ mysql -u orchestrator-user -p -Dorchestrator < db.sql
+        $ mysql -u orch-user -p -Dorchestrator < db.sql
 
-  When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
+  When it asks the password, enter that used above (i.e., `orch-pwd`). The process may take some seconds.
   
   The script above also adds in the database the `admin` user (`username:admin`, `password:admin`).
 
