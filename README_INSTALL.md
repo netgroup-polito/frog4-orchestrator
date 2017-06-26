@@ -78,7 +78,7 @@ You can launch the FROG4-orchestrator by executing the following script in the o
 	
 # How to interact with the FROG4-orchestrator
 
-A description of the API exposed by the FROG4-orchestrator is available at the URL: `ip_address:port/docs` (e.g., `127.0.0.1:9000/docs`).
+A description of the API exposed by the FROG4-orchestrator is available at the URL: `ip_address:port/api_docs` (e.g., `127.0.0.1:9000/docs`).
 
 ## Adding the WEB GUI on top of the SDN domain orchestrator
 
