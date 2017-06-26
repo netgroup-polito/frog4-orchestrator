@@ -47,7 +47,7 @@ where `orchestrator-user` and `orchestrator-pwd` can be replaced respectively by
 - Create tables in the orchestrator db (all the initialization parameters are stored in the ``db.sql`` file):
 
         $ cd [frog4-orchestrator]
-        mysql -u orchestrator-user -p -Dorchestrator < db.sql
+        $ mysql -u orchestrator-user -p -Dorchestrator < db.sql
 
   When it asks the password, enter that used above (i.e., `orchestrator-pwd`). The process may take some seconds.
   
