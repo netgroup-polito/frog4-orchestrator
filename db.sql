@@ -207,22 +207,6 @@ CREATE TABLE IF NOT EXISTS `user_token` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-
---
--- Struttura della tabella `vnf_image`
---
-
-CREATE TABLE `vnf_image` (
-  `id` varchar(255) NOT NULL,
-  `internal_id` varchar(255) NOT NULL,
-  `template` text NOT NULL,
-  `configuration_model` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Indici per le tabelle scaricate
---
-
 --
 -- Indici per le tabelle `domain`
 --
@@ -271,7 +255,6 @@ ALTER TABLE `functional_capability`
 ALTER TABLE `function_specification`
   ADD PRIMARY KEY (`id`);
 
-
 --
 -- Indici per le tabelle `graph`
 --
@@ -290,11 +273,6 @@ ALTER TABLE `session`
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`);
 
---
--- Indici per le tabelle `vnf_image`
---
-ALTER TABLE `vnf_image`
-  ADD PRIMARY KEY (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
