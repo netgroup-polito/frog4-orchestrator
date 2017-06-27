@@ -87,8 +87,9 @@ It is possible to configure the [FROG4 GUI](https://github.com/netgroup-polito/f
 To install the GUI, follows the [instructions](https://github.com/netgroup-polito/fg-gui/blob/master/README_INSTALL.md) provided with the repository.
 
 # Useful scripts
-You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
+You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script:
         
-        python3 -m scripts.clean_db_nffgs
+        $ cd [frog4-orchestrator]
+        $ python3 -m scripts.clean_db_nffgs
 
 The same applies for other similar scripts like [clean_domains_and_info](scripts/clean_domains_and_info.py) that will remove data related to the domains connected to the orchestrator from the database. You just need to replace "clean_db_nffgs" with "clean_domains_and_info" in the previous command.
