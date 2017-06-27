@@ -5,7 +5,7 @@ The following instructions have been tested on Ubuntu 15.10 and 16.04.
 ## Required packages
 First, you need to install all the required ubuntu packages. For this, please follow the steps below:
 
-	sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server
+	sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server git
 	sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
 
 ## Clone the code
