@@ -54,7 +54,7 @@ where `orch-user` and `orch-pwd` can be replaced respectively by the username an
   The script above also adds in the database the `admin` user (`username:admin`, `password:admin`).
 
 ### Create a new user
-To create a new user, runs:
+To create a new user, run:
 
         $ cd [frog4-orchestrator]
         $ python3 -m scripts.create_user
