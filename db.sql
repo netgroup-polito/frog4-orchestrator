@@ -1,20 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.4.1deb2ubuntu2
+-- version 4.0.10deb1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Ago 05, 2016 alle 10:13
--- Versione del server: 5.7.13-0ubuntu0.16.04.2
--- Versione PHP: 7.0.8-0ubuntu0.16.04.2
+-- Generation Time: Jun 27, 2017 at 1:00 PM
+-- Server version: 5.5.55-0ubuntu0.14.04.1
+-- PHP Version: 5.5.9-1ubuntu4.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `orchestrator`
@@ -23,97 +17,101 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `domain`
+-- Table structure for table `domain`
 --
 
-CREATE TABLE `domain` (
+CREATE TABLE IF NOT EXISTS `domain` (
   `id` int(11) NOT NULL,
   `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `type` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `ip` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
-  `port` int(11) NOT NULL
+  `port` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `domain_gre`
+-- Table structure for table `domain_gre`
 --
 
-CREATE TABLE `domain_gre` (
+CREATE TABLE IF NOT EXISTS `domain_gre` (
   `id` int(64) NOT NULL,
   `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `domain_info_id` int(64) NOT NULL,
   `local_ip` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `remote_ip` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `gre_key` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL
+  `gre_key` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `domain_information`
+-- Table structure for table `domain_information`
 --
 
-CREATE TABLE `domain_information` (
+CREATE TABLE IF NOT EXISTS `domain_information` (
   `id` int(64) NOT NULL,
   `domain_id` int(11) NOT NULL,
   `node` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `interface` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `side` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `gre` tinyint(1) NOT NULL,
-  `vlan` tinyint(1) NOT NULL
+  `vlan` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `domain_neighbor`
+-- Table structure for table `domain_neighbor`
 --
 
-CREATE TABLE `domain_neighbor` (
+CREATE TABLE IF NOT EXISTS `domain_neighbor` (
   `id` int(11) NOT NULL,
   `domain_info_id` int(11) NOT NULL,
   `neighbor_domain_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `neighbor_node` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `neighbor_interface` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `neighbor_domain_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL
+  `neighbor_domain_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `domain_token`
+-- Table structure for table `domain_token`
 --
 
-CREATE TABLE `domain_token` (
+CREATE TABLE IF NOT EXISTS `domain_token` (
   `user_id` int(11) NOT NULL,
   `domain_id` int(11) NOT NULL,
-  `token` varchar(64) NOT NULL
+  `token` varchar(64) NOT NULL,
+  PRIMARY KEY (`user_id`,`domain_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `domain_vlan`
+-- Table structure for table `domain_vlan`
 --
 
-CREATE TABLE `domain_vlan` (
+CREATE TABLE IF NOT EXISTS `domain_vlan` (
   `id` int(64) NOT NULL,
   `domain_info_id` int(64) NOT NULL,
   `vlan_start` int(11) NOT NULL,
-  `vlan_end` int(11) NOT NULL
+  `vlan_end` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-
-
 -- --------------------------------------------------------
-    
+
 --
--- Struttura della tabella `functional_capability`
+-- Table structure for table `functional_capability`
 --
 
-CREATE TABLE `functional_capability` (
+CREATE TABLE IF NOT EXISTS `functional_capability` (
   `id` int(11) NOT NULL,
   `domain_id` int(11) NOT NULL,
   `type` varchar(64) NOT NULL,
@@ -121,72 +119,77 @@ CREATE TABLE `functional_capability` (
   `ready` tinyint(1) NOT NULL,
   `family` varchar(64) NOT NULL,
   `template` varchar(64) NOT NULL,
-  `resource_id` varchar(64)
+  `resource_id` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `function_specification`
+-- Table structure for table `function_specification`
 --
 
-CREATE TABLE `function_specification` (
+CREATE TABLE IF NOT EXISTS `function_specification` (
   `id` int(11) NOT NULL,
   `functional_capability_id` int(11) NOT NULL,
   `name` varchar(64) NOT NULL,
   `value` varchar(64) NOT NULL,
   `unit` varchar(64) NOT NULL,
-  `mean` varchar(64) NOT NULL
+  `mean` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `graph`
+-- Table structure for table `graph`
 --
 
-CREATE TABLE `graph` (
+CREATE TABLE IF NOT EXISTS `graph` (
   `id` int(64) NOT NULL,
   `session_id` varchar(64) NOT NULL,
   `domain_id` int(11) NOT NULL,
   `partial` tinyint(4) DEFAULT NULL,
-  `sub_graph_id` varchar(64) DEFAULT NULL
+  `sub_graph_id` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `session`
+-- Table structure for table `session`
 --
 
-CREATE TABLE `session` (
+CREATE TABLE IF NOT EXISTS `session` (
   `id` varchar(64) NOT NULL,
   `user_id` varchar(64) DEFAULT NULL,
   `service_graph_id` varchar(64) NOT NULL,
   `service_graph_name` varchar(64) DEFAULT NULL,
-  `nf_fgraph` varchar(60000) DEFAULT NULL,
+  `nf_fgraph` mediumtext,
   `status` varchar(64) NOT NULL,
   `started_at` datetime DEFAULT NULL,
   `last_update` datetime DEFAULT NULL,
   `error` datetime DEFAULT NULL,
-  `ended` datetime DEFAULT NULL
+  `ended` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Struttura della tabella `user`
+-- Table structure for table `user`
 --
 
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
   `id` varchar(64) CHARACTER SET utf8 NOT NULL,
   `name` varchar(64) CHARACTER SET utf8 NOT NULL,
   `password` varchar(64) CHARACTER SET utf8 NOT NULL,
-  `mail` varchar(64) CHARACTER SET utf8 DEFAULT NULL
+  `mail` varchar(64) CHARACTER SET utf8 DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Dump dei dati per la tabella `user`
+-- Dumping data for table `user`
 --
 
 INSERT INTO `user` (`id`, `name`, `password`, `mail`) VALUES
@@ -207,73 +210,3 @@ CREATE TABLE IF NOT EXISTS `user_token` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---
--- Indici per le tabelle `domain`
---
-ALTER TABLE `domain`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `domain_gre`
---
-ALTER TABLE `domain_gre`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `domain_information`
---
-ALTER TABLE `domain_information`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `domain_neighbor`
---
-ALTER TABLE `domain_neighbor`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `domain_token`
---
-ALTER TABLE `domain_token`
-  ADD PRIMARY KEY (`user_id`,`domain_id`);
-
---
--- Indici per le tabelle `domain_vlan`
---
-ALTER TABLE `domain_vlan`
-  ADD PRIMARY KEY (`id`);
-  
---
--- Indici per le tabelle `functional_capability`
---
-ALTER TABLE `functional_capability`
-  ADD PRIMARY KEY (`id`);
-  
---
--- Indici per le tabelle `function_specification`
---
-ALTER TABLE `function_specification`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `graph`
---
-ALTER TABLE `graph`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `session`
---
-ALTER TABLE `session`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indici per le tabelle `user`
---
-ALTER TABLE `user`
-  ADD PRIMARY KEY (`id`);
-
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
