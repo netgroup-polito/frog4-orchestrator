@@ -88,6 +88,6 @@ To install the GUI, follows the [instructions](https://github.com/netgroup-polit
 # Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
         
-        python3 -m scripts.clean_db_sessions
+        python3 -m scripts.clean_db_nffgs
 
-The same applies for other similar scripts like [clean_domains_and_info](scripts/clean_domains_and_info.py) that will remove data related to the domains connected to the orchestrator from the database. You just need to replace "clean_db_sessions" with "clean_domains_and_info" in the previous command.
+The same applies for other similar scripts like [clean_domains_and_info](scripts/clean_domains_and_info.py) that will remove data related to the domains connected to the orchestrator from the database. You just need to replace "clean_db_nffgs" with "clean_domains_and_info" in the previous command.
