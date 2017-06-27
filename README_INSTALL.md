@@ -26,10 +26,10 @@ The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDe
 		
 Now you can install the DubleDeker as follows:
 
-		#install dependencies 
+		; install dependencies 
 		$ sudo apt-get update
 		$ sudo apt-get install python3-setuptools python3-nacl python3-zmq python3-urwid python3-tornado
-		# install the doubledecker module and scripts
+		; install the doubledecker module and scripts
 		$ sudo python3 setup.py install
 ## Create the SQL database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
@@ -89,6 +89,6 @@ To install the GUI, follows the [instructions](https://github.com/netgroup-polit
 # Useful scripts
 You can find some helpful scripts inside the [scripts](scripts) folder. For example, if you need to clean all sessions and graphs currently stored in the database, you can launch the following script in the orchestrator root folder:
         
-        python3 -m scripts.clean_db_sessions
+        $ python3 -m scripts.clean_db_sessions
 
 The same applies for other similar scripts like [clean_domains_and_info](scripts/clean_domains_and_info.py) that will remove data related to the domains connected to the orchestrator from the database. You just need to replace "clean_db_sessions" with "clean_domains_and_info" in the previous command.
