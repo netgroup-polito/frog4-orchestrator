@@ -81,7 +81,7 @@ You can launch the FROG4-orchestrator by executing the following script in the o
 
 A description of the API exposed by the FROG4-orchestrator is available at the URL: `ip_address:port/api_docs` (e.g., `127.0.0.1:9000/api_docs`).
 
-## Adding the WEB GUI on top of the SDN domain orchestrator
+## Adding the WEB GUI on top of the FROG4 orchestrator
 
 It is possible to configure the [FROG4 GUI](https://github.com/netgroup-polito/fg-gui), so that it can be used to interact with the FROG4-orchestrator (e.g., to deploye new service graphs, or to read the service graphs currently deployed).
 To install the GUI, follows the [instructions](https://github.com/netgroup-polito/fg-gui/blob/master/README_INSTALL.md) provided with the repository.
