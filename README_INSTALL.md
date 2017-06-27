@@ -5,15 +5,15 @@ The following instructions have been tested on Ubuntu 15.10 and 16.04.
 ## Required packages
 First, you need to install all the required ubuntu packages. For this, please follow the steps below:
 
-	sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server git
-	sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
+	$ sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server git
+	$ sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
 
 ## Clone the code
 Now you have to clone this repository _and_ all the submodules. Submodules include components that are part of the orchestrator but that are being developed in different repositories. This lead to the necessity to clone them as well in the right folders, under the FROG4 orchestrator root. For this, please follow the steps below:
 
-        git clone https://github.com/netgroup-polito/frog4-orchestrator.git
-        cd frog4-orchestrator
-        git submodule init && git submodule update
+        $ git clone https://github.com/netgroup-polito/frog4-orchestrator.git
+        $ cd frog4-orchestrator
+        $ git submodule init && git submodule update
 
 ## Install the DoubleDecker client
 The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker-py) messaging system to communicate with the domain orchestrators. Then, you need to install the DoubleDecker client.
