@@ -5,15 +5,15 @@ The following instructions have been tested on Ubuntu 15.10 and 16.04.
 ## Required packages
 First, you need to install all the required ubuntu packages. For this, please follow the steps below:
 
-	sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server
-	sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
+	$ sudo apt-get install python3-dev python3-setuptools python3-pip python3-sqlalchemy libmysqlclient-dev mysql-server git
+	$ sudo pip3 install --upgrade requests gunicorn jsonschema pymysql flask flask-restplus Flask-SQLAlchemy
 
 ## Clone the code
 Now you have to clone this repository _and_ all the submodules. Submodules include components that are part of the orchestrator but that are being developed in different repositories. This lead to the necessity to clone them as well in the right folders, under the FROG4 orchestrator root. For this, please follow the steps below:
 
-        git clone https://github.com/netgroup-polito/frog4-orchestrator.git
-        cd frog4-orchestrator
-        git submodule init && git submodule update
+        $ git clone https://github.com/netgroup-polito/frog4-orchestrator.git
+        $ cd frog4-orchestrator
+        $ git submodule init && git submodule update
 
 ## Install the DoubleDecker client
 The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDecker-py) messaging system to communicate with the domain orchestrators. Then, you need to install the DoubleDecker client.
@@ -26,10 +26,10 @@ The frog4-orchestrator uses the [DoubleDecker](https://github.com/Acreo/DoubleDe
 		
 Now you can install the DubleDeker as follows:
 
-		#install dependencies 
+		; install dependencies 
 		$ sudo apt-get update
 		$ sudo apt-get install python3-setuptools python3-nacl python3-zmq python3-urwid python3-tornado
-		# install the doubledecker module and scripts
+		; install the doubledecker module and scripts
 		$ sudo python3 setup.py install
 ## Create the SQL database
 The FROG4 orchestrator uses a local mySQL database that has to be created and initialized by executing the steps below.
@@ -54,9 +54,10 @@ where `orch-user` and `orch-pwd` can be replaced respectively by the username an
   The script above also adds in the database the `admin` user (`username:admin`, `password:admin`).
 
 ### Create a new user
-To create a new user from the main directory runs:
+To create a new user, run:
 
-        python3 -m scripts.create_user
+        $ cd [frog4-orchestrator]
+        $ python3 -m scripts.create_user
 
 To add a new user on the database
 
@@ -80,7 +81,7 @@ You can launch the FROG4-orchestrator by executing the following script in the o
 
 A description of the API exposed by the FROG4-orchestrator is available at the URL: `ip_address:port/api_docs` (e.g., `127.0.0.1:9000/api_docs`).
 
-## Adding the WEB GUI on top of the SDN domain orchestrator
+## Adding the WEB GUI on top of the FROG4 orchestrator
 
 It is possible to configure the [FROG4 GUI](https://github.com/netgroup-polito/fg-gui), so that it can be used to interact with the FROG4-orchestrator (e.g., to deploye new service graphs, or to read the service graphs currently deployed).
 To install the GUI, follows the [instructions](https://github.com/netgroup-polito/fg-gui/blob/master/README_INSTALL.md) provided with the repository.
