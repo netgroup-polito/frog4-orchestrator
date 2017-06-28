@@ -56,35 +56,7 @@ class CA_Interface(object):
                 return json.loads(resp.text)
             else:
                 raise err
-    
-    def getNFFG(self, nffg_id):
-        if self.token is None:
-            self.getToken(self.user_data)
-        try:
-            resp = requests.get(self.get_nffg_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
-            resp.raise_for_status()
-            logging.debug(resp.text)
-            nffg_dict = json.loads(resp.text)
-            ValidateNF_FG().validate(nffg_dict)
-            nffg = NF_FG()
-            nffg.parseDict(nffg_dict)
-            logging.debug("Get NFFG completed")
-            return nffg
-        except HTTPError as err:
-            if err.response.status_code == 401:
-                logging.debug("Token expired, getting a new one...")
-                self.getToken(self.user_data)                
-                resp = requests.get(self.get_nffg_url % nffg_id, headers=self.headers, timeout=int(self.timeout))
-                resp.raise_for_status()
-                logging.debug(resp.text)
-                nffg_dict = json.loads(resp.text)
-                ValidateNF_FG().validate(nffg_dict)
-                nffg = NF_FG()
-                nffg.parseDict(nffg_dict)
-                logging.debug("Get NFFG completed")
-                return nffg   
-            else:
-                raise err
+
     
     def put(self, nffg):
         if self.token is None:

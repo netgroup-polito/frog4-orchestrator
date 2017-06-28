@@ -50,10 +50,10 @@ class Graph(object):
         session = get_session()  
         with session.begin():
             self.id_generator(nffg, session_id)
-            if not partial:
-                graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial)
-            else:
-                graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial,
+            #if not partial:
+                #graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial)
+            #else:
+            graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial,
                                        sub_graph_id=nffg.id)
             session.add(graph_ref)
 

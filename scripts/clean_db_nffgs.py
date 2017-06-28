@@ -11,4 +11,4 @@ session = get_session()
 session.query(GraphModel).delete()
 session.query(SessionModel).delete()
 
-print("Database sessions deleted")
+print("Database Nffgs deleted")
