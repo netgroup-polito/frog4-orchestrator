@@ -51,9 +51,8 @@ class NFFGResource(Resource):
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
             controller = UpperLayerOrchestratorController(user_data, self.counter)
-            response = controller.put(nffg, nffg_id)
-            self.counter +=1
-            resp = Response(response, status=201, mimetype="application/json")
+            resp = Response(response=controller.put(nffg, nffg_id), status=201, mimetype="application/json")
+            self.counter += 1
             return resp
 
         except wrongRequest as err:

@@ -7,14 +7,12 @@
 import json
 import logging
 import base64
+import uuid
 
 from nffg_library.nffg import NF_FG
 from orchestrator_core.scheduler import Scheduler
 from orchestrator_core.virtual_topology import VirtualTopology
 from .splitter import Splitter
-import uuid
-import random
-import string
 
 from orchestrator_core.exception import sessionNotFound, GraphError, FrogDataStoreError, NoFunctionalCapabilityFound, \
     FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound, DomainNotFound
@@ -205,6 +203,7 @@ class UpperLayerOrchestratorController(object):
 
         logging.info('Graph put request from user '+self.user_data.username)
 
+        # update nffg
         if nffg_id is not None:
             nffg.id = str(nffg_id)
             if self.check_nffg_status(nffg.id) is True:
@@ -215,10 +214,12 @@ class UpperLayerOrchestratorController(object):
             else:
                 raise NoGraphFound("EXCEPTION - Please first insert this graph then try to update")
 
+        # deploy as new graph
         else:
 
+            # choose new id for the graph
             while True:
-                new_nffg_id = ''.join(random.SystemRandom().choice(string.digits) for _ in range(8))
+                new_nffg_id = uuid.uuid4().int
                 old_nffg_id = Session().check_nffg_id(new_nffg_id)
                 if len(old_nffg_id) == 0:
                     nffg.id = str(new_nffg_id)
@@ -308,8 +309,11 @@ class UpperLayerOrchestratorController(object):
                 '''
                 Session().set_error(session_id)
                 raise ex
+        # return the graph id
         nffg_id = Session().get_nffg_id(session_id).service_graph_id
-        return nffg_id
+        response_uuid = dict()
+        response_uuid["nffg-uuid"] = nffg_id
+        return json.dumps(response_uuid)
         
     @staticmethod
     def prepare_nffg(nffg):
