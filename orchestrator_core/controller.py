@@ -43,11 +43,13 @@ class UpperLayerOrchestratorController(object):
             sessions = Session().get_active_user_sessions(self.user_data.id)
             graphs = []
             for session in sessions:
-                response_json = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))
-                graphs.append(response_json)
-            response_dict = dict()
-            response_dict["NF-FG"] = graphs
-            return json.dumps(response_dict)
+                graph = {}
+                graph['nffg-uuid'] =  Session().get_nffg_id(session.id).service_graph_id
+                graph['forwarding-graph'] = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))['forwarding-graph']
+                graphs.append(graph)
+            response_json = {}
+            response_json["NF-FG"] = graphs
+            return json.dumps(response_json)
         else:
             session_id = Session().get_current_user_session_by_nffg_id(nffg_id, self.user_data.id).id
             logging.debug("Getting session: "+str(session_id))
@@ -81,7 +83,10 @@ class UpperLayerOrchestratorController(object):
     def update(self, nffg):
 
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
-        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
+        nffg_json = json.loads(nffg.getJSON(domain=True))
+        # delete graph id from json
+        del nffg_json['forwarding-graph']['id']
+        nffg_json = json.dumps(nffg_json).encode('utf-8')
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
         # Get profile from session
         graphs_ref = Graph().get_graphs(session.id)
@@ -93,7 +98,7 @@ class UpperLayerOrchestratorController(object):
             old_nffg_dict = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))
             old_nffg = NF_FG()
             old_nffg.parseDict(old_nffg_dict)
-
+            old_nffg.id = Session().get_nffg_id(session.id).service_graph_id
             # Get the diff nffg
             diff_nffg = old_nffg.diff(nffg)
 
@@ -219,13 +224,17 @@ class UpperLayerOrchestratorController(object):
 
             # choose new id for the graph
             while True:
-                new_nffg_id = uuid.uuid4().int
-                old_nffg_id = Session().check_nffg_id(new_nffg_id)
+                new_nffg_id = uuid.uuid4()
+                print(new_nffg_id)
+                old_nffg_id = Session().check_nffg_id(str(new_nffg_id))
                 if len(old_nffg_id) == 0:
                     nffg.id = str(new_nffg_id)
                     break
 
-            nffg_json = nffg.getJSON(domain=True).encode('utf-8')
+            nffg_json = json.loads(nffg.getJSON(domain=True))
+            # delete graph id from json
+            del nffg_json['forwarding-graph']['id']
+            nffg_json = json.dumps(nffg_json).encode('utf-8')
             session_id = uuid.uuid4().hex
             Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
             try:

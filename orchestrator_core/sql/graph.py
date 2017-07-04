@@ -95,12 +95,6 @@ class Graph(object):
         session = get_session()
         return session.query(GraphModel).filter_by(id=graph_id).one().sub_graph_id
 
-    @staticmethod
-    def set_domain_id(graph_id, domain_id):
-        session = get_session()
-        with session.begin():
-            logging.debug(session.query(GraphModel).filter_by(id=graph_id).update({"domain_id": domain_id}))
-            
     def id_generator(self, nffg, session_id, update=False, graph_id=None):
         graph_base_id = self._get_higher_graph_id()
         if graph_base_id is not None:
@@ -116,21 +110,3 @@ class Graph(object):
                 nffg.db_id = graphs_ref[0].id
             else:
                 nffg.db_id = graph_id            
-    """
-    def _getGraph(self, graph_id):
-        session = get_session()  
-        try:
-            return session.query(GraphModel).filter_by(id=graph_id).one()
-        except Exception as ex:
-            logging.error(ex)
-            raise GraphNotFound("Graph not found for db id: "+str(graph_id))
-    
-    def _getGraphID(self, service_graph_id):
-        session = get_session()  
-        try:
-            session_id = Session().get_active_user_session_by_nf_fg_id(service_graph_id).id
-            return session.query(GraphModel).filter_by(session_id=session_id).one().id
-        except Exception as ex:
-            logging.error(ex)
-            raise GraphNotFound("Graph not found for service graph id: "+str(service_graph_id))
-    """      
