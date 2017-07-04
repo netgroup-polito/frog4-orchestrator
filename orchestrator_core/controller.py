@@ -88,7 +88,7 @@ class UpperLayerOrchestratorController(object):
         # Get profile from session
         graphs_ref = Graph().get_graphs(session.id)
         try:
-            # Get VNFs templates
+            # nffg pre-processing
             self.prepare_nffg(nffg)
 
             # Fetch nffg yet deployed
@@ -228,7 +228,7 @@ class UpperLayerOrchestratorController(object):
             session_id = uuid.uuid4().hex
             Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
             try:
-                # Manage profile
+                # nffg pre-processing
                 self.prepare_nffg(nffg)
 
                 # 0) Create virtual topology basing on current domain information
@@ -314,10 +314,7 @@ class UpperLayerOrchestratorController(object):
     @staticmethod
     def prepare_nffg(nffg):
         manager = NFFG_Manager(nffg)  
-        
-        # Retrieve the VNF templates, if a node is a new graph, expand it
-        # logging.debug('Add templates to nffg')
-        # manager.addTemplates()
+
         logging.debug('Post expansion: '+nffg.getJSON())
         
         # Optimize NF-FG, currently the switch VNF when possible will be collapsed
