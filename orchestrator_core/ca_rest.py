@@ -8,8 +8,6 @@ import requests
 import json
 from orchestrator_core.config import Configuration
 from orchestrator_core.sql.domain import Domain
-from vnf_template_library.template import Template
-from vnf_template_library.validator import ValidateTemplate
 from nffg_library.nffg import NF_FG
 from nffg_library.validator import ValidateNF_FG
 from requests.exceptions import HTTPError

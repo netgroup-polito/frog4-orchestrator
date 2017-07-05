@@ -44,8 +44,9 @@ class UpperLayerOrchestratorController(object):
             graphs = []
             for session in sessions:
                 graph = {}
-                graph['nffg-uuid'] =  Session().get_nffg_id(session.id).service_graph_id
-                graph['forwarding-graph'] = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph).decode('utf-8'))['forwarding-graph']
+                graph['nffg-uuid'] =  session.service_graph_id
+                graph['forwarding-graph'] = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph)
+                                                       .decode('utf-8'))['forwarding-graph']
                 graphs.append(graph)
             response_json = {}
             response_json["NF-FG"] = graphs
