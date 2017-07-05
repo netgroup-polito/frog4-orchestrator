@@ -14,7 +14,7 @@ from orchestrator_core.scheduler import Scheduler
 from orchestrator_core.virtual_topology import VirtualTopology
 from .splitter import Splitter
 
-from orchestrator_core.exception import sessionNotFound, GraphError, FrogDataStoreError, NoFunctionalCapabilityFound, \
+from orchestrator_core.exception import sessionNotFound, GraphError, NoFunctionalCapabilityFound, \
     FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound, DomainNotFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
@@ -183,10 +183,7 @@ class UpperLayerOrchestratorController(object):
             Graph().delete_session(session.id)
             Session().set_error(session.id)
             raise ex
-        except FrogDataStoreError as ex:
-            logging.exception(ex)
-            # Session().set_error(session.id)
-            raise ex
+
         except Exception as ex:
             logging.exception(ex)
             '''
@@ -288,10 +285,6 @@ class UpperLayerOrchestratorController(object):
             except (HTTPError, ConnectionError) as ex:
                 logging.exception(ex)
                 Graph().delete_session(session_id)
-                Session().set_error(session_id)
-                raise ex
-            except FrogDataStoreError as ex:
-                logging.exception(ex)
                 Session().set_error(session_id)
                 raise ex
             except NoFunctionalCapabilityFound as ex:

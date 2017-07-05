@@ -16,8 +16,8 @@ from nffg_library.validator import ValidateNF_FG
 from orchestrator_core.api.api import api
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.userAuthentication import UserTokenAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound, \
-    FrogDataStoreError, NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
+from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound,\
+    NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
     UnsupportedLabelingMethod, TokenNotFound, NoGraphFound, DomainNotFound
 from nffg_library.exception import NF_FGValidationError
@@ -73,8 +73,6 @@ class NFFGResource(Resource):
         except requests.ConnectionError as err:
             logging.exception(err)
             return str(err), 500
-        except FrogDataStoreError as err:
-            return err.message, 500
         except GraphError as err:
             return err.message, 400
         except NoFunctionalCapabilityFound as err:

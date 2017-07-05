@@ -14,7 +14,6 @@ from flask import Flask
 
 from orchestrator_core.api.api import root_blueprint
 from orchestrator_core.api.nffg import api as nffg_api
-from orchestrator_core.api.template import api as template_api
 from orchestrator_core.api.user import api as user_api
 
 from orchestrator_core.config import Configuration
@@ -49,7 +48,7 @@ token_message = users_tokens_clean().token_clean()
 logging.info(token_message)
 
 # Rest application
-if nffg_api is not None and template_api is not None :
+if nffg_api is not None and user_api is not None :
     app = Flask(__name__)
     app.register_blueprint(root_blueprint)
     logging.info("Flask Successfully started")
