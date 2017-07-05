@@ -54,15 +54,6 @@ class Configuration(object, metaclass=Singleton):
             self._BROKER_ADDRESS = config.get('doubledecker','broker_address')
             self._DD_KEYFILE = config.get('doubledecker','dd_keyfile')
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
-            self._TEMPLATE_SOURCE = config.get('templates','source')
-            if config.has_option('templates', 'path'):
-                self._TEMPLATE_PATH = config.get('templates','path')
-            else:
-                self._TEMPLATE_PATH = None
-            if config.has_option('templates', 'repository_url'):
-                self._TEMPLATE_REPOSITORY_URL = config.get('templates', 'repository_url')
-            else:
-                self._TEMPLATE_REPOSITORY_URL = None
 
         except Exception as ex:
             raise WrongConfigurationFile(str(ex))
@@ -90,18 +81,6 @@ class Configuration(object, metaclass=Singleton):
     @property
     def DEBUG_MODE(self):
         return self._DEBUG_MODE
-    
-    @property
-    def TEMPLATE_SOURCE(self):
-        return self._TEMPLATE_SOURCE
-
-    @property
-    def TEMPLATE_REPOSITORY_URL(self):
-        return self._TEMPLATE_REPOSITORY_URL
-    @property
-
-    def TEMPLATE_PATH(self):
-        return self._TEMPLATE_PATH
      
     @property
     def DEFAULT_PRIORITY(self):

@@ -91,7 +91,7 @@ class UpperLayerOrchestratorController(object):
         # Get profile from session
         graphs_ref = Graph().get_graphs(session.id)
         try:
-            # Get VNFs templates
+            # nffg pre-processing
             self.prepare_nffg(nffg)
 
             # Fetch nffg yet deployed
@@ -225,7 +225,6 @@ class UpperLayerOrchestratorController(object):
             # choose new id for the graph
             while True:
                 new_nffg_id = uuid.uuid4()
-                print(new_nffg_id)
                 old_nffg_id = Session().check_nffg_id(str(new_nffg_id))
                 if len(old_nffg_id) == 0:
                     nffg.id = str(new_nffg_id)
@@ -238,7 +237,7 @@ class UpperLayerOrchestratorController(object):
             session_id = uuid.uuid4().hex
             Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
             try:
-                # Manage profile
+                # nffg pre-processing
                 self.prepare_nffg(nffg)
 
                 # 0) Create virtual topology basing on current domain information
@@ -327,10 +326,7 @@ class UpperLayerOrchestratorController(object):
     @staticmethod
     def prepare_nffg(nffg):
         manager = NFFG_Manager(nffg)  
-        
-        # Retrieve the VNF templates, if a node is a new graph, expand it
-        # logging.debug('Add templates to nffg')
-        # manager.addTemplates()
+
         logging.debug('Post expansion: '+nffg.getJSON())
         
         # Optimize NF-FG, currently the switch VNF when possible will be collapsed
@@ -423,22 +419,23 @@ class UpperLayerOrchestratorController(object):
                 feasible_domain_dictionary[vnf.id] = [vnf.domain]
             elif (vnf.domain is not None and vnf.status is None) or vnf.status == 'to_deploy_fixed':
                 domain = Domain().getDomainFromName(vnf.domain)
-                fc = domains_info[domain.id].capabilities.get_functional_capability(vnf.name.lower())
+                fc = domains_info[domain.id].capabilities.get_functional_capability(vnf.functional_capability.lower())
                 if fc is not None and (fc.ready or vnf.status == 'already_deployed'):
                     feasible_domain_dictionary[vnf.id] = [vnf.domain]
                 else:
-                    raise NoFunctionalCapabilityFound("No suitable FC found for NF '" + vnf.name + "' in domain '" +
-                                                      vnf.domain + "' specified in nffg.")
+                    raise NoFunctionalCapabilityFound("No suitable FC found for NF '" + vnf.functional_capability +
+                                                      "' in domain '" + vnf.domain + "' specified in nffg.")
             else:
                 old_domain = vnf.domain
                 vnf.domain = None
                 feasible_domain_dictionary[vnf.id] = []
                 for domain_id, domain_info in domains_info.items():
                     logging.debug(domain_info.get_dict())
-                    fc = domain_info.capabilities.get_functional_capability(vnf.name.lower())
+                    fc = domain_info.capabilities.get_functional_capability(vnf.functional_capability.lower())
                     if fc is not None and (fc.ready or old_domain == domain_info.name):
                         feasible_domain_dictionary[vnf.id].append(domain_info.name)
-                        logging.debug("Domain '" + domain_info.name + "' is feasible for NF '" + vnf.name + "'")
+                        logging.debug("Domain '" + domain_info.name + "' is feasible for NF '"
+                                      + vnf.functional_capability + "'")
 
         logging.debug('feasible_domain_dictionary = %s', feasible_domain_dictionary)
 

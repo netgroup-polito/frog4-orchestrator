@@ -52,6 +52,7 @@ class NFFGResource(Resource):
             nffg.parseDict(nffg_dict)
             controller = UpperLayerOrchestratorController(user_data, self.counter)
             resp = Response(response=controller.put(nffg, nffg_id), status=201, mimetype="application/json")
+            # TODO which is the purpose of this counter?
             self.counter += 1
             return resp
 
