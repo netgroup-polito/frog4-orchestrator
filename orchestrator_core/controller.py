@@ -81,7 +81,21 @@ class UpperLayerOrchestratorController(object):
         Session().delete_sessions(nffg_id)
         # Session().set_ended(session.id)
     
-    def update(self, nffg):
+    def put(self, nffg, nffg_id):
+        """
+        Manage the request of NF-FG instantiation
+        :param nffg:
+        :param nffg_id:
+        :type nffg: nffg_library.nffg.NF_FG
+        :type nffg_id: int
+        """
+        logging.info('Graph put request from user '+self.user_data.username)
+
+        nffg.id = str(nffg_id)
+        if self.check_nffg_status(nffg.id) is False:
+            raise NoGraphFound("EXCEPTION - Please first insert this graph then try to update")
+
+        logging.info('NF-FG already instantiated, trying to update it')
 
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
         nffg_json = json.loads(nffg.getJSON(domain=True))
@@ -89,6 +103,7 @@ class UpperLayerOrchestratorController(object):
         del nffg_json['forwarding-graph']['id']
         nffg_json = json.dumps(nffg_json).encode('utf-8')
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
+
         # Get profile from session
         graphs_ref = Graph().get_graphs(session.id)
         try:
@@ -178,145 +193,147 @@ class UpperLayerOrchestratorController(object):
                     CA_Interface(self.user_data, new_domain).put(new_nffg)
 
             Session().updateStatus(session.id, 'complete')
+            logging.info('Update completed')
+
+            # return the graph id
+            response_uuid = dict()
+            response_uuid["nffg-uuid"] = nffg_id
+            return json.dumps(response_uuid)
 
         except (HTTPError, ConnectionError) as ex:
             logging.exception(ex)
             Graph().delete_session(session.id)
             Session().set_error(session.id)
             raise ex
+        except NoFunctionalCapabilityFound as ex:
+            logging.exception(ex)
+            Session().set_error(session.id)
+            raise ex
+        except FunctionalCapabilityAlreadyInUse as ex:
+            logging.exception(ex)
+            Session().set_error(session.id)
+            raise ex
+        except FeasibleDomainNotFoundForNFFGElement as ex:
+            logging.exception(ex)
+            Session().set_error(session.id)
+            raise ex
+        except DomainNotFound as ex:
+            logging.exception(ex)
+            Session().set_error(session.id)
+            raise ex
+        except Exception as ex:
+            logging.exception(ex)
+            Session().set_error(session.id)
+            raise ex
 
+    def post(self, nffg):
+        """
+        Manage the request of NF-FG instantiation
+        :param nffg:
+        :type nffg: nffg_library.nffg.NF_FG
+        """
+        # deploy as new graph
+        logging.info('Graph post request from user '+self.user_data.username)
+
+        # choose new id for the graph
+        while True:
+            new_nffg_id = uuid.uuid4()
+            old_nffg_id = Session().check_nffg_id(str(new_nffg_id))
+            if len(old_nffg_id) == 0:
+                nffg.id = str(new_nffg_id)
+                break
+
+        nffg_json = json.loads(nffg.getJSON(domain=True))
+        # delete graph id from json
+        del nffg_json['forwarding-graph']['id']
+        nffg_json = json.dumps(nffg_json).encode('utf-8')
+        session_id = uuid.uuid4().hex
+        Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
+        try:
+            # nffg pre-processing
+            self.prepare_nffg(nffg)
+
+            # 0) Create virtual topology basing on current domain information
+            logging.info("Generating virtual topology...")
+            virtual_topology = VirtualTopology(DomainInformation().get_domains_info())
+
+            # 1) Fetch a map with a list of feasible domains for each NF of the nffg and for each ep
+            logging.info("Finding feasible domains...")
+            feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
+            feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
+
+            # 2) Perform the scheduling algorithm (tag nffg untagged elements with best domain)
+            logging.info("Performing scheduling...")
+            scheduler = Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict)
+            split_flows = scheduler.schedule(nffg)
+            logging.debug(json.dumps(nffg.getDict(domain=True)))
+
+            # 3) Generate a sub-graph for each involved domain
+            logging.info("Splitting graph...")
+            domains, nffgs = Splitter(self.counter).split(nffg, split_flows)
+
+            domain_nffg_dict = OrderedDict()
+            for i in range(0, len(domains)):
+                nffgs[i].sanitizeEpIDs()
+                domain_nffg_dict[domains[i]] = nffgs[i]
+
+            for domain, sub_nffg in domain_nffg_dict.items():
+
+                # Chose an id for the sub-graph
+                sub_nffg.id = str(nffg.id)
+
+                # Save the graph in the database
+                Graph().add_graph(sub_nffg, session_id, domain_id=domain.id, partial=len(domain_nffg_dict) > 1)
+
+                # Instantiate profile
+                logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
+
+                if DEBUG_MODE is True:
+                    logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
+                else:
+                    CA_Interface(self.user_data, domain).put(sub_nffg)
+
+                logging.info("sub-graph correctly instantiated  on domain '" + domain.name + "'")
+
+            Session().updateStatus(session_id, 'complete')
+            logging.info("NF-FG correctly instantiated on session " + session_id)
+
+            # return the graph id
+            nffg_id = Session().get_nffg_id(session_id).service_graph_id
+            response_uuid = dict()
+            response_uuid["nffg-uuid"] = nffg_id
+            return json.dumps(response_uuid)
+
+        except (HTTPError, ConnectionError) as ex:
+            logging.exception(ex)
+            Graph().delete_session(session_id)
+            Session().set_error(session_id)
+            raise ex
+        except NoFunctionalCapabilityFound as ex:
+            logging.exception(ex)
+            Session().set_error(session_id)
+            raise ex
+        except FunctionalCapabilityAlreadyInUse as ex:
+            logging.exception(ex)
+            Session().set_error(session_id)
+            raise ex
+        except FeasibleDomainNotFoundForNFFGElement as ex:
+            logging.exception(ex)
+            Session().set_error(session_id)
+            raise ex
+        except DomainNotFound as ex:
+            logging.exception(ex)
+            Session().set_error(session_id)
+            raise ex
         except Exception as ex:
             logging.exception(ex)
             '''
             Graph().delete_graph(nffg.db_id)
             '''
-            Session().set_error(session.id)
+            Session().set_error(session_id)
             raise ex
-        
-        return session.id
-        
-    def put(self, nffg, nffg_id):
-        """
-        Manage the request of NF-FG instantiation
-        :param nffg:
-        :param nffg_id:
-        :type nffg: nffg_library.nffg.NF_FG
-        :type nffg_id: int
-        """
 
-        logging.info('Graph put request from user '+self.user_data.username)
 
-        # update nffg
-        if nffg_id is not None:
-            nffg.id = str(nffg_id)
-            if self.check_nffg_status(nffg.id) is True:
-                logging.debug('NF-FG already instantiated, trying to update it')
-                session_id = self.update(nffg)
-                logging.debug('Update completed')
-
-            else:
-                raise NoGraphFound("EXCEPTION - Please first insert this graph then try to update")
-
-        # deploy as new graph
-        else:
-
-            # choose new id for the graph
-            while True:
-                new_nffg_id = uuid.uuid4()
-                old_nffg_id = Session().check_nffg_id(str(new_nffg_id))
-                if len(old_nffg_id) == 0:
-                    nffg.id = str(new_nffg_id)
-                    break
-
-            nffg_json = json.loads(nffg.getJSON(domain=True))
-            # delete graph id from json
-            del nffg_json['forwarding-graph']['id']
-            nffg_json = json.dumps(nffg_json).encode('utf-8')
-            session_id = uuid.uuid4().hex
-            Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
-            try:
-                # nffg pre-processing
-                self.prepare_nffg(nffg)
-
-                # 0) Create virtual topology basing on current domain information
-                logging.info("Generating virtual topology...")
-                virtual_topology = VirtualTopology(DomainInformation().get_domains_info())
-
-                # 1) Fetch a map with a list of feasible domains for each NF of the nffg and for each ep
-                logging.info("Finding feasible domains...")
-                feasible_nf_domains_dict = self.get_nf_feasible_domains_map(nffg)
-                feasible_ep_domains_dict = self.get_ep_feasible_domains_map(nffg)
-
-                # 2) Perform the scheduling algorithm (tag nffg untagged elements with best domain)
-                logging.info("Performing scheduling...")
-                scheduler = Scheduler(virtual_topology, feasible_nf_domains_dict, feasible_ep_domains_dict)
-                split_flows = scheduler.schedule(nffg)
-                logging.debug(json.dumps(nffg.getDict(domain=True)))
-
-                # 3) Generate a sub-graph for each involved domain
-                logging.info("Splitting graph...")
-                domains, nffgs = Splitter(self.counter).split(nffg, split_flows)
-
-                domain_nffg_dict = OrderedDict()
-                for i in range(0, len(domains)):
-                    nffgs[i].sanitizeEpIDs()
-                    domain_nffg_dict[domains[i]] = nffgs[i]
-
-                for domain, sub_nffg in domain_nffg_dict.items():
-
-                    # Chose an id for the sub-graph
-                    sub_nffg.id = str(nffg.id)
-
-                    # Save the graph in the database
-                    Graph().add_graph(sub_nffg, session_id, domain_id=domain.id, partial=len(domain_nffg_dict) > 1)
-
-                    # Instantiate profile
-                    logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
-
-                    if DEBUG_MODE is True:
-                        logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
-                    else:
-                        CA_Interface(self.user_data, domain).put(sub_nffg)
-
-                    logging.info("sub-graph correctly instantiated  on domain '" + domain.name + "'")
-
-                Session().updateStatus(session_id, 'complete')
-                logging.info("NF-FG correctly instantiated on session " + session_id)
-                # Session().set_error(session_id)
-            except (HTTPError, ConnectionError) as ex:
-                logging.exception(ex)
-                Graph().delete_session(session_id)
-                Session().set_error(session_id)
-                raise ex
-            except NoFunctionalCapabilityFound as ex:
-                logging.exception(ex)
-                Session().set_error(session_id)
-                raise ex
-            except FunctionalCapabilityAlreadyInUse as ex:
-                logging.exception(ex)
-                Session().set_error(session_id)
-                raise ex
-            except FeasibleDomainNotFoundForNFFGElement as ex:
-                logging.exception(ex)
-                Session().set_error(session_id)
-                raise ex
-            except DomainNotFound as ex:
-                logging.exception(ex)
-                Session().set_error(session_id)
-                raise ex
-            except Exception as ex:
-                logging.exception(ex)
-                '''
-                Graph().delete_graph(nffg.db_id)
-                '''
-                Session().set_error(session_id)
-                raise ex
-        # return the graph id
-        nffg_id = Session().get_nffg_id(session_id).service_graph_id
-        response_uuid = dict()
-        response_uuid["nffg-uuid"] = nffg_id
-        return json.dumps(response_uuid)
-        
     @staticmethod
     def prepare_nffg(nffg):
         manager = NFFG_Manager(nffg)  
