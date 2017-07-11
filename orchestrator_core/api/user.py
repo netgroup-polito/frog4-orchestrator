@@ -23,7 +23,7 @@ class User_login(Resource):
     @login_user.response(401, 'Unauthorized.')
     @login_user.response(500, 'Internal Error.')
     def post(self):
-        """Login info and return the user token"""
+        """Login info and returning the user token"""
         try:
 
             login_data = json.loads(request.data.decode())

@@ -151,6 +151,7 @@ CREATE TABLE IF NOT EXISTS `graph` (
   `domain_id` int(11) NOT NULL,
   `partial` tinyint(4) DEFAULT NULL,
   `sub_graph_id` varchar(64) DEFAULT NULL,
+  `sub_nffg` mediumtext DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

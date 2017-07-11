@@ -61,7 +61,8 @@ class CA_Interface(object):
             self.getToken(self.user_data)
         try:
             logging.debug(self.put_url % nffg.id + "\n" + nffg.getJSON())
-            resp = requests.put(self.put_url % nffg.id, data=nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
+            resp = requests.put(self.put_url % nffg.id, data=nffg.getJSON(), headers=self.headers,
+                                timeout=int(self.timeout))
 
             resp.raise_for_status()
             logging.debug("Put completed")
@@ -70,7 +71,8 @@ class CA_Interface(object):
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
                 self.getToken(self.user_data)
-                resp = requests.put(self.put_url % nffg.id, data = nffg.getJSON(), headers=self.headers, timeout=int(self.timeout))
+                resp = requests.put(self.put_url % nffg.id, data = nffg.getJSON(), headers=self.headers,
+                                    timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug("Put completed")  
                 return resp.text

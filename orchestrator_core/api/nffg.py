@@ -94,7 +94,7 @@ class NFFGResource(Resource):
             return err.message, 401
         except NoGraphFound as err:
             logging.exception(err)
-            return err.message, 400
+            return err.message, 404
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
