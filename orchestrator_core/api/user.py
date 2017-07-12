@@ -13,11 +13,11 @@ login_user_model = api.model('Login', {
     'username': fields.String(required = True, description = 'Username',  type = 'string'),
     'password': fields.String(required = True, description = 'Password',  type = 'string') })
 @login_user.route('', methods=['POST'])
-@api.doc(responses={404: 'UserNotFound'})
+@api.doc(responses={404: 'User Not Found'})
 class User_login(Resource):
 
     @login_user.expect(login_user_model)
-    @login_user.response(200, 'Login Successfully')
+    @login_user.response(200, 'Login Successfully.')
     @login_user.response(400, 'Bad Request.')
     @login_user.response(409, 'Validation Error.')
     @login_user.response(401, 'Unauthorized.')

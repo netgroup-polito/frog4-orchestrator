@@ -42,7 +42,7 @@ class NFFGResource(Resource):
     def put(self, nffg_id):
         """
         Update a Network Functions Forwarding Graph
-        Deploy a graph
+        Update a graph
         """
         try:
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
@@ -144,8 +144,8 @@ class NFFGResource(Resource):
     @nffg_ns.response(500, 'Internal Error.')
     def get(self, nffg_id=None):
         """
-        Get a graph
         Returns an already deployed graph
+        Get a graph
         """
         try:
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
@@ -190,7 +190,7 @@ class NFFGStatusResource(Resource):
     def get(self, nffg_id):
         """
         Get the status of a graph
-        Get a graph
+
         """
         try:
             user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
@@ -222,7 +222,6 @@ class NFFGStatusResource(Resource):
 
 
 @nffg_ns.route('/', methods=['POST','GET'])
-@api.doc(responses={404: 'Graph not found'})
 class UpperLayerOrchestrator(Resource):
 
     # This class is necessary because there is a conflict in the swagger documentation of get and put operations
@@ -302,9 +301,6 @@ class UpperLayerOrchestrator(Resource):
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401
-        except NoGraphFound as err:
-            logging.exception(err)
-            return err.message, 404
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
