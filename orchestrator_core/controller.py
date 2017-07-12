@@ -182,7 +182,6 @@ class UpperLayerOrchestratorController(object):
                     Graph().set_graph_partial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
                 else:
                     # domain not yet involved
-                    # chose an id for the new sub-graph
                     new_nffg.id = str(nffg.id)
                     Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
                 new_nffg.sanitizeEpIDs()
@@ -283,7 +282,8 @@ class UpperLayerOrchestratorController(object):
                 sub_nffg.id = str(nffg.id)
 
                 # Save the graph in the database
-                Graph().add_graph(sub_nffg, session_id, domain_id=domain.id, partial=len(domain_nffg_dict) > 1)
+                graph_db_id = Graph().add_graph(sub_nffg, session_id, domain_id=domain.id,
+                                             partial=len(domain_nffg_dict) > 1)
 
                 # Instantiate profile
                 logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
@@ -291,7 +291,8 @@ class UpperLayerOrchestratorController(object):
                 if DEBUG_MODE is True:
                     logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
                 else:
-                    CA_Interface(self.user_data, domain).put(sub_nffg)
+                    get_sub_nffg_id = CA_Interface(self.user_data, domain).post(sub_nffg)
+                    Graph().set_sub_graph_id(get_sub_nffg_id["nffg-uuid"], graph_db_id)
 
                 logging.info("sub-graph correctly instantiated  on domain '" + domain.name + "'")
 

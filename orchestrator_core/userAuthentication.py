@@ -41,7 +41,7 @@ class UserCredentials(object):
 class UserLoginAuthenticationController(object):
 
     def put(self, user_data):
-        logging.debug('New POST request for /login/  From user '+user_data.username)
+        logging.debug('New POST request for /login/ From user '+user_data.username)
         try:
             have_a_token = User().checkUserToken(user_data.id)
             if have_a_token is False:
