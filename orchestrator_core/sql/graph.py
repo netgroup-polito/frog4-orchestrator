@@ -11,6 +11,7 @@ from sqlalchemy.sql import func
 
 from orchestrator_core.config import Configuration
 from orchestrator_core.sql.session import Session
+import base64
 import logging
 
 Base = declarative_base()
@@ -22,12 +23,13 @@ class GraphModel(Base):
     Maps the database table graph
     """
     __tablename__ = 'graph'
-    attributes = ['id', 'session_id', 'domain_id', 'partial', 'sub_graph_id']
+    attributes = ['id', 'session_id', 'domain_id', 'partial', 'sub_graph_id', 'sub_nffg']
     id = Column(Integer, primary_key=True)
     session_id = Column(VARCHAR(64))
     domain_id = Column(Integer)
     partial = Column(Boolean())
     sub_graph_id = Column(VARCHAR(64))
+    sub_nffg = Column(VARCHAR(60000))
 
 
 class Graph(object):
@@ -45,7 +47,7 @@ class Graph(object):
         :type nffg: nffg_library.nffg.NF_FG
         :type session_id: int
         :type partial: bool
-        :return: 
+        :return:
         """
         session = get_session()  
         with session.begin():
@@ -54,7 +56,7 @@ class Graph(object):
                 #graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial)
             #else:
             graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial,
-                                       sub_graph_id=nffg.id)
+                                       sub_graph_id=nffg.id, sub_nffg=base64.b64encode(nffg.getJSON().encode('utf-8')))
             session.add(graph_ref)
 
     def delete_session(self, session_id):
