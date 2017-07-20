@@ -33,8 +33,8 @@ class NFFGResource(Resource):
     counter = 1
 
     @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
-    @nffg_ns.param("NFFG", "Graph to be deployed", "body", type="string", required=True)
-    @nffg_ns.response(201, 'Graph correctly updated.')
+    @nffg_ns.param("NFFG", "Graph to be updated", "body", type="string", required=True)
+    @nffg_ns.response(202, 'Graph correctly updated.')
     @nffg_ns.response(400, 'Bad request.')
     @nffg_ns.response(401, 'Unauthorized.')
     @nffg_ns.response(409, 'The graph is valid but does not have a feasible deployment in the current network.')
@@ -51,7 +51,8 @@ class NFFGResource(Resource):
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
             controller = UpperLayerOrchestratorController(user_data, self.counter)
-            resp = Response(response=controller.put(nffg, nffg_id), status=201, mimetype="application/json")
+            controller.put(nffg, nffg_id)
+            resp = Response(response=None, status=202, mimetype="application/json")
             # TODO which is the purpose of this counter?
             self.counter += 1
             return resp
