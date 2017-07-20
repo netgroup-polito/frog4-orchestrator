@@ -196,9 +196,10 @@ class UpperLayerOrchestratorController(object):
             logging.info('Update completed')
 
             # return the graph id
-            response_uuid = dict()
-            response_uuid["nffg-uuid"] = nffg_id
-            return json.dumps(response_uuid)
+            #response_uuid = dict()
+            #response_uuid["nffg-uuid"] = nffg_id
+            #return json.dumps(response_uuid)
+            return nffg_id
 
         except (HTTPError, ConnectionError) as ex:
             logging.exception(ex)
