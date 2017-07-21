@@ -486,10 +486,10 @@ class UpperLayerOrchestratorController(object):
 
         for diff_vnf in diff_nffg.vnfs:
             if diff_vnf.status == 'already_deployed':
-                vnf = nffg.getVNF(diff_nffg.id)
+                vnf = nffg.getVNF(diff_vnf.id)
                 if vnf is None:
                     continue
-                if vnf.domain == diff_vnf.domain:
+                if vnf.domain is not None and vnf.domain == diff_vnf.domain:
                     vnf.status = 'already_deployed'
                 elif vnf.domain is None:
                     vnf.status = 'to_reschedule'
