@@ -100,7 +100,7 @@ class UpperLayerOrchestratorController(object):
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
         nffg_json = json.loads(nffg.getJSON(domain=True))
         # delete graph id from json
-        del nffg_json['forwarding-graph']['id']
+        #del nffg_json['forwarding-graph']['id']
         nffg_json = json.dumps(nffg_json).encode('utf-8')
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
 
@@ -245,7 +245,7 @@ class UpperLayerOrchestratorController(object):
 
         nffg_json = json.loads(nffg.getJSON(domain=True))
         # delete graph id from json
-        del nffg_json['forwarding-graph']['id']
+        #del nffg_json['forwarding-graph']['id']
         nffg_json = json.dumps(nffg_json).encode('utf-8')
         session_id = uuid.uuid4().hex
         Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
