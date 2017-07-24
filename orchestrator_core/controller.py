@@ -98,10 +98,7 @@ class UpperLayerOrchestratorController(object):
         logging.info('NF-FG already instantiated, trying to update it')
 
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
-        nffg_json = json.loads(nffg.getJSON(domain=True))
-        # delete graph id from json
-        #del nffg_json['forwarding-graph']['id']
-        nffg_json = json.dumps(nffg_json).encode('utf-8')
+        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
 
         # Get profile from session
@@ -201,10 +198,6 @@ class UpperLayerOrchestratorController(object):
             Session().updateStatus(session.id, 'complete')
             logging.info('Update completed')
 
-            # return the graph id
-            #response_uuid = dict()
-            #response_uuid["nffg-uuid"] = nffg_id
-            #return json.dumps(response_uuid)
             return nffg_id
 
         except (HTTPError, ConnectionError) as ex:
@@ -250,10 +243,7 @@ class UpperLayerOrchestratorController(object):
                 nffg.id = str(new_nffg_id)
                 break
 
-        nffg_json = json.loads(nffg.getJSON(domain=True))
-        # delete graph id from json
-        #del nffg_json['forwarding-graph']['id']
-        nffg_json = json.dumps(nffg_json).encode('utf-8')
+        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
         session_id = uuid.uuid4().hex
         Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
         try:
