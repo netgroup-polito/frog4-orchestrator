@@ -89,7 +89,6 @@ class CA_Interface(object):
 
             resp.raise_for_status()
             logging.debug("Put completed")
-            return json.loads(resp.text)
         except HTTPError as err:
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
@@ -98,7 +97,6 @@ class CA_Interface(object):
                                     timeout=int(self.timeout))
                 resp.raise_for_status()
                 logging.debug("Put completed")
-                return json.loads(resp.text)
             else:
                 raise err
     
