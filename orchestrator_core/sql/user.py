@@ -55,17 +55,17 @@ class User(object):
         except Exception as ex:
             raise UserNotFound("User not found") from None
 
-    def inizializeUserAuthentication(self, user_id, token):
+    def inizializeUserAuthentication(self, user_id, token, timestamp):
         session = get_session()
         with session.begin():
-            user_ref = UserTokenModel(user_id=user_id, token = token, timestamp = time.time())
+            user_ref = UserTokenModel(user_id=user_id, token=token, timestamp=timestamp)
             session.add(user_ref)
         pass
 
     def checkUserToken(self, user_id):
         session = get_session()
         try:
-            return session.query(UserTokenModel).filter_by(user_id=user_id).one().token
+            return session.query(UserTokenModel).filter_by(user_id=user_id).one()
         except NoResultFound:
             return False
     def getToken(self, user_token):
@@ -74,3 +74,8 @@ class User(object):
             return session.query(UserTokenModel).filter_by(token = user_token).one()
         except Exception as ex:
             raise TokenNotFound("Token is not valid: "+str(user_token)) from None
+
+    def checkToken(self, token):
+        session = get_session()
+        with session.begin():
+            return session.query(UserTokenModel).filter_by(token = token).all()

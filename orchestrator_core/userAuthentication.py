@@ -5,8 +5,9 @@
 
 from .sql.user import User
 from orchestrator_core.exception import unauthorizedRequest, TokenNotFound
+from orchestrator_core.config import Configuration
 import uuid
-import logging
+import time, logging
 
 class UserData(object):
     
@@ -22,34 +23,48 @@ class UserData(object):
 
 class UserLoginAuthentication(object):
 
+    def __init__(self):
+        self.token_expiration_timestamp = int(Configuration().AUTH_TOKEN_EXPIRATION)
+
+    def __isAnExpiredToken(self, timestamp):
+        if timestamp is None:
+            return True
+        timestamp = int(timestamp)
+        tt = int(time.time())
+        return ((tt - timestamp) > self.token_expiration_timestamp)
+
     def UserLoginAuthenticateFromRESTRequest(self, login_data):
         username = login_data['username']
         password = login_data['password']
-        return UserCredentials().authenticateUserFromCredentials(username,password)
-
-class UserCredentials(object):
+        return self.authenticateUserFromCredentials(username,password)
 
     def authenticateUserFromCredentials(self, username, password):
+        logging.debug('New POST request for /login/  From user ' + username)
         if username is None or password is None:
             raise unauthorizedRequest('Authentication credentials required')
         user = User().getUser(username)
-        if user.password == password:
-            userobj = UserData(user.id, username, password)
-            return userobj
-        raise unauthorizedRequest('Invalid authentication credentials')
+        if user.password != password:
+            raise unauthorizedRequest('Invalid authentication credentials')
 
-class UserLoginAuthenticationController(object):
+        userobj = UserData(user.id, username, password)
 
-    def put(self, user_data):
-        logging.debug('New POST request for /login/  From user '+user_data.username)
+        logging.info("Check current token. Get a new token, if it is needed.")
         try:
-            have_a_token = User().checkUserToken(user_data.id)
-            if have_a_token is False:
-                token  = uuid.uuid4().hex
-                User().inizializeUserAuthentication(user_data.id, token)
+            have_a_token_details = User().checkUserToken(userobj.id)
+            if have_a_token_details.token is False or self.__isAnExpiredToken(have_a_token_details.timestamp):
+
+                while True:
+                    token = uuid.uuid4().hex
+                    old_Token = User().checkToken(token)
+                    if len(old_Token) == 0:
+                        break
+                timestamp = int(time.time())
+                User().inizializeUserAuthentication(userobj.id, token, timestamp)
+                logging.debug("New token generated")
                 return token
             else:
-                return have_a_token
+                logging.debug("Current token is valid.")
+                return have_a_token_details.token
         except Exception as ex:
             logging.exception(ex)
             raise ex

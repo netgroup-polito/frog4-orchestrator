@@ -55,6 +55,9 @@ class Configuration(object, metaclass=Singleton):
             self._DD_KEYFILE = config.get('doubledecker','dd_keyfile')
             self._DEFAULT_PRIORITY = config.get('flowrule', "default_priority")
 
+            # [authentication]
+            self.__AUTH_TOKEN_EXPIRATION = config.get('authentication', 'token_expiration')
+
         except Exception as ex:
             raise WrongConfigurationFile(str(ex))
     
@@ -121,3 +124,7 @@ class Configuration(object, metaclass=Singleton):
     @property
     def SWITCH_TEMPLATE(self):
         return self._SWITCH_TEMPLATE
+
+    @property
+    def AUTH_TOKEN_EXPIRATION(self):
+        return self.__AUTH_TOKEN_EXPIRATION
