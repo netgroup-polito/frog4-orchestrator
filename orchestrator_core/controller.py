@@ -183,13 +183,20 @@ class UpperLayerOrchestratorController(object):
                 else:
                     # domain not yet involved
                     new_nffg.id = str(nffg.id)
-                    Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
+                    graph_db_id = Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
                 new_nffg.sanitizeEpIDs()
 
                 if DEBUG_MODE is True:
                     logging.debug(new_domain.ip+":"+str(new_domain.port)+" "+new_nffg.id+"\n"+new_nffg.getJSON())
                 else:
-                    CA_Interface(self.user_data, new_domain).put(new_nffg)
+
+                    if new_domain.id in old_domain_graph.keys():
+                        # Update graph
+                        CA_Interface(self.user_data, new_domain).put(new_nffg)
+                    else:
+                        # Create new graph
+                        get_sub_nffg_id = CA_Interface(self.user_data, new_domain).post(new_nffg)
+                        Graph().set_sub_graph_id(get_sub_nffg_id["nffg-uuid"], graph_db_id)
 
             Session().updateStatus(session.id, 'complete')
             logging.info('Update completed')
