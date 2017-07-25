@@ -18,8 +18,6 @@ from orchestrator_core.api.user import api as user_api
 
 from orchestrator_core.config import Configuration
 
-from scripts.clean_user_token import users_tokens_clean
-
 from orchestrator_core.dd_client import DDClient
 
 conf = Configuration()
