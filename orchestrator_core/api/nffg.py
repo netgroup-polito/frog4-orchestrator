@@ -19,7 +19,7 @@ from orchestrator_core.userAuthentication import UserAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound,\
     NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
-    UnsupportedLabelingMethod, TokenNotFound, NoGraphFound, DomainNotFound
+    UnsupportedLabelingMethod, TokenNotFound, NoGraphFound, DomainNotFound, UserTokenExpired
 from nffg_library.exception import NF_FGValidationError
 
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
@@ -93,6 +93,9 @@ class NFFGResource(Resource):
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401
+        except UserTokenExpired as err:
+            logging.exception(err)
+            return err.message, 401
         except NoGraphFound as err:
             logging.exception(err)
             return err.message, 404
@@ -135,6 +138,9 @@ class NFFGResource(Resource):
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401
+        except UserTokenExpired as err:
+            logging.exception(err)
+            return err.message, 401
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
@@ -172,6 +178,9 @@ class NFFGResource(Resource):
             logging.debug(err.message)
             return "Unauthorized", 401
         except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
+        except UserTokenExpired as err:
             logging.exception(err)
             return err.message, 401
         except Exception as err:
@@ -214,6 +223,9 @@ class NFFGStatusResource(Resource):
             logging.debug(err.message)
             return "Unauthorized", 401
         except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
+        except UserTokenExpired as err:
             logging.exception(err)
             return err.message, 401
         except Exception as err:
@@ -300,6 +312,9 @@ class UpperLayerOrchestrator(Resource):
         except UnsupportedLabelingMethod as err:
             return err.message, 500
         except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
+        except UserTokenExpired as err:
             logging.exception(err)
             return err.message, 401
         except Exception as err:

@@ -4,7 +4,7 @@
 '''
 
 from .sql.user import User
-from orchestrator_core.exception import unauthorizedRequest, TokenNotFound
+from orchestrator_core.exception import unauthorizedRequest, TokenNotFound, UserTokenExpired
 from orchestrator_core.config import Configuration
 import uuid
 import time, logging
@@ -30,7 +30,6 @@ class UserAuthentication(object):
         if timestamp is None:
             return True
         timestamp = int(timestamp)
-        print(timestamp)
         tt = int(time.time())
         return ((tt - timestamp) > self.token_expiration_timestamp)
 
@@ -73,11 +72,16 @@ class UserAuthentication(object):
         user_token = request.headers.get("X-Auth-Token")
         if user_token is None:
             raise TokenNotFound('Token is required')
-        token_val = User().getToken(user_token)
-        if token_val.token == user_token:
-            user = User().getUserFromID(token_val.user_id)
-            username = user.name
-            password = user.password
-            userobj = UserData(user.id, username, password)
-            return userobj
+        user_details = User().getToken(user_token)
+        if user_details.token == user_token:
+            if self.IsAnExpiredToken(User().checkUsertimestamp(user_details.user_id)) == False:
+                user = User().getUserFromID(user_details.user_id)
+                username = user.name
+                password = user.password
+                userobj = UserData(user.id, username, password)
+                logging.debug("Found user token " + str(user_token) + " still valid.")
+                return userobj
+            else:
+                logging.debug("Found an expired user token " + str(user_token) + ".")
+                raise UserTokenExpired("Token expired. You must authenticate again with user/pass")
         raise TokenNotFound('Invalid Token Provided')
