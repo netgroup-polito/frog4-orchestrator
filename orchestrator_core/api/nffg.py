@@ -15,7 +15,7 @@ from nffg_library.nffg import NF_FG
 from nffg_library.validator import ValidateNF_FG
 from orchestrator_core.api.api import api
 from orchestrator_core.controller import UpperLayerOrchestratorController
-from orchestrator_core.userAuthentication import UserTokenAuthentication
+from orchestrator_core.userAuthentication import UserAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound,\
     NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
@@ -45,7 +45,7 @@ class NFFGResource(Resource):
         Update a graph
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             nffg_dict = json.loads(request.data.decode())
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
@@ -109,7 +109,7 @@ class NFFGResource(Resource):
         Delete a graph
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
             resp = Response(response=None, status=200, mimetype="application/json")
@@ -149,7 +149,7 @@ class NFFGResource(Resource):
         Get a graph
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             resp = Response(response=controller.get(nffg_id), status=200, mimetype="application/json")
             return resp
@@ -194,7 +194,7 @@ class NFFGStatusResource(Resource):
 
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             resp = Response(response=controller.get_status(nffg_id), status=200, mimetype="application/json")
             return resp
@@ -255,7 +255,7 @@ class UpperLayerOrchestrator(Resource):
         """
 
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             nffg_dict = json.loads(request.data.decode())
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()

@@ -21,15 +21,16 @@ class UserData(object):
         self.username = user.name
         self.password = user.password
 
-class UserLoginAuthentication(object):
+class UserAuthentication(object):
 
     def __init__(self):
         self.token_expiration_timestamp = int(Configuration().AUTH_TOKEN_EXPIRATION)
 
-    def __isAnExpiredToken(self, timestamp):
+    def IsAnExpiredToken(self, timestamp):
         if timestamp is None:
             return True
         timestamp = int(timestamp)
+        print(timestamp)
         tt = int(time.time())
         return ((tt - timestamp) > self.token_expiration_timestamp)
 
@@ -50,26 +51,23 @@ class UserLoginAuthentication(object):
 
         logging.info("Check current token. Get a new token, if it is needed.")
         try:
-            have_a_token_details = User().checkUserToken(userobj.id)
-            if have_a_token_details.token is False or self.__isAnExpiredToken(have_a_token_details.timestamp):
-
+            have_a_token = User().checkUserToken(userobj.id)
+            if have_a_token is False or self.IsAnExpiredToken(User().checkUsertimestamp(userobj.id)):
                 while True:
                     token = uuid.uuid4().hex
                     old_Token = User().checkToken(token)
                     if len(old_Token) == 0:
                         break
                 timestamp = int(time.time())
-                User().inizializeUserAuthentication(userobj.id, token, timestamp)
+                User().inizializeUserAuthentication(userobj.id, token, timestamp, have_a_token)
                 logging.debug("New token generated")
                 return token
             else:
                 logging.debug("Current token is valid.")
-                return have_a_token_details.token
+                return have_a_token
         except Exception as ex:
             logging.exception(ex)
             raise ex
-
-class UserTokenAuthentication(object):
 
     def UserTokenAuthenticateFromRESTRequest(self, request):
         user_token = request.headers.get("X-Auth-Token")

@@ -5,7 +5,7 @@ from flask import request, Response
 from flask_restplus import Resource, fields
 from orchestrator_core.user_validator import UserValidate
 from orchestrator_core.api.api import api
-from orchestrator_core.userAuthentication import UserLoginAuthentication
+from orchestrator_core.userAuthentication import UserAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, UserNotFound, UserValidationError
 
 login_user = api.namespace('login', description = 'Login Resource')
@@ -28,7 +28,7 @@ class User_login(Resource):
 
             login_data = json.loads(request.data.decode())
             UserValidate().validate(login_data)
-            resp_token = UserLoginAuthentication().UserLoginAuthenticateFromRESTRequest(login_data)
+            resp_token = UserAuthentication().UserLoginAuthenticateFromRESTRequest(login_data)
             resp = Response(response=resp_token, status=200, mimetype="application/token")
             return resp
 
