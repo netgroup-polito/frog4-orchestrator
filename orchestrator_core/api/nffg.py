@@ -15,11 +15,11 @@ from nffg_library.nffg import NF_FG
 from nffg_library.validator import ValidateNF_FG
 from orchestrator_core.api.api import api
 from orchestrator_core.controller import UpperLayerOrchestratorController
-from orchestrator_core.userAuthentication import UserTokenAuthentication
+from orchestrator_core.userAuthentication import UserAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound,\
     NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, \
     FeasibleDomainNotFoundForNFFGElement, FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, \
-    UnsupportedLabelingMethod, TokenNotFound, NoGraphFound, DomainNotFound
+    UnsupportedLabelingMethod, TokenNotFound, NoGraphFound, DomainNotFound, UserTokenExpired
 from nffg_library.exception import NF_FGValidationError
 
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
@@ -45,7 +45,7 @@ class NFFGResource(Resource):
         Update a graph
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             nffg_dict = json.loads(request.data.decode())
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
@@ -93,6 +93,9 @@ class NFFGResource(Resource):
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401
+        except UserTokenExpired as err:
+            logging.exception(err)
+            return err.message, 401
         except NoGraphFound as err:
             logging.exception(err)
             return err.message, 404
@@ -109,7 +112,7 @@ class NFFGResource(Resource):
         Delete a graph
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
             resp = Response(response=None, status=200, mimetype="application/json")
@@ -135,6 +138,9 @@ class NFFGResource(Resource):
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401
+        except UserTokenExpired as err:
+            logging.exception(err)
+            return err.message, 401
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
@@ -149,7 +155,7 @@ class NFFGResource(Resource):
         Get a graph
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             resp = Response(response=controller.get(nffg_id), status=200, mimetype="application/json")
             return resp
@@ -174,6 +180,9 @@ class NFFGResource(Resource):
         except TokenNotFound as err:
             logging.exception(err)
             return err.message, 401
+        except UserTokenExpired as err:
+            logging.exception(err)
+            return err.message, 401
         except Exception as err:
             logging.exception(err)
             return "Contact the admin: " + str(err), 500
@@ -194,7 +203,7 @@ class NFFGStatusResource(Resource):
 
         """
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             resp = Response(response=controller.get_status(nffg_id), status=200, mimetype="application/json")
             return resp
@@ -214,6 +223,9 @@ class NFFGStatusResource(Resource):
             logging.debug(err.message)
             return "Unauthorized", 401
         except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
+        except UserTokenExpired as err:
             logging.exception(err)
             return err.message, 401
         except Exception as err:
@@ -255,7 +267,7 @@ class UpperLayerOrchestrator(Resource):
         """
 
         try:
-            user_data = UserTokenAuthentication().UserTokenAuthenticateFromRESTRequest(request)
+            user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             nffg_dict = json.loads(request.data.decode())
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
@@ -300,6 +312,9 @@ class UpperLayerOrchestrator(Resource):
         except UnsupportedLabelingMethod as err:
             return err.message, 500
         except TokenNotFound as err:
+            logging.exception(err)
+            return err.message, 401
+        except UserTokenExpired as err:
             logging.exception(err)
             return err.message, 401
         except Exception as err:

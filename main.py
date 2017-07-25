@@ -18,8 +18,6 @@ from orchestrator_core.api.user import api as user_api
 
 from orchestrator_core.config import Configuration
 
-from scripts.clean_user_token import users_tokens_clean
-
 from orchestrator_core.dd_client import DDClient
 
 conf = Configuration()
@@ -42,10 +40,6 @@ log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%
 logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
 
 logging.debug("Global Orchestrator Starting...")
-
-# Clean user tokens
-# token_message = users_tokens_clean().token_clean()
-# logging.info(token_message)
 
 # Rest application
 if nffg_api is not None and user_api is not None:
