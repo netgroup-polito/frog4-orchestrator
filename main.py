@@ -43,10 +43,6 @@ logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, 
 
 logging.debug("Global Orchestrator Starting...")
 
-# Clean user tokens
-# token_message = users_tokens_clean().token_clean()
-# logging.info(token_message)
-
 # Rest application
 if nffg_api is not None and user_api is not None:
     app = Flask(__name__)
