@@ -8,13 +8,15 @@ from orchestrator_core.api.api import api
 from orchestrator_core.userAuthentication import UserAuthentication
 from orchestrator_core.exception import wrongRequest, unauthorizedRequest, UserNotFound, UserValidationError
 
-login_user = api.namespace('login', description = 'Login Resource')
+login_user = api.namespace('login', description='Login Resource')
 login_user_model = api.model('Login', {
-    'username': fields.String(required = True, description = 'Username',  type = 'string'),
-    'password': fields.String(required = True, description = 'Password',  type = 'string') })
+    'username': fields.String(required=True, description='Username', type='string'),
+    'password': fields.String(required=True, description='Password', type='string')})
+
+
 @login_user.route('', methods=['POST'])
 @api.doc(responses={404: 'User Not Found'})
-class User_login(Resource):
+class LoginResource(Resource):
 
     @login_user.expect(login_user_model)
     @login_user.response(200, 'Login Successfully.')
@@ -34,28 +36,22 @@ class User_login(Resource):
 
         except wrongRequest as err:
             logging.exception(err)
-            return ("Bad Request", 400)
-
+            return "Bad Request", 400
         except unauthorizedRequest as err:
             logging.debug(err.message)
-            return ("Unauthorized: "+ err.message, 401)
-
+            return "Unauthorized: " + err.message, 401
         except UserNotFound as err:
-            logging.exception(err)
-            return ("UserNotFound", 404)
-
+            logging.debug(err.message)
+            return "Unauthorized: " + err.message, 401
         except UserValidationError as err:
             logging.exception(err)
-            return ("Login Validation Error: "+ err.message, 409)
-
+            return "Login Validation Error: " + err.message, 409
         except requests.HTTPError as err:
             logging.exception(err)
-            return (str(err), 500)
-
+            return str(err), 500
         except requests.ConnectionError as err:
             logging.exception(err)
-            return (str(err), 500)
-
+            return str(err), 500
         except Exception as err:
             logging.exception(err)
-            return ("Contact the admin: "+ str(err), 500)
+            return "Contact the admin: " + str(err), 500
