@@ -1,4 +1,5 @@
-import sys, os
+import sys
+import os
 from subprocess import call
 from orchestrator_core.config import Configuration
 
@@ -18,6 +19,6 @@ if conf_file is not None:
 conf = Configuration()
 ip = conf.ORCH_IP
 port = conf.ORCH_PORT
-address = str(ip) +":"+str(port)
+address = str(ip) + ":" + str(port)
 
 call("gunicorn -b " + address + " -t 500 main:app", shell=True)

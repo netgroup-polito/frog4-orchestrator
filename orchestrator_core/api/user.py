@@ -5,8 +5,8 @@ from flask import request, Response
 from flask_restplus import Resource, fields
 from orchestrator_core.user_validator import UserValidate
 from orchestrator_core.api.api import api
-from orchestrator_core.userAuthentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, UserNotFound, UserValidationError
+from orchestrator_core.user_authentication import UserAuthentication
+from orchestrator_core.exception import WrongRequest, UnauthorizedRequest, UserNotFound, UserValidationError
 
 login_user = api.namespace('login', description='Login Resource')
 login_user_model = api.model('Login', {
@@ -25,7 +25,9 @@ class LoginResource(Resource):
     @login_user.response(401, 'Unauthorized.')
     @login_user.response(500, 'Internal Error.')
     def post(self):
-        """Login info and returning the user token"""
+        """
+        Login info and returning the user token
+        """
         try:
 
             login_data = json.loads(request.data.decode())
@@ -34,10 +36,10 @@ class LoginResource(Resource):
             resp = Response(response=resp_token, status=200, mimetype="application/token")
             return resp
 
-        except wrongRequest as err:
+        except WrongRequest as err:
             logging.exception(err)
             return "Bad Request", 400
-        except unauthorizedRequest as err:
+        except UnauthorizedRequest as err:
             logging.debug(err.message)
             return "Unauthorized: " + err.message, 401
         except UserNotFound as err:

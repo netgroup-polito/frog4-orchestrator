@@ -7,7 +7,7 @@ Created on Oct 1, 2014
 from sqlalchemy import Column, DateTime, func, VARCHAR, desc
 from orchestrator_core.sql.sql_server import get_session
 from sqlalchemy.ext.declarative import declarative_base
-from orchestrator_core.exception import sessionNotFound
+from orchestrator_core.exception import SessionNotFound
 from sqlalchemy.orm.exc import NoResultFound
 
 import base64
@@ -62,10 +62,8 @@ class Session(object):
         returns if exists all active session of the user
         '''
         session = get_session()
-        session_ref = session.query(SessionModel).filter_by(user_id = user_id).filter_by(ended = None)\
-            .filter_by(error = None).all()
-        if len(session_ref) == 0 :
-            raise sessionNotFound("No active Graph")
+        session_ref = session.query(SessionModel).filter_by(user_id=user_id).filter_by(ended=None)\
+            .filter_by(error=None).all()
         return session_ref    
     
     def set_ended(self, session_id):
@@ -96,7 +94,7 @@ class Session(object):
             session_ref = session.query(SessionModel).filter_by(service_graph_id = service_graph_id).filter_by\
                 (ended = None).order_by(desc(SessionModel.started_at)).first()
         if session_ref is None:
-            raise sessionNotFound("No Result Found for graph id: "+str(service_graph_id))
+            raise SessionNotFound("No Result Found for graph id: " + str(service_graph_id))
         return session_ref
 
     def updateSession(self, session_id, status, graph_name, nffg_json):

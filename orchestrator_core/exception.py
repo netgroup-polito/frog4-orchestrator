@@ -39,31 +39,31 @@ class LoginError(Exception):
         return self.message    
 
 
-class sessionNotFound(Exception):
+class SessionNotFound(Exception):
     def __init__(self, message):
         self.message = message
         # Call the base class constructor with the parameters it needs
-        super(sessionNotFound, self).__init__(message)
+        super(SessionNotFound, self).__init__(message)
         
     def get_mess(self):
         return self.message
 
 
-class wrongRequest(Exception):
+class WrongRequest(Exception):
     def __init__(self, message):
         self.message = message
         # Call the base class constructor with the parameters it needs
-        super(wrongRequest, self).__init__(message)
+        super(WrongRequest, self).__init__(message)
     
     def get_mess(self):
         return self.message
 
 
-class unauthorizedRequest(Exception):
+class UnauthorizedRequest(Exception):
     def __init__(self, message):
         self.message = message
         # Call the base class constructor with the parameters it needs
-        super(unauthorizedRequest, self).__init__(message)
+        super(UnauthorizedRequest, self).__init__(message)
     
     def get_mess(self):
         return self.message
@@ -87,6 +87,7 @@ class GraphError(Exception):
     
     def get_mess(self):
         return self.message
+
 
 class NoFunctionalCapabilityFound(Exception):
     def __init__(self, message):
@@ -186,6 +187,7 @@ class NoGraphFound(Exception):
 
     def get_mess(self):
         return self.message
+
 
 class UserTokenExpired(Exception):
     def __init__(self, message):

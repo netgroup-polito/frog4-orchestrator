@@ -6,7 +6,7 @@ import uuid
 import time
 import logging
 from .sql.user import User
-from orchestrator_core.exception import unauthorizedRequest, TokenNotFound, UserTokenExpired
+from orchestrator_core.exception import UnauthorizedRequest, TokenNotFound, UserTokenExpired
 from orchestrator_core.config import Configuration
 
 
@@ -43,10 +43,10 @@ class UserAuthentication(object):
     def authenticate_user_from_credentials(self, username, password):
         logging.debug('New POST request for /login/  From user ' + username)
         if username is None or password is None:
-            raise unauthorizedRequest('Authentication credentials required')
+            raise UnauthorizedRequest('Authentication credentials required')
         user = User().getUser(username)
         if user.password != password:
-            raise unauthorizedRequest('Invalid authentication credentials')
+            raise UnauthorizedRequest('Invalid authentication credentials')
 
         user_obj = UserData(user.id, username, password)
 

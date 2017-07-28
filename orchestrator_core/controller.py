@@ -12,9 +12,9 @@ import uuid
 from nffg_library.nffg import NF_FG
 from orchestrator_core.scheduler import Scheduler
 from orchestrator_core.virtual_topology import VirtualTopology
-from .splitter import Splitter
+from orchestrator_core.splitter import Splitter
 
-from orchestrator_core.exception import sessionNotFound, GraphError, NoFunctionalCapabilityFound, \
+from orchestrator_core.exception import SessionNotFound, GraphError, NoFunctionalCapabilityFound, \
     FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement, NoGraphFound, DomainNotFound
 from orchestrator_core.nffg_manager import NFFG_Manager
 from orchestrator_core.sql.session import Session
@@ -33,9 +33,8 @@ class UpperLayerOrchestratorController(object):
     """
     Class that performs the logic of orchestrator_core
     """
-    def __init__(self, user_data, counter=None):
+    def __init__(self, user_data):
         self.user_data = user_data
-        self.counter = counter
 
     def get(self, nffg_id):
         if nffg_id is None:
@@ -135,7 +134,7 @@ class UpperLayerOrchestratorController(object):
             split_flows = scheduler.schedule(nffg)
 
             # 3) Generate a sub-graph for each involved domain
-            domains, nffgs = Splitter(self.counter).split(nffg, split_flows)
+            domains, nffgs = Splitter().split(nffg, split_flows)
 
             domain_nffg_dict = OrderedDict()
             for i in range(0, len(domains)):
@@ -269,7 +268,7 @@ class UpperLayerOrchestratorController(object):
 
             # 3) Generate a sub-graph for each involved domain
             logging.info("Splitting graph...")
-            domains, nffgs = Splitter(self.counter).split(nffg, split_flows)
+            domains, nffgs = Splitter().split(nffg, split_flows)
 
             domain_nffg_dict = OrderedDict()
             for i in range(0, len(domains)):
@@ -347,7 +346,7 @@ class UpperLayerOrchestratorController(object):
         # TODO: Check if the graph exists, if true
         try:
             session_id = Session().get_active_user_session_by_nf_fg_id(service_graph_id).id
-        except sessionNotFound:
+        except SessionNotFound:
             return False
         
         status = self.get_resources_status(session_id)

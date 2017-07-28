@@ -16,7 +16,7 @@ from nffg_library.validator import ValidateNF_FG
 from orchestrator_core.api.api import api
 from orchestrator_core.controller import UpperLayerOrchestratorController
 from orchestrator_core.user_authentication import UserAuthentication
-from orchestrator_core.exception import wrongRequest, unauthorizedRequest, sessionNotFound, UserNotFound,\
+from orchestrator_core.exception import WrongRequest, UnauthorizedRequest, SessionNotFound, UserNotFound,\
     NoFunctionalCapabilityFound, FunctionalCapabilityAlreadyInUse, FeasibleDomainNotFoundForNFFGElement,\
     FeasibleSolutionNotFoundForNFFG, GraphError, IncoherentDomainInformation, UnsupportedLabelingMethod, TokenNotFound,\
     NoGraphFound, DomainNotFound, UserTokenExpired
@@ -30,8 +30,6 @@ nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 @nffg_ns.route('/', methods=['POST', 'GET'])
 @api.doc(responses={404: 'Graph not found'})
 class NFFGResource(Resource):
-
-    counter = 1
 
     @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.param("NFFG", "Graph to be deployed", "body", type="string", required=True)
@@ -52,16 +50,14 @@ class NFFGResource(Resource):
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
-            controller = UpperLayerOrchestratorController(user_data, self.counter)
+            controller = UpperLayerOrchestratorController(user_data)
             resp = Response(response=controller.post(nffg), status=201, mimetype="application/json")
-            # TODO which is the purpose of this counter?
-            self.counter += 1
             return resp
 
-        except wrongRequest as err:
+        except WrongRequest as err:
             logging.exception(err)
             return "Bad Request", 400
-        except (unauthorizedRequest, UserNotFound) as err:
+        except (UnauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
@@ -119,17 +115,15 @@ class NFFGResource(Resource):
             ValidateNF_FG().validate(nffg_dict)
             nffg = NF_FG()
             nffg.parseDict(nffg_dict)
-            controller = UpperLayerOrchestratorController(user_data, self.counter)
+            controller = UpperLayerOrchestratorController(user_data)
             controller.put(nffg, nffg_id)
             resp = Response(response=None, status=202, mimetype="application/json")
-            # TODO which is the purpose of this counter?
-            self.counter += 1
             return resp
 
-        except wrongRequest as err:
+        except WrongRequest as err:
             logging.exception(err)
             return "Bad Request", 400
-        except (unauthorizedRequest, UserNotFound) as err:
+        except (UnauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
@@ -196,10 +190,10 @@ class NFFGResource(Resource):
         except requests.ConnectionError as err:
             logging.exception(err)
             return str(err), 500
-        except sessionNotFound as err:
+        except SessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound) as err:
+        except (UnauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt")
             logging.debug(err.message)
@@ -231,17 +225,17 @@ class NFFGResource(Resource):
 
         except NoResultFound:
             logging.exception("EXCEPTION - NoResultFound")
-            return "No Result Found", 404
+            return "Graph not found", 404
         except requests.HTTPError as err:
             logging.exception(err)
             return str(err), 500
         except requests.ConnectionError as err:
             logging.exception(err)
             return str(err), 500
-        except sessionNotFound as err:
+        except SessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound) as err:
+        except (UnauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
@@ -283,10 +277,10 @@ class NFFGStatusResource(Resource):
         except requests.HTTPError as err:
             logging.exception(err)
             return str(err), 500
-        except sessionNotFound as err:
+        except SessionNotFound as err:
             logging.exception(err.message)
             return err.message, 404
-        except (unauthorizedRequest, UserNotFound) as err:
+        except (UnauthorizedRequest, UserNotFound) as err:
             if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
