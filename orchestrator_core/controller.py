@@ -177,10 +177,12 @@ class UpperLayerOrchestratorController(object):
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
                     new_nffg.id = Graph().get_sub_graph_id(new_nffg.db_id)
                     Graph().set_graph_partial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
+                    graph_db_id = new_nffg.db_id
                 else:
                     # domain not yet involved
                     new_nffg.id = str(nffg.id)
-                    graph_db_id = Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
+                    graph_db_id = Graph().add_graph(new_nffg, session.id, new_domain.id,
+                                                    partial=len(domain_nffg_dict) > 1)
                 new_nffg.sanitizeEpIDs()
 
                 if DEBUG_MODE is True:
@@ -192,8 +194,8 @@ class UpperLayerOrchestratorController(object):
                         CA_Interface(self.user_data, new_domain).put(new_nffg)
                     else:
                         # Create new graph
-                        get_sub_nffg_id = CA_Interface(self.user_data, new_domain).post(new_nffg)
-                        Graph().set_sub_graph_id(get_sub_nffg_id["nffg-uuid"], graph_db_id)
+                        sub_nffg_id = CA_Interface(self.user_data, new_domain).post(new_nffg)
+                        Graph().set_sub_graph_id(sub_nffg_id["nffg-uuid"], graph_db_id)
 
             Session().updateStatus(session.id, 'complete')
             logging.info('Update completed')
@@ -281,7 +283,7 @@ class UpperLayerOrchestratorController(object):
 
                 # Save the graph in the database
                 graph_db_id = Graph().add_graph(sub_nffg, session_id, domain_id=domain.id,
-                                             partial=len(domain_nffg_dict) > 1)
+                                                partial=len(domain_nffg_dict) > 1)
 
                 # Instantiate profile
                 logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
@@ -331,7 +333,6 @@ class UpperLayerOrchestratorController(object):
             '''
             Session().set_error(session_id)
             raise ex
-
 
     @staticmethod
     def prepare_nffg(nffg):
@@ -480,7 +481,6 @@ class UpperLayerOrchestratorController(object):
         :type diff_nffg: NF_FG
         :return: 
         """
-
         for diff_vnf in diff_nffg.vnfs:
             if diff_vnf.status == 'already_deployed':
                 vnf = nffg.getVNF(diff_vnf.id)

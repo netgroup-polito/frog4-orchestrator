@@ -28,7 +28,7 @@ class User_login(Resource):
 
             login_data = json.loads(request.data.decode())
             UserValidate().validate(login_data)
-            resp_token = UserAuthentication().UserLoginAuthenticateFromRESTRequest(login_data)
+            resp_token = UserAuthentication().user_login_authenticate_from_rest_request(login_data)
             resp = Response(response=resp_token, status=200, mimetype="application/token")
             return resp
 
