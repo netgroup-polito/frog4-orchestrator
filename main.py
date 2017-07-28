@@ -20,24 +20,11 @@ from orchestrator_core.config import Configuration
 
 from orchestrator_core.dd_client import DDClient
 
+# load configuration
 conf = Configuration()
 
-# set log level
-if conf.DEBUG is True:
-    log_level = logging.DEBUG
-    requests_log = logging.getLogger("requests")
-    requests_log.setLevel(logging.WARNING)
-    sqlalchemy_log = logging.getLogger('sqlalchemy.engine')
-    sqlalchemy_log.setLevel(logging.WARNING)
-elif conf.VERBOSE is True:
-    log_level = logging.INFO
-    requests_log = logging.getLogger("requests")
-    requests_log.setLevel(logging.WARNING)
-else:
-    log_level = logging.WARNING
-
-log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%(lineno)s'
-logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
+# initialize logging
+conf.log_configuration()
 print("[ Configuration file is: '" + Configuration().conf_file + "' ]")
 
 logging.debug("Global Orchestrator Starting...")
