@@ -38,6 +38,7 @@ else:
 
 log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s - %(filename)s:%(lineno)s'
 logging.basicConfig(filename=conf.LOG_FILE, level=log_level, format=log_format, datefmt='%d/%m/%Y %I:%M:%S')
+print("[ Configuration file is: '" + Configuration().conf_file + "' ]")
 
 logging.debug("Global Orchestrator Starting...")
 

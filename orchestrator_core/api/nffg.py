@@ -25,7 +25,7 @@ from nffg_library.exception import NF_FGValidationError
 nffg_ns = api.namespace('NF-FG', 'NFFG Resource')
 
 
-@nffg_ns.route('/<nffg_id>', methods=['PUT','DELETE','GET'],
+@nffg_ns.route('/<nffg_id>', methods=['PUT', 'DELETE', 'GET'],
                doc={'params': {'nffg_id': {'description': 'The graph ID', 'in': 'path'}}})
 @api.doc(responses={404: 'Graph not found'})
 class NFFGResource(Resource):
@@ -115,7 +115,7 @@ class NFFGResource(Resource):
             user_data = UserAuthentication().UserTokenAuthenticateFromRESTRequest(request)
             controller = UpperLayerOrchestratorController(user_data)
             controller.delete(nffg_id)
-            resp = Response(response=None, status=200, mimetype="application/json")
+            resp = Response(response=None, status=204, mimetype="application/json")
             return resp
 
         except NoResultFound:
@@ -173,7 +173,7 @@ class NFFGResource(Resource):
             logging.exception(err.message)
             return err.message, 404
         except (unauthorizedRequest, UserNotFound) as err:
-            if request.headers.get("X-Auth-Token") is  None:
+            if request.headers.get("X-Auth-Token") is None:
                 logging.debug("Unauthorized access attempt ")
             logging.debug(err.message)
             return "Unauthorized", 401
@@ -188,8 +188,8 @@ class NFFGResource(Resource):
             return "Contact the admin: " + str(err), 500
 
 
-@nffg_ns.route('/status/<nffg_id>', methods=['GET'], doc={'params': {'nffg_id': {'description':
-                                                                                     'The Graph ID to be retrieved'}}})
+@nffg_ns.route('/status/<nffg_id>', methods=['GET'],
+               doc={'params': {'nffg_id': {'description': 'The Graph ID to be retrieved'}}})
 @api.doc(responses={404: 'Graph not found'})
 class NFFGStatusResource(Resource):
 
@@ -233,11 +233,11 @@ class NFFGStatusResource(Resource):
             return "Contact the admin: " + str(err), 500
 
 
-
-@nffg_ns.route('/', methods=['POST','GET'])
+@nffg_ns.route('/', methods=['POST', 'GET'])
 class UpperLayerOrchestrator(Resource):
 
     # This class is necessary because there is a conflict in the swagger documentation of get and put operations
+    # TODO fix the swagger annotations of the NFFGResource class and delete this one
 
     @nffg_ns.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
     @nffg_ns.response(200, 'List retrieved.')

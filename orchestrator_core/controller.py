@@ -43,12 +43,12 @@ class UpperLayerOrchestratorController(object):
             sessions = Session().get_active_user_sessions(self.user_data.id)
             graphs = []
             for session in sessions:
-                graph = {}
-                graph['nffg-uuid'] =  session.service_graph_id
+                graph = dict()
+                graph['nffg-uuid'] = session.service_graph_id
                 graph['forwarding-graph'] = json.loads(base64.b64decode(Session().get_nffg_json(session.id).nf_fgraph)
                                                        .decode('utf-8'))['forwarding-graph']
                 graphs.append(graph)
-            response_json = {}
+            response_json = dict()
             response_json["NF-FG"] = graphs
             return json.dumps(response_json)
         else:
@@ -195,10 +195,6 @@ class UpperLayerOrchestratorController(object):
             Session().updateStatus(session.id, 'complete')
             logging.info('Update completed')
 
-            # return the graph id
-            #response_uuid = dict()
-            #response_uuid["nffg-uuid"] = nffg_id
-            #return json.dumps(response_uuid)
             return nffg_id
 
         except (HTTPError, ConnectionError) as ex:
