@@ -49,15 +49,18 @@ class Graph(object):
         :type partial: bool
         :return:
         """
-        session = get_session()  
+        session = get_session()
         with session.begin():
             self.id_generator(nffg, session_id)
             #if not partial:
-                #graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial)
+                #graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id,  partial=partial,
+                                       #sub_nffg=base64.b64encode(nffg.getJSON().encode('utf-8')))
             #else:
             graph_ref = GraphModel(id=nffg.db_id, session_id=session_id, domain_id=domain_id, partial=partial,
                                        sub_graph_id=nffg.id, sub_nffg=base64.b64encode(nffg.getJSON().encode('utf-8')))
             session.add(graph_ref)
+        return nffg.db_id
+
 
     def delete_session(self, session_id):
         session = get_session()
@@ -111,4 +114,10 @@ class Graph(object):
                 graphs_ref = session.query(GraphModel).filter_by(session_id = session_id).all()
                 nffg.db_id = graphs_ref[0].id
             else:
-                nffg.db_id = graph_id            
+                nffg.db_id = graph_id
+
+    @staticmethod
+    def set_sub_graph_id(sub_nffg_id, graph_db_id):
+        session = get_session()
+        with session.begin():
+            session.query(GraphModel).filter_by(id=graph_db_id).update({"sub_graph_id": sub_nffg_id})

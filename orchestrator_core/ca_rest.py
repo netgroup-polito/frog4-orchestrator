@@ -25,10 +25,10 @@ class CA_Interface(object):
         self.user_data = user_data
         self.base_url = "http://"+str(self.ip)+":"+str(self.port)
         self.put_url = self.base_url+"/NF-FG/%s"
+        self.post_url = self.base_url + "/NF-FG/"
         self.delete_url = self.base_url+"/NF-FG/%s"
         self.get_nffg_url = self.base_url+"/NF-FG/%s"   
-        self.get_status_url = self.base_url+"/NF-FG/status/%s"  
-        self.get_template =  self.base_url+"/template/location/%s"
+        self.get_status_url = self.base_url+"/NF-FG/status/%s"
         self.authentication_url = self.base_url+"/login"
         
         if self.token is not None:
@@ -56,6 +56,29 @@ class CA_Interface(object):
                 raise err
 
     
+    def post(self, nffg):
+        if self.token is None:
+            self.getToken(self.user_data)
+        try:
+            logging.debug(self.post_url + "\n" + nffg.getJSON())
+            resp = requests.post(self.post_url, data=nffg.getJSON(), headers=self.headers,
+                                timeout=int(self.timeout))
+            resp.raise_for_status()
+            logging.debug("Post completed")
+            return json.loads(resp.text)
+
+        except HTTPError as err:
+            if err.response.status_code == 401:
+                logging.debug("Token expired, getting a new one...")
+                self.getToken(self.user_data)
+                resp = requests.post(self.post_url, data = nffg.getJSON(), headers=self.headers,
+                                    timeout=int(self.timeout))
+                resp.raise_for_status()
+                logging.debug("Post completed")
+                return json.loads(resp.text)
+            else:
+                raise err
+
     def put(self, nffg):
         if self.token is None:
             self.getToken(self.user_data)
@@ -66,7 +89,6 @@ class CA_Interface(object):
 
             resp.raise_for_status()
             logging.debug("Put completed")
-            return resp.text
         except HTTPError as err:
             if err.response.status_code == 401:
                 logging.debug("Token expired, getting a new one...")
@@ -74,8 +96,7 @@ class CA_Interface(object):
                 resp = requests.put(self.put_url % nffg.id, data = nffg.getJSON(), headers=self.headers,
                                     timeout=int(self.timeout))
                 resp.raise_for_status()
-                logging.debug("Put completed")  
-                return resp.text
+                logging.debug("Put completed")
             else:
                 raise err
     

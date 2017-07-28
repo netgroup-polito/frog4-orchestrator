@@ -98,10 +98,7 @@ class UpperLayerOrchestratorController(object):
         logging.info('NF-FG already instantiated, trying to update it')
 
         session = Session().get_active_user_session_by_nf_fg_id(nffg.id, error_aware=True)
-        nffg_json = json.loads(nffg.getJSON(domain=True))
-        # delete graph id from json
-        del nffg_json['forwarding-graph']['id']
-        nffg_json = json.dumps(nffg_json).encode('utf-8')
+        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
         Session().updateSession(session.id, 'updating', nffg.name, nffg_json)
 
         # Get profile from session
@@ -180,17 +177,25 @@ class UpperLayerOrchestratorController(object):
                     new_nffg.db_id = old_domain_graph[new_domain.id].pop()
                     new_nffg.id = Graph().get_sub_graph_id(new_nffg.db_id)
                     Graph().set_graph_partial(new_nffg.db_id, partial=len(domain_nffg_dict) > 1)
+                    graph_db_id = new_nffg.db_id
                 else:
                     # domain not yet involved
-                    # chose an id for the new sub-graph
                     new_nffg.id = str(nffg.id)
-                    Graph().add_graph(new_nffg, session.id, new_domain.id, partial=len(domain_nffg_dict) > 1)
+                    graph_db_id = Graph().add_graph(new_nffg, session.id, new_domain.id,
+                                                    partial=len(domain_nffg_dict) > 1)
                 new_nffg.sanitizeEpIDs()
 
                 if DEBUG_MODE is True:
                     logging.debug(new_domain.ip+":"+str(new_domain.port)+" "+new_nffg.id+"\n"+new_nffg.getJSON())
                 else:
-                    CA_Interface(self.user_data, new_domain).put(new_nffg)
+
+                    if new_domain.id in old_domain_graph.keys():
+                        # Update graph
+                        CA_Interface(self.user_data, new_domain).put(new_nffg)
+                    else:
+                        # Create new graph
+                        sub_nffg_id = CA_Interface(self.user_data, new_domain).post(new_nffg)
+                        Graph().set_sub_graph_id(sub_nffg_id["nffg-uuid"], graph_db_id)
 
             Session().updateStatus(session.id, 'complete')
             logging.info('Update completed')
@@ -240,10 +245,7 @@ class UpperLayerOrchestratorController(object):
                 nffg.id = str(new_nffg_id)
                 break
 
-        nffg_json = json.loads(nffg.getJSON(domain=True))
-        # delete graph id from json
-        del nffg_json['forwarding-graph']['id']
-        nffg_json = json.dumps(nffg_json).encode('utf-8')
+        nffg_json = nffg.getJSON(domain=True).encode('utf-8')
         session_id = uuid.uuid4().hex
         Session().inizializeSession(session_id, self.user_data.id, nffg.id, nffg.name, nffg_json)
         try:
@@ -280,7 +282,8 @@ class UpperLayerOrchestratorController(object):
                 sub_nffg.id = str(nffg.id)
 
                 # Save the graph in the database
-                Graph().add_graph(sub_nffg, session_id, domain_id=domain.id, partial=len(domain_nffg_dict) > 1)
+                graph_db_id = Graph().add_graph(sub_nffg, session_id, domain_id=domain.id,
+                                                partial=len(domain_nffg_dict) > 1)
 
                 # Instantiate profile
                 logging.info("Instantiate sub-graph on domain '" + domain.name + "'")
@@ -288,7 +291,8 @@ class UpperLayerOrchestratorController(object):
                 if DEBUG_MODE is True:
                     logging.debug(domain.ip + ":" + str(domain.port) + " " + sub_nffg.id+"\n"+sub_nffg.getJSON())
                 else:
-                    CA_Interface(self.user_data, domain).put(sub_nffg)
+                    get_sub_nffg_id = CA_Interface(self.user_data, domain).post(sub_nffg)
+                    Graph().set_sub_graph_id(get_sub_nffg_id["nffg-uuid"], graph_db_id)
 
                 logging.info("sub-graph correctly instantiated  on domain '" + domain.name + "'")
 
@@ -329,7 +333,6 @@ class UpperLayerOrchestratorController(object):
             '''
             Session().set_error(session_id)
             raise ex
-
 
     @staticmethod
     def prepare_nffg(nffg):
@@ -478,7 +481,6 @@ class UpperLayerOrchestratorController(object):
         :type diff_nffg: NF_FG
         :return: 
         """
-
         for diff_vnf in diff_nffg.vnfs:
             if diff_vnf.status == 'already_deployed':
                 vnf = nffg.getVNF(diff_vnf.id)
