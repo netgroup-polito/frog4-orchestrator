@@ -65,7 +65,7 @@ To add a new user on the database
 For this, you need to modify the [config/default-config.ini](config/default-config.ini) file according to your preferences.
 Important parameters to be properly set are the following:
 * [broker address](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L24): this line must point to the broker previously installed;
-* [dd_keyfile](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L28): this line must point to a local file containing the key to be used on the message bus;
+* [dd_keyfile](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L26): this line must point to a local file containing the key to be used on the message bus;
 * [db connection](https://github.com/netgroup-polito/frog4-orchestrator/blob/master/config/default-config.ini#L40): this line must be changed so that `orch-user` and `orch-pwd` are set to the value chose above when creating the SQL database.
 
 Moreover, in this file you can set the TCP port to be used to interact with the FROG4-orchestrator through its REST API.
