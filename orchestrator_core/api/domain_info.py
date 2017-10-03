@@ -1,6 +1,5 @@
 import logging
 import requests
-import json
 from flask import request, Response
 from flask_restplus import Resource
 from sqlalchemy.orm.exc import NoResultFound
@@ -19,7 +18,7 @@ class DomainInfo(Resource):
     @domain_info.response(200, 'Domain retrieved.')
     @domain_info.response(401, 'Unauthorized.')
     @domain_info.response(500, 'Internal Error.')
-    def get(self, nffg_id=None):
+    def get(self):
         """
         Returns a domain information
         Get domain information
