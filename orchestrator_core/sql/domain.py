@@ -101,7 +101,10 @@ class Domain(object):
     def get_Domain_Info_for_upper_layer(self):
         session = get_session()
         try:
-            return session.query(DomainModel).all()
+            Domain_info =  session.query(DomainModel).all()
+            if Domain_info is None:
+                raise NoResultFound()
+            return  Domain_info
         except Exception as ex:
             logging.exception(ex)
             raise DomainNotFound("Domain not found: ") from None

@@ -14,8 +14,9 @@ from flask import Flask
 
 from orchestrator_core.api.api import root_blueprint
 from orchestrator_core.api.nffg import api as nffg_api
-from orchestrator_core.api.user import api as user_api
 from orchestrator_core.api.domain_info import api as domain_info_api
+from orchestrator_core.api.user import api as user_api
+
 
 from orchestrator_core.config import Configuration
 
