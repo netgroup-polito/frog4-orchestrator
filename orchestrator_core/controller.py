@@ -498,3 +498,18 @@ class UpperLayerOrchestratorController(object):
                     vnf.status = 'to_reschedule'
                 else:
                     vnf.status = 'to_deploy_fixed'
+
+    def get_domian_information_for_upper_Layer(self):
+
+        # Get the list of active domains
+        Domain_Info_for_upper_layer = Domain().get_Domain_Info_for_upper_layer()
+        domain_list = []
+        for Domain_Info in Domain_Info_for_upper_layer:
+            domain = dict()
+            domain['domain-name'] = Domain_Info.name
+            domain['functional-capabilities'] = (DomainInformation().get_functional_capabilities_ForUpperLayer
+                                                 (Domain_Info.id))
+            domain_list.append(domain)
+        response_json = dict()
+        response_json["netgroup-domain:informations"] = domain_list
+        return json.dumps(response_json)

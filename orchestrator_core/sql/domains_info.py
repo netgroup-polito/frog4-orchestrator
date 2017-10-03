@@ -286,3 +286,16 @@ class DomainInformation(object):
     def _get_higher_function_specification_id(self):
         session = get_session()
         return session.query(func.max(FunctionSpecificationModel.id).label("max_id")).one().max_id
+
+    def get_functional_capabilities_ForUpperLayer(self, domain_id):
+        session = get_session()
+        functional_capabilities_ForUpperLayer = session.query(FunctionalCapabilityModel).filter_by(domain_id = domain_id).all()
+        if functional_capabilities_ForUpperLayer is None:
+            raise NoResultFound()
+        capabilities_list = []
+        for functional_capabilities_Info in functional_capabilities_ForUpperLayer:
+            functional_cap = dict()
+            functional_cap['name'] = functional_capabilities_Info.name
+            functional_cap['type'] = functional_capabilities_Info.type
+            capabilities_list.append(functional_cap)
+        return capabilities_list

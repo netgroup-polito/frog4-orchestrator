@@ -96,3 +96,12 @@ class Domain(object):
             domain = DomainModel(id=max_id+1, name=domain_name, type=domain_type, ip=domain_ip, port=domain_port)
             session.add(domain)
             return domain.id
+
+
+    def get_Domain_Info_for_upper_layer(self):
+        session = get_session()
+        try:
+            return session.query(DomainModel).all()
+        except Exception as ex:
+            logging.exception(ex)
+            raise DomainNotFound("Domain not found: ") from None
