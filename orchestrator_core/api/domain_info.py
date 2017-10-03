@@ -16,7 +16,7 @@ domain_info = api.namespace('Domain-Information', 'Domain Resource')
 
 class DomainInfo(Resource):
     @domain_info.param("X-Auth-Token", "Authentication Token", "header", type="string", required=True)
-    @domain_info.response(200, 'Graph retrieved.')
+    @domain_info.response(200, 'Domain retrieved.')
     @domain_info.response(401, 'Unauthorized.')
     @domain_info.response(500, 'Internal Error.')
     def get(self, nffg_id=None):
