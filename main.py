@@ -15,6 +15,7 @@ from flask import Flask
 from orchestrator_core.api.api import root_blueprint
 from orchestrator_core.api.nffg import api as nffg_api
 from orchestrator_core.api.user import api as user_api
+from orchestrator_core.api.domain_info import api as domain_info_api
 
 from orchestrator_core.config import Configuration
 
@@ -30,7 +31,7 @@ print("[ Configuration file is: '" + Configuration().conf_file + "' ]")
 logging.debug("Global Orchestrator Starting...")
 
 # Rest application
-if nffg_api is not None and user_api is not None:
+if nffg_api is not None and user_api is not None and domain_info_api is not None:
     app = Flask(__name__)
     app.register_blueprint(root_blueprint)
     logging.info("Flask Successfully started")
